@@ -1,0 +1,55 @@
+plugins {
+    id 'net.neoforged.moddev' version '1.0.11'
+    id 'maven-publish'
+}
+
+version = '1.0.0'
+group = 'com.setycz.chickens'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.neoforged.net/releases' }
+}
+
+sourceSets {
+    main {
+        resources {
+            // Reuse the original assets to avoid duplicating large binary files.
+            srcDir 'OriginalChickens/src/main/resources'
+        }
+    }
+}
+
+dependencies {
+    // Explicitly depend on NeoForge's API to make IDE and compilation happy.
+    implementation "net.neoforged:neoforge:${project.neoforge_version}"
+}
+
+neoForge {
+    version = project.neoforge_version
+    addModdingDependenciesTo(sourceSets.main)
+    runs {
+        client { client() }
+        server { server() }
+        data { data() }
+    }
+    mods {
+        modernchickens {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}

@@ -1,0 +1,22 @@
+package com.setycz.chickens.config;
+
+/**
+ * Thread-safe container for the currently active configuration snapshot.
+ * NeoForge loads configuration data on the mod loading thread, so a simple
+ * volatile reference is more than enough to safely publish values to any
+ * gameplay systems that might query them later on.
+ */
+public final class ChickensConfigHolder {
+    private static volatile ChickensConfigValues values = new ChickensConfigValues(10, 3, 5, 1.0f, false);
+
+    private ChickensConfigHolder() {
+    }
+
+    public static ChickensConfigValues get() {
+        return values;
+    }
+
+    public static void set(ChickensConfigValues newValues) {
+        values = newValues;
+    }
+}
