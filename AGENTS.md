@@ -16,9 +16,10 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ## Directory Policy
 ```
 / (root)
-├─ ModernChickens/ # The ONLY mod code to edit!
-├─ ModDevGradle-main/ # Gradle Source Code (READ-ONLY)
-└─ NeoForge-1.21.x/ # NeoForge Source Code (READ-ONLY)
+├─ ModernChickens/      # The ONLY mod code to edit!
+├─ OriginalChickens/    # Original Chickens mod we are porting. (READ-ONLY)
+├─ ModDevGradle-main/   # Gradle Source Code (READ-ONLY)
+└─ NeoForge-1.21.x/     # NeoForge Source Code (READ-ONLY)
 ```
 
 ### Allowed edits
