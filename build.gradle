@@ -15,6 +15,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases' }
+    maven { url = 'https://maven.blamejared.com' }
 }
 
 sourceSets {
@@ -26,9 +27,17 @@ sourceSets {
     }
 }
 
+// Prefer the modernised resources when both the legacy asset directory and the
+// new src/main/resources tree provide the same file (e.g., the updated henhouse models).
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 dependencies {
     // Explicitly depend on NeoForge's API to make IDE and compilation happy.
     implementation "net.neoforged:neoforge:${project.neoforge_version}"
+    // Hook into JEI so the modernised recipe categories can render in-game guidance.
+    implementation "mezz.jei:jei-${project.minecraft_version}-neoforge:${project.jei_version}"
 }
 
 neoForge {

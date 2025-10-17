@@ -1,6 +1,7 @@
 package com.setycz.chickens;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -113,6 +114,19 @@ public class ChickensRegistryItem {
 
     public boolean isDye(Ingredient colour) {
         return isDye() && colour.test(layItem);
+    }
+
+    public boolean isDye(DyeColor colour) {
+        DyeColor dyeColor = getDyeColor();
+        return dyeColor != null && dyeColor == colour;
+    }
+
+    @Nullable
+    public DyeColor getDyeColor() {
+        if (layItem.getItem() instanceof DyeItem dyeItem) {
+            return dyeItem.getDyeColor();
+        }
+        return null;
     }
 
     public int getId() {

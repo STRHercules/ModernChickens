@@ -1,13 +1,29 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.ChickensRegistry;
+import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.LiquidEggRegistry;
+import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.block.HenhouseBlock;
+import com.setycz.chickens.item.AnalyzerItem;
+import com.setycz.chickens.item.ChickensSpawnEggItem;
+import com.setycz.chickens.item.ColoredEggItem;
+import com.setycz.chickens.item.LiquidEggItem;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredRegister.Blocks;
 import net.neoforged.neoforge.registries.DeferredRegister.Items;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.bus.api.IEventBus;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Centralised registry bootstrap. The majority of the mod's content will
@@ -24,17 +40,85 @@ public final class ModRegistry {
     public static void init(IEventBus modBus) {
         ITEMS.register(modBus);
         BLOCKS.register(modBus);
+        ModEntityTypes.init(modBus);
+        ModBlockEntities.init(modBus);
+        ModMenuTypes.init(modBus);
+        ModSpawns.init(modBus);
+        ModBiomeModifiers.init(modBus);
+        ModCapabilities.init(modBus);
+        ModCreativeTabs.init(modBus);
+        modBus.addListener(ModRegistry::onBuildCreativeTabs);
     }
 
-    // These registrations are still simple placeholders; dedicated item
-    // classes will follow once their behaviour has been ported from the
-    // original mod.
-    public static final DeferredItem<Item> SPAWN_EGG = ITEMS.register("spawn_egg",
-            () -> new Item(new Item.Properties().stacksTo(16)));
-    public static final DeferredItem<Item> COLORED_EGG = ITEMS.register("colored_egg",
-            () -> new Item(new Item.Properties().stacksTo(16)));
-    public static final DeferredItem<Item> LIQUID_EGG = ITEMS.register("liquid_egg",
-            () -> new Item(new Item.Properties().stacksTo(16)));
-    public static final DeferredItem<Item> ANALYZER = ITEMS.register("analyzer",
-            () -> new Item(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<ChickensSpawnEggItem> SPAWN_EGG = ITEMS.register("spawn_egg",
+            () -> new ChickensSpawnEggItem(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<ColoredEggItem> COLORED_EGG = ITEMS.register("colored_egg",
+            () -> new ColoredEggItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<LiquidEggItem> LIQUID_EGG = ITEMS.register("liquid_egg",
+            () -> new LiquidEggItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
+            () -> new AnalyzerItem(new Item.Properties().durability(238)));
+    // Register the henhouse block and its item form so players can place the storage structure.
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE_BIRCH = registerHenhouse("henhouse_birch", MapColor.COLOR_BROWN);
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE_JUNGLE = registerHenhouse("henhouse_jungle", MapColor.COLOR_BROWN);
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE_ACACIA = registerHenhouse("henhouse_acacia", MapColor.COLOR_BROWN);
+    public static final DeferredBlock<HenhouseBlock> HENHOUSE_DARK_OAK = registerHenhouse("henhouse_dark_oak", MapColor.COLOR_BROWN);
+
+    public static final List<DeferredBlock<HenhouseBlock>> HENHOUSE_BLOCKS = List.of(
+            HENHOUSE, HENHOUSE_SPRUCE, HENHOUSE_BIRCH, HENHOUSE_JUNGLE, HENHOUSE_ACACIA, HENHOUSE_DARK_OAK
+    );
+
+    public static final DeferredItem<BlockItem> HENHOUSE_ITEM = registerHenhouseItem("henhouse", HENHOUSE);
+    public static final DeferredItem<BlockItem> HENHOUSE_SPRUCE_ITEM = registerHenhouseItem("henhouse_spruce", HENHOUSE_SPRUCE);
+    public static final DeferredItem<BlockItem> HENHOUSE_BIRCH_ITEM = registerHenhouseItem("henhouse_birch", HENHOUSE_BIRCH);
+    public static final DeferredItem<BlockItem> HENHOUSE_JUNGLE_ITEM = registerHenhouseItem("henhouse_jungle", HENHOUSE_JUNGLE);
+    public static final DeferredItem<BlockItem> HENHOUSE_ACACIA_ITEM = registerHenhouseItem("henhouse_acacia", HENHOUSE_ACACIA);
+    public static final DeferredItem<BlockItem> HENHOUSE_DARK_OAK_ITEM = registerHenhouseItem("henhouse_dark_oak", HENHOUSE_DARK_OAK);
+
+    private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
+            HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
+            HENHOUSE_JUNGLE_ITEM, HENHOUSE_ACACIA_ITEM, HENHOUSE_DARK_OAK_ITEM
+    );
+
+    public static List<DeferredItem<BlockItem>> getHenhouseItems() {
+        // Expose an immutable view so creative tabs can iterate every variant without
+        // risking accidental modification of the registration list.
+        return Collections.unmodifiableList(HENHOUSE_ITEMS);
+    }
+
+    private static void onBuildCreativeTabs(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
+                event.accept(ChickensSpawnEggItem.createFor(chicken));
+            }
+        } else if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
+            for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
+                if (chicken.isDye()) {
+                    event.accept(ColoredEggItem.createFor(chicken));
+                }
+            }
+        } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            // Surface every henhouse variant so builders can pick the wood tone they prefer.
+            for (DeferredItem<BlockItem> item : HENHOUSE_ITEMS) {
+                event.accept(item.get());
+            }
+        } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(ANALYZER.get());
+            for (LiquidEggRegistryItem liquid : LiquidEggRegistry.getAll()) {
+                event.accept(LiquidEggItem.createFor(liquid));
+            }
+        }
+    }
+
+    private static DeferredBlock<HenhouseBlock> registerHenhouse(String name, MapColor color) {
+        // Each variant reuses the same block logic while keeping the tint configurable per wood type.
+        return BLOCKS.register(name, () -> new HenhouseBlock(color));
+    }
+
+    private static DeferredItem<BlockItem> registerHenhouseItem(String name, DeferredBlock<HenhouseBlock> block) {
+        // Pair the block with a simple BlockItem so the creative menu and recipes have tangible entries.
+        return ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+    }
 }

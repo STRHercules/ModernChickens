@@ -2,7 +2,10 @@ package com.setycz.chickens.data;
 
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.LiquidEggRegistry;
+import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.SpawnType;
+import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
@@ -163,20 +166,27 @@ public final class DefaultChickens {
                 blueChicken, logChicken).setSpawnType(SpawnType.SNOW);
         chickens.add(snowballChicken);
 
+        LiquidEggRegistryItem waterLiquid = LiquidEggRegistry.findById(0);
+        ItemStack waterEgg = waterLiquid != null
+                ? LiquidEggItem.createFor(waterLiquid)
+                : new ItemStack(ModRegistry.LIQUID_EGG.get());
         ChickensRegistryItem waterChicken = new ChickensRegistryItem(
                 206, "WaterChicken", texture("WaterChicken"),
-                // The liquid egg item still behaves as a stub so no metadata
-                // is attached yet; subtype support will arrive with the item
-                // rewrite.
-                new ItemStack(ModRegistry.LIQUID_EGG.get()),
+                // Attach the liquid egg id directly so chickens lay the
+                // correct fluid variant without additional lookups.
+                waterEgg,
                 0x000099, 0x8080ff,
                 gunpowderChicken, snowballChicken);
         chickens.add(waterChicken);
 
+        LiquidEggRegistryItem lavaLiquid = LiquidEggRegistry.findById(1);
+        ItemStack lavaEgg = lavaLiquid != null
+                ? LiquidEggItem.createFor(lavaLiquid)
+                : new ItemStack(ModRegistry.LIQUID_EGG.get());
         ChickensRegistryItem lavaChicken = new ChickensRegistryItem(
                 103, "LavaChicken", texture("LavaChicken"),
-                // As above, metadata free placeholder until subtype logic lands.
-                new ItemStack(ModRegistry.LIQUID_EGG.get()),
+                // The lava variant uses the second registered liquid id.
+                lavaEgg,
                 0xcc3300, 0xffff00,
                 coalChicken, quartzChicken).setSpawnType(SpawnType.HELL);
         chickens.add(lavaChicken);

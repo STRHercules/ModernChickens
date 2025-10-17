@@ -1,6 +1,7 @@
 package com.setycz.chickens;
 
 import net.minecraft.core.Holder;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.common.Tags;
 
@@ -78,6 +79,16 @@ public final class ChickensRegistry {
 
     @Nullable
     public static ChickensRegistryItem findDyeChicken(net.minecraft.world.item.crafting.Ingredient colour) {
+        for (ChickensRegistryItem chicken : ITEMS.values()) {
+            if (chicken.isDye(colour)) {
+                return chicken;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static ChickensRegistryItem findDyeChicken(DyeColor colour) {
         for (ChickensRegistryItem chicken : ITEMS.values()) {
             if (chicken.isDye(colour)) {
                 return chicken;

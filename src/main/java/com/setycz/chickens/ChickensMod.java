@@ -1,6 +1,8 @@
 package com.setycz.chickens;
 
+import com.setycz.chickens.command.ChickensCommands;
 import com.setycz.chickens.data.ChickensDataLoader;
+import com.setycz.chickens.integration.jade.JadeIntegration;
 import com.setycz.chickens.registry.ModRegistry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -21,6 +23,9 @@ public final class ChickensMod {
     public ChickensMod(IEventBus modBus) {
         ModRegistry.init(modBus);
         modBus.addListener(this::onCommonSetup);
+        ChickenTeachHandler.init();
+        ChickensCommands.init();
+        JadeIntegration.init();
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
     }
 

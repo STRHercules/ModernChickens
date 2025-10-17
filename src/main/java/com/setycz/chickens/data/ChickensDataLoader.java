@@ -7,6 +7,8 @@ import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
+import com.setycz.chickens.item.ChickenItemHelper;
+import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -17,9 +19,9 @@ import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -54,6 +56,10 @@ public final class ChickensDataLoader {
                 defaults.size(),
                 ChickensRegistry.getItems().size(),
                 ChickensRegistry.getDisabledItems().size());
+
+        // Export the breeding graph during bootstrap so tooling retains the
+        // legacy log output without waiting for command invocation.
+        BreedingGraphExporter.export(ChickensRegistry.getItems());
     }
 
     private static void registerLiquidEggs() {
@@ -87,11 +93,19 @@ public final class ChickensDataLoader {
             chicken.setLayCoefficient(layCoefficient);
 
             ItemStack defaultEgg = chicken.createLayItem();
-            ItemStack layItem = readItemStack(props, prefix + "eggItem", prefix + "eggCount", defaultEgg);
+            ItemStack layItem = readItemStack(props,
+                    prefix + "eggItem",
+                    prefix + "eggCount",
+                    prefix + "eggType",
+                    defaultEgg);
             chicken.setLayItem(layItem);
 
             ItemStack defaultDrop = chicken.createDropItem();
-            ItemStack dropItem = readItemStack(props, prefix + "dropItem", prefix + "dropCount", defaultDrop);
+            ItemStack dropItem = readItemStack(props,
+                    prefix + "dropItem",
+                    prefix + "dropCount",
+                    prefix + "dropType",
+                    defaultDrop);
             chicken.setDropItem(dropItem);
 
             String parent1 = readString(props, prefix + "parent1", chicken.getParent1() != null ? chicken.getParent1().getEntityName() : "");
@@ -147,17 +161,84 @@ public final class ChickensDataLoader {
         }
     }
 
-    private static ItemStack readItemStack(Properties props, String itemKey, String countKey, ItemStack fallback) {
+    private static ItemStack readItemStack(Properties props, String itemKey, String countKey, String typeKey, ItemStack fallback) {
         String defaultItemId = getItemId(fallback);
-        String itemId = readString(props, itemKey, defaultItemId);
-        int count = readInt(props, countKey, fallback.getCount());
+        String itemId = readItemId(props, itemKey, defaultItemId);
+        int count = readItemCount(props, countKey, fallback.getCount());
         ItemStack stack = decodeItemStack(itemId, count);
         if (stack.isEmpty()) {
+            // Persist defaults so the written configuration mirrors the in-game values.
             props.setProperty(itemKey, defaultItemId);
             props.setProperty(countKey, Integer.toString(fallback.getCount()));
+            if (typeKey != null) {
+                props.setProperty(typeKey, Integer.toString(readDefaultType(fallback)));
+            }
             return fallback.copy();
         }
+
+        if (stack.is(ModRegistry.LIQUID_EGG.get())) {
+            int defaultType = readDefaultType(fallback);
+            int type = readItemType(props, itemKey, typeKey, defaultType);
+            ChickenItemHelper.setChickenType(stack, type);
+            props.setProperty(typeKey, Integer.toString(type));
+        } else if (typeKey != null) {
+            props.remove(typeKey);
+        }
+
+        props.setProperty(itemKey, getItemId(stack));
+        props.setProperty(countKey, Integer.toString(stack.getCount()));
         return stack;
+    }
+
+    private static int readDefaultType(ItemStack fallback) {
+        return fallback.is(ModRegistry.LIQUID_EGG.get()) ? ChickenItemHelper.getChickenType(fallback) : 0;
+    }
+
+    private static String readItemId(Properties props, String itemKey, String defaultItemId) {
+        String legacyKey = itemKey + "Name";
+        String itemId = props.getProperty(itemKey);
+        if (itemId == null) {
+            itemId = props.getProperty(legacyKey);
+        }
+        if (itemId == null || itemId.isEmpty()) {
+            itemId = defaultItemId;
+        }
+        props.setProperty(itemKey, itemId);
+        return itemId;
+    }
+
+    private static int readItemCount(Properties props, String countKey, int defaultCount) {
+        String legacyKey = countKey.replace("Count", "ItemAmount");
+        String value = props.getProperty(countKey);
+        if (value == null) {
+            value = props.getProperty(legacyKey);
+        }
+        int count = parseInt(value, defaultCount);
+        props.setProperty(countKey, Integer.toString(count));
+        return count;
+    }
+
+    private static int readItemType(Properties props, String itemKey, String typeKey, int defaultType) {
+        // Honour both the modern "type" key and the legacy metadata entry so
+        // existing configuration files retain their liquid egg variants.
+        String legacyKey = itemKey + "Meta";
+        String value = props.getProperty(typeKey);
+        if (value == null) {
+            value = props.getProperty(legacyKey);
+        }
+        int type = parseInt(value, defaultType);
+        return Math.max(type, 0);
+    }
+
+    private static int parseInt(String raw, int defaultValue) {
+        if (raw == null || raw.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     private static ItemStack decodeItemStack(String itemId, int count) {
