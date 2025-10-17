@@ -19,6 +19,8 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ├─ ModernChickens/      # The ONLY mod code to edit!
 ├─ OriginalChickens/    # Original Chickens mod we are porting. (READ-ONLY)
 ├─ ModDevGradle-main/   # Gradle Source Code (READ-ONLY)
+├─ MoreChickens/        # MoreChickens - Chicken expansion mod Source Code (READ-ONLY)
+├─ Hatchery/            # Hatchery Source Code (READ-ONLY)
 └─ NeoForge-1.21.x/     # NeoForge Source Code (READ-ONLY)
 ```
 
