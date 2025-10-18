@@ -130,3 +130,11 @@
   2. Removed the redundant data accessor and cached the chicken type locally while mirroring it into the thrown egg's watched item stack so the tint and save data still carry the metadata.
   3. Synced the cache whenever the projectile's item stack updates to keep server and client copies aligned before re-running the Gradle build to confirm the fix compiles cleanly.
 - **Rationale**: Delegating chicken metadata to the existing item stack synchronisation prevents the oversized data array that caused the client to crash while preserving the coloured egg functionality and visuals.
+
+## Entry 17
+- **Prompt/Task**: ModernChickens spawn eggs summon random chicken breeds instead of the specific breed encoded in the item.
+- **Steps**:
+  1. Reviewed the `ChickensSpawnEggItem` workflow and confirmed we set the chicken type on the entity before calling `finalizeSpawn`, allowing the entity's spawn routine to overwrite the metadata with a biome-random pick.
+  2. Reordered the spawn logic to run `finalizeSpawn` first, hydrate any stored entity data, and then apply the egg's chicken id so the randomisation hook cannot clobber the intended breed.
+  3. Documented the sequencing fix directly in the code and rebuilt the project to ensure the change compiles without introducing new regressions.
+- **Rationale**: Assigning the chicken type after the entity's spawn routine finishes guarantees the spawn egg's metadata wins, restoring deterministic breed spawns while keeping the rest of the spawn initialisation intact.

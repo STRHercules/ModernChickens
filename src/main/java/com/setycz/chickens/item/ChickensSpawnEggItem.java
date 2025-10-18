@@ -86,7 +86,6 @@ public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem 
         }
         entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                 level.random.nextFloat() * 360.0F, 0.0F);
-        entity.setChickenType(chicken.getId());
         entity.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos),
                 MobSpawnType.SPAWN_EGG, null);
 
@@ -94,6 +93,10 @@ public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem 
         if (data != null) {
             entity.load(data.copyTag());
         }
+
+        // Assign the chicken type *after* finalizeSpawn so the random wild spawn
+        // logic inside ChickensChicken does not overwrite the egg's metadata.
+        entity.setChickenType(chicken.getId());
 
         serverLevel.addFreshEntity(entity);
         if (!(context.getPlayer() != null && context.getPlayer().getAbilities().instabuild)) {

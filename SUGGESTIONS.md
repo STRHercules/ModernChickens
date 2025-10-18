@@ -15,3 +15,4 @@
 - Allow configuring the breeding graph export path or filename so dedicated servers can segregate outputs per world without manual cleanup.
 - Add a simple asset lint or data-driven test that loads each spawn egg model to catch future texture regressions before they make it into a release build.
 - Introduce a gameplay regression test (or QA checklist) that spawns and throws each coloured egg in a multiplayer environment to ensure entity data sync stays within vanilla bounds after future refactors.
+- Add a small helper on `ChickensChicken` that returns a spawn group data wrapper for a given chicken id so dispensers and future spawn egg paths can inject the correct breed without reordering spawn logic by hand.
