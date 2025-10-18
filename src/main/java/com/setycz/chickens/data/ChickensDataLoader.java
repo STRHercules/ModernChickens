@@ -272,7 +272,11 @@ public final class ChickensDataLoader {
         int maxBroodSize = readInt(props, "general.maxBroodSize", 5);
         float multiplier = readFloat(props, "general.netherSpawnChanceMultiplier", 1.0f);
         boolean alwaysShowStats = readBoolean(props, "general.alwaysShowStats", false);
-        return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats);
+        double roostSpeed = readDouble(props, "general.roostSpeedMultiplier", 1.0D);
+        double breederSpeed = readDouble(props, "general.breederSpeedMultiplier", 1.0D);
+        boolean disableEggLaying = readBoolean(props, "general.disableVanillaEggLaying", false);
+        return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
+                roostSpeed, breederSpeed, disableEggLaying);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {
@@ -321,6 +325,20 @@ public final class ChickensDataLoader {
             return Float.parseFloat(value);
         } catch (NumberFormatException e) {
             props.setProperty(key, Float.toString(defaultValue));
+            return defaultValue;
+        }
+    }
+
+    private static double readDouble(Properties props, String key, double defaultValue) {
+        String value = props.getProperty(key);
+        if (value == null) {
+            props.setProperty(key, Double.toString(defaultValue));
+            return defaultValue;
+        }
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            props.setProperty(key, Double.toString(defaultValue));
             return defaultValue;
         }
     }

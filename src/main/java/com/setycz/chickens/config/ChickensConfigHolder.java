@@ -7,7 +7,7 @@ package com.setycz.chickens.config;
  * gameplay systems that might query them later on.
  */
 public final class ChickensConfigHolder {
-    private static volatile ChickensConfigValues values = new ChickensConfigValues(10, 3, 5, 1.0f, false);
+    private static volatile ChickensConfigValues values = new ChickensConfigValues(10, 3, 5, 1.0f, false, 1.0D, 1.0D, false);
 
     private ChickensConfigHolder() {
     }

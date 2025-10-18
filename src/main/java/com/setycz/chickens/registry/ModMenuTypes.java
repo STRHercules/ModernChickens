@@ -1,7 +1,10 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.menu.BreederMenu;
+import com.setycz.chickens.menu.CollectorMenu;
 import com.setycz.chickens.menu.HenhouseMenu;
+import com.setycz.chickens.menu.RoostMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -19,6 +22,12 @@ public final class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<HenhouseMenu>> HENHOUSE = MENU_TYPES.register("henhouse",
             () -> IMenuTypeExtension.create(HenhouseMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<RoostMenu>> ROOST = MENU_TYPES.register("roost",
+            () -> IMenuTypeExtension.create(RoostMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<BreederMenu>> BREEDER = MENU_TYPES.register("breeder",
+            () -> IMenuTypeExtension.create(BreederMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<CollectorMenu>> COLLECTOR = MENU_TYPES.register("collector",
+            () -> IMenuTypeExtension.create(CollectorMenu::new));
 
     private ModMenuTypes() {
     }

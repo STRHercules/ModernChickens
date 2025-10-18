@@ -36,6 +36,13 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         // Utility items first to mirror the original ordering.
                         output.accept(ModRegistry.ANALYZER.get());
+                        output.accept(ModRegistry.CATCHER.get());
+                        for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
+                            output.accept(ModRegistry.CHICKEN_ITEM.get().createFor(chicken));
+                        }
+                        output.accept(ModRegistry.ROOST_ITEM.get());
+                        output.accept(ModRegistry.BREEDER_ITEM.get());
+                        output.accept(ModRegistry.COLLECTOR_ITEM.get());
                         for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {
                             output.accept(item.get());
                         }

@@ -3,6 +3,7 @@ package com.setycz.chickens;
 import com.setycz.chickens.command.ChickensCommands;
 import com.setycz.chickens.data.ChickensDataLoader;
 import com.setycz.chickens.entity.NetherPopulationHandler;
+import com.setycz.chickens.RoostEggPreventer;
 import com.setycz.chickens.integration.jade.JadeIntegration;
 import com.setycz.chickens.registry.ModRegistry;
 import net.neoforged.bus.api.IEventBus;
@@ -28,6 +29,7 @@ public final class ChickensMod {
         ChickensCommands.init();
         JadeIntegration.init();
         NetherPopulationHandler.init();
+        RoostEggPreventer.init();
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
     }
 

@@ -13,14 +13,21 @@ public final class ChickensConfigValues {
     private final int maxBroodSize;
     private final float netherSpawnChanceMultiplier;
     private final boolean alwaysShowStats;
+    private final double roostSpeedMultiplier;
+    private final double breederSpeedMultiplier;
+    private final boolean disableVanillaEggLaying;
 
     public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
-            float netherSpawnChanceMultiplier, boolean alwaysShowStats) {
+            float netherSpawnChanceMultiplier, boolean alwaysShowStats,
+            double roostSpeedMultiplier, double breederSpeedMultiplier, boolean disableVanillaEggLaying) {
         this.spawnProbability = spawnProbability;
         this.minBroodSize = minBroodSize;
         this.maxBroodSize = maxBroodSize;
         this.netherSpawnChanceMultiplier = netherSpawnChanceMultiplier;
         this.alwaysShowStats = alwaysShowStats;
+        this.roostSpeedMultiplier = roostSpeedMultiplier;
+        this.breederSpeedMultiplier = breederSpeedMultiplier;
+        this.disableVanillaEggLaying = disableVanillaEggLaying;
     }
 
     public int getSpawnProbability() {
@@ -41,5 +48,17 @@ public final class ChickensConfigValues {
 
     public boolean isAlwaysShowStats() {
         return alwaysShowStats;
+    }
+
+    public double getRoostSpeedMultiplier() {
+        return roostSpeedMultiplier;
+    }
+
+    public double getBreederSpeedMultiplier() {
+        return breederSpeedMultiplier;
+    }
+
+    public boolean isVanillaEggLayingDisabled() {
+        return disableVanillaEggLaying;
     }
 }

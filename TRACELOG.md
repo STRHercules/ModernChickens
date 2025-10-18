@@ -146,3 +146,51 @@
   2. Inlined the flap animation updates from the base chicken implementation so the override can execute the movement code while bypassing the default egg drop.
   3. Moved the resource-laying routine into a dedicated helper that now runs after the animation updates, ensuring only the modded drops trigger before rebuilding to verify compilation.
 - **Rationale**: Replicating the vanilla movement behaviour while suppressing its egg spawn hook restores the intended diamond/coal/etc. drops without regressing chicken animations or physics.
+
+## Entry 19
+- **Prompt/Task**: Start porting Roost functionality into ModernChickens based on the Roost feature audit.
+- **Steps**:
+  1. Implemented a shared `AbstractChickenContainerBlockEntity` that modernises the legacy Roost inventory, timer, and progress synchronisation so specialised containers can reuse the logic on NeoForge.
+  2. Added the roost block, block entity, menu, and screen plus the chicken/catcher items, wiring them into the deferred registries, creative tabs, and client colour handlers while creating JSON assets for blockstates, models, loot, and recipes.
+  3. Ran `./gradlew build` to confirm the new gameplay code, UI, and assets compile cleanly before staging the changes.
+- **Rationale**: Establishing the reusable container core and the first functional roost provides a foundation for porting breeder/collector logic and item workflows in follow-up tasks while keeping the current build stable.
+
+## Entry 20
+- **Prompt/Task**: Finish porting the Roost breeder and collector features onto the new NeoForge container framework.
+- **Steps**:
+  1. Implemented `BreederBlockEntity`, block, menu, and screen on top of the shared container base, reusing the Chickens breeding logic, adding direct item interactions, and updating registries, client screens, and assets.
+  2. Added the collector block/entity/menu/screen that scans nearby roost-style containers, wiring new menu types, block entities, creative tab entries, loot tables, and crafting recipes.
+  3. Updated localisation keys plus ran `./gradlew build` to verify the expanded feature set compiles successfully.
+- **Rationale**: Reinstating both automation blocks restores parity with the legacy Roost mod, enabling automated breeding and drop collection while keeping all registration and client hooks aligned with ModernChickens’ architecture.
+
+## Entry 21
+- **Prompt/Task**: Continue porting Roost integrations by restoring JEI categories, Jade overlays, and egg suppression.
+- **Steps**:
+  1. Added JEI recipe types and categories for roosting, the breeder machine, and chicken catching while registering item subtypes so each chicken item renders distinct entries.
+  2. Ported the Jade block tooltip provider by exposing tooltip/tag hooks on the shared container base, letting roost, breeder, and collector report progress, seed status, and inventory data in overlays.
+  3. Introduced the `RoostEggPreventer` event listener to stop vanilla chickens from laying eggs and reran `./ModDevGradle-main/gradlew build --no-daemon` after clearing stale NeoForge locks.
+- **Rationale**: Restoring the auxiliary integrations and disabling vanilla egg spam completes the gameplay loop for Roost content, ensuring automation blocks surface their state to players and behave like the original mod.
+
+## Entry 22
+- **Prompt/Task**: Continue porting everything from Roost by recreating its in-world and item rendering on NeoForge.
+- **Steps**:
+  1. Extended the shared chicken container with a render-friendly DTO so client renderers can query chicken type, stats, and stack counts without poking at server internals.
+  2. Implemented dedicated roost and breeder block-entity renderers plus a chicken entity cache to mirror the original mod’s animated chickens and seed piles, registering them inside the client bootstrap.
+  3. Rebuilt the project with `bash ./ModDevGradle-main/gradlew build --no-daemon` to validate the new rendering hooks compile cleanly alongside the existing automation features.
+- **Rationale**: Bringing back the signature roost/breeder visuals ensures the port feels complete, matching the legacy mod’s presentation while staying compatible with NeoForge’s rendering pipeline.
+
+## Entry 23
+- **Prompt/Task**: Continue porting Roost by restoring gameplay configuration knobs, bespoke chicken item visuals, and distinctive automation block models.
+- **Steps**:
+  1. Reintroduced the roost/breeder speed multipliers and vanilla egg toggle to the configuration loader and legacy bridge, wiring block entities and the egg suppressor to respect the new settings.
+  2. Added a client `BlockEntityWithoutLevelRenderer` for the chicken item plus its model stub so inventory stacks once again display the correct animated breed.
+  3. Replaced the placeholder roost, breeder, and collector block models with multi-piece structures built from vanilla textures to better echo the original cages and crates.
+- **Rationale**: Matching the original mod’s configurability and presentation keeps the port feature-complete, letting players tune automation speed while regaining the recognisable item and block silhouettes without waiting on bespoke textures.
+
+## Entry 24
+- **Prompt/Task**: Continue porting outstanding Roost features that are still missing, rewriting for NeoForge when needed.
+- **Steps**:
+  1. Added a dedicated collector block entity renderer that orbits representative item stacks above the crate so the storage block regains the animated presentation from Roost.
+  2. Registered the new renderer inside the client bootstrap to ensure it loads alongside the existing roost and breeder visual hooks.
+  3. Updated the suggestions list with a follow-up configuration idea for tuning the collector’s scan range.
+- **Rationale**: Bringing the collector’s visual feedback in line with the other automation blocks completes the ported feature set and highlights future configuration work for pack makers.

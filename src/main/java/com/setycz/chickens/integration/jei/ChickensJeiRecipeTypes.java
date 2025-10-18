@@ -15,6 +15,9 @@ public final class ChickensJeiRecipeTypes {
     public static final RecipeType<BreedingRecipe> BREEDING = RecipeType.create(ChickensMod.MOD_ID, "breeding", BreedingRecipe.class);
     public static final RecipeType<ThrowingRecipe> THROWING = RecipeType.create(ChickensMod.MOD_ID, "throwing", ThrowingRecipe.class);
     public static final RecipeType<HenhouseRecipe> HENHOUSE = RecipeType.create(ChickensMod.MOD_ID, "henhouse", HenhouseRecipe.class);
+    public static final RecipeType<RoostingRecipe> ROOSTING = RecipeType.create(ChickensMod.MOD_ID, "roosting", RoostingRecipe.class);
+    public static final RecipeType<CatchingRecipe> CATCHING = RecipeType.create(ChickensMod.MOD_ID, "catching", CatchingRecipe.class);
+    public static final RecipeType<BreederRecipe> BREEDER = RecipeType.create(ChickensMod.MOD_ID, "breeder", BreederRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -32,5 +35,14 @@ public final class ChickensJeiRecipeTypes {
     }
 
     public record HenhouseRecipe(ItemStack hayBale, ItemStack dirt) {
+    }
+
+    public record RoostingRecipe(ItemStack chickenStack, ItemStack dropStack, int stackSize) {
+    }
+
+    public record CatchingRecipe(ItemStack catcher, ItemStack target, ItemStack result) {
+    }
+
+    public record BreederRecipe(ItemStack parent1, ItemStack parent2, ItemStack seeds, ItemStack child, int chancePercent) {
     }
 }

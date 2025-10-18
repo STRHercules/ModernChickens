@@ -1,7 +1,10 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.blockentity.BreederBlockEntity;
+import com.setycz.chickens.blockentity.CollectorBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
+import com.setycz.chickens.blockentity.RoostBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -21,6 +24,18 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HenhouseBlockEntity>> HENHOUSE = BLOCK_ENTITIES
             .register("henhouse", () -> BlockEntityType.Builder
                     .of(HenhouseBlockEntity::new, henhouseBlocks())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoostBlockEntity>> ROOST = BLOCK_ENTITIES
+            .register("roost", () -> BlockEntityType.Builder
+                    .of(RoostBlockEntity::new, ModRegistry.ROOST.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BreederBlockEntity>> BREEDER = BLOCK_ENTITIES
+            .register("breeder", () -> BlockEntityType.Builder
+                    .of(BreederBlockEntity::new, ModRegistry.BREEDER.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CollectorBlockEntity>> COLLECTOR = BLOCK_ENTITIES
+            .register("collector", () -> BlockEntityType.Builder
+                    .of(CollectorBlockEntity::new, ModRegistry.COLLECTOR.get())
                     .build(null));
 
     private ModBlockEntities() {
