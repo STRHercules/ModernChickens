@@ -19,9 +19,9 @@ import net.neoforged.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -76,6 +76,8 @@ public final class ChickensDataLoader {
                 LOGGER.warn("Failed to read chickens configuration; using defaults", e);
             }
         }
+
+        LegacyConfigBridge.importIfPresent(props, chickens);
 
         ChickensConfigValues values = readGeneralSettings(props);
         Map<String, ChickensRegistryItem> byName = new HashMap<>();
@@ -138,6 +140,7 @@ public final class ChickensDataLoader {
             LOGGER.warn("Unable to write chickens configuration", e);
         }
 
+        LegacyConfigBridge.export(props, chickens, values);
         return values;
     }
 

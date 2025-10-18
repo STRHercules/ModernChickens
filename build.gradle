@@ -1,9 +1,12 @@
+import org.gradle.api.file.RelativePath
+import java.util.Locale
+
 plugins {
     id 'net.neoforged.moddev' version '1.0.11'
     id 'maven-publish'
 }
 
-version = '1.0.0'
+version = '1.0.6'
 group = 'com.setycz.chickens'
 
 java {
@@ -18,24 +21,39 @@ repositories {
     maven { url = 'https://maven.blamejared.com' }
 }
 
-sourceSets {
-    main {
-        resources {
-            // Reuse the original assets to avoid duplicating large binary files.
-            srcDir 'OriginalChickens/src/main/resources'
+tasks.named('processResources') {
+    notCompatibleWithConfigurationCache("Resource remapping mutates RelativePath instances at execution time")
+    from('OriginalChickens/src/main/resources')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property('modVersion', version)
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand('file': ['jarVersion': project.version])
+    }
+    eachFile { details ->
+        def segments = details.relativePath.segments.clone()
+        if (segments.length >= 4) {
+            if (segments[3] == 'blocks') {
+                segments[3] = 'block'
+                details.relativePath = new RelativePath(details.relativePath.isFile(), segments)
+            } else if (segments[3] == 'items') {
+                segments[3] = 'item'
+                details.relativePath = new RelativePath(details.relativePath.isFile(), segments)
+            }
+        }
+        if (details.relativePath.pathString.startsWith('assets/chickens/textures/entity/') && details.name.endsWith('.png')) {
+            segments = details.relativePath.segments.clone()
+            segments[segments.length - 1] = details.name.toLowerCase(Locale.ROOT)
+            details.relativePath = new RelativePath(details.relativePath.isFile(), segments)
+        }
+    }
+    filesMatching('assets/chickens/models/**/*.json') {
+        filter { line ->
+            line.replace('chickens:blocks/', 'chickens:block/').replace('chickens:items/', 'chickens:item/')
         }
     }
 }
 
-// Prefer the modernised resources when both the legacy asset directory and the
-// new src/main/resources tree provide the same file (e.g., the updated henhouse models).
-tasks.named('processResources') {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
 dependencies {
-    // Explicitly depend on NeoForge's API to make IDE and compilation happy.
-    implementation "net.neoforged:neoforge:${project.neoforge_version}"
     // Hook into JEI so the modernised recipe categories can render in-game guidance.
     implementation "mezz.jei:jei-${project.minecraft_version}-neoforge:${project.jei_version}"
 }

@@ -3,12 +3,12 @@ package com.setycz.chickens;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.registry.ModMenuTypes;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.screen.HenhouseScreen;
-import net.minecraft.client.renderer.entity.ChickenRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +31,7 @@ public final class ChickensClient {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.COLORED_EGG.get(), context -> new ThrownItemRenderer<>(context, 1.0F, true));
-        event.registerEntityRenderer(ModEntityTypes.CHICKENS_CHICKEN.get(), ChickenRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.CHICKENS_CHICKEN.get(), ChickensChickenRenderer::new);
     }
 
     @SubscribeEvent
@@ -50,22 +50,25 @@ public final class ChickensClient {
     private static int getChickenColor(ItemStack stack, boolean primary) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken == null) {
-            return 0xffffff;
+            return 0xFFFFFFFF;
         }
-        return primary ? chicken.getBgColor() : chicken.getFgColor();
+        int color = primary ? chicken.getBgColor() : chicken.getFgColor();
+        return 0xFF000000 | color;
     }
 
     private static int getColoredEggColor(ItemStack stack) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken == null) {
-            return 0xffffff;
+            return 0xFFFFFFFF;
         }
         DyeColor dye = chicken.getDyeColor();
-        return dye != null ? dye.getTextColor() : chicken.getFgColor();
+        int color = dye != null ? dye.getTextColor() : chicken.getFgColor();
+        return 0xFF000000 | color;
     }
 
     private static int getLiquidEggColor(ItemStack stack) {
         LiquidEggRegistryItem liquid = LiquidEggRegistry.findById(ChickenItemHelper.getChickenType(stack));
-        return liquid != null ? liquid.getEggColor() : 0xffffff;
+        int color = liquid != null ? liquid.getEggColor() : 0xFFFFFF;
+        return 0xFF000000 | color;
     }
 }

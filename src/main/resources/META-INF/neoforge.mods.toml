@@ -3,18 +3,21 @@ loaderVersion="[4,)"
 license="MIT"
 issueTrackerURL="https://example.com"
 showAsResourcePack=true
+
 [[mods]]
 modId="chickens"
-version="1.0.0"
+version="${file.jarVersion}"
 displayName="Modern Chickens"
 description='''
 Modernized port of the classic Chickens mod for Minecraft 1.21.1.'''
+
 [[dependencies.chickens]]
 modId="neoforge"
 mandatory=true
 versionRange="[21.1.0,)"
 ordering="NONE"
 sides="BOTH"
+
 [[dependencies.chickens]]
 modId="minecraft"
 mandatory=true

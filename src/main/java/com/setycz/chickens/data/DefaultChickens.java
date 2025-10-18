@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Recreates the legacy {@code generateDefaultChickens} method from the 1.10
@@ -274,7 +275,8 @@ public final class DefaultChickens {
     }
 
     private static ResourceLocation texture(String name) {
-        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/" + name + ".png");
+        String path = name.toLowerCase(Locale.ROOT);
+        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
     }
 
     /**

@@ -17,8 +17,8 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.ClipContext;
@@ -30,14 +30,11 @@ import net.minecraft.world.phys.HitResult;
 import java.util.List;
 
 /**
- * Multi-variant spawn egg that reuses the original metadata driven behaviour by
- * storing the target chicken id in NBT. This allows a single item to spawn any
- * registered chicken while still integrating with vanilla mechanics such as the
- * EntityTag customisation hook.
+ * Custom spawn egg that colours itself based on the chicken descriptor stored in NBT.
  */
-public class ChickensSpawnEggItem extends Item {
+public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem {
     public ChickensSpawnEggItem(Properties properties) {
-        super(properties);
+        super(ModEntityTypes.CHICKENS_CHICKEN.get(), 0xffffff, 0xffffff, properties);
     }
 
     public static ItemStack createFor(ChickensRegistryItem chicken) {
@@ -52,14 +49,17 @@ public class ChickensSpawnEggItem extends Item {
         if (chicken == null) {
             return super.getName(stack);
         }
-        return Component.translatable("item.chickens.spawn_egg.named", Component.translatable("entity." + chicken.getEntityName() + ".name")).withStyle(ChatFormatting.YELLOW);
+        return Component.translatable("item.chickens.spawn_egg.named",
+                Component.translatable("entity." + chicken.getEntityName() + ".name"))
+                .withStyle(ChatFormatting.YELLOW);
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
-            tooltip.add(Component.translatable("item.chickens.spawn_egg.tooltip", chicken.getTier()).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("item.chickens.spawn_egg.tooltip", chicken.getTier())
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -76,15 +76,19 @@ public class ChickensSpawnEggItem extends Item {
         }
         BlockPos clickedPos = context.getClickedPos();
         BlockState state = level.getBlockState(clickedPos);
-        BlockPos spawnPos = state.getCollisionShape(level, clickedPos).isEmpty() ? clickedPos : clickedPos.relative(context.getClickedFace());
+        BlockPos spawnPos = state.getCollisionShape(level, clickedPos).isEmpty()
+                ? clickedPos
+                : clickedPos.relative(context.getClickedFace());
 
         ChickensChicken entity = ModEntityTypes.CHICKENS_CHICKEN.get().create(serverLevel);
         if (entity == null) {
             return InteractionResult.FAIL;
         }
-        entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
+        entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+                level.random.nextFloat() * 360.0F, 0.0F);
         entity.setChickenType(chicken.getId());
-        entity.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos), MobSpawnType.SPAWN_EGG, null);
+        entity.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos),
+                MobSpawnType.SPAWN_EGG, null);
 
         CustomData data = stack.get(DataComponents.ENTITY_DATA);
         if (data != null) {
@@ -95,7 +99,8 @@ public class ChickensSpawnEggItem extends Item {
         if (!(context.getPlayer() != null && context.getPlayer().getAbilities().instabuild)) {
             stack.shrink(1);
         }
-        serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.CHICKEN_AMBIENT, SoundSource.NEUTRAL, 0.5F, 1.0F);
+        serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                SoundEvents.CHICKEN_AMBIENT, SoundSource.NEUTRAL, 0.5F, 1.0F);
         return InteractionResult.CONSUME;
     }
 
