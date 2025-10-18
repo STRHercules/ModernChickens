@@ -114,3 +114,11 @@
   2. Registered a `/chickens export breeding` Brigadier command that regenerates the graph on demand with clear success and failure feedback for operators.
   3. Hooked the command listener into the NeoForge event bus and added localisation strings so the runtime messages match the mod's polished presentation.
 - **Rationale**: Letting players and server admins refresh the breeding graph without restarting keeps the modern port as convenient as the legacy mod while ensuring every export runs through the validated writer.
+
+## Entry 15
+- **Prompt/Task**: The 'Spawn Eggs' are now completely invisible.
+- **Steps**:
+  1. Investigated the spawn egg model definition and found it targeted the placeholder `template_spawn_egg` textures added in 1.21, which render fully transparent on tinted items.
+  2. Updated both development and source resource packs to reference the vanilla `spawn_egg` and `spawn_egg_overlay` textures so the baked model pulls in the correct base imagery before tinting.
+  3. Verified the fix by rebuilding the project to ensure the corrected resources compile without introducing regressions.
+- **Rationale**: Pointing the model at the actual spawn egg textures restores the expected geometry for every coloured chicken egg, preventing invisible icons across inventories and JEI lists.
