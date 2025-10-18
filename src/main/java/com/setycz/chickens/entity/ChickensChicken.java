@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -170,23 +172,48 @@ public class ChickensChicken extends Chicken {
 
     @Override
     public void aiStep() {
-        if (!this.level().isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey()) {
-            this.layTime--;
-            // Keep the synced lay progress field in step with the ticking timer so
-            // analysers and Jade overlays report the same countdown the legacy mod did.
-            this.updateLayProgress();
-            if (this.layTime <= 0) {
-                ChickensRegistryItem description = this.getChickenDescription();
-                if (description != null) {
-                    ItemStack toLay = description.createLayItem();
-                    // Deliver eggs to nearby henhouses before falling back to
-                    // item drops so long-running automation setups continue to work.
-                    this.spawnEggStack(toLay, description);
-                }
-                this.resetTimeUntilNextEgg();
-            }
-        }
         super.aiStep();
+
+        // Inline the vanilla wing animation updates so overriding this method lets us
+        // replace the default egg drop without regressing movement visuals.
+        this.oFlap = this.flap;
+        this.oFlapSpeed = this.flapSpeed;
+        this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
+        this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
+        if (!this.onGround() && this.flapping < 1.0F) {
+            this.flapping = 1.0F;
+        }
+
+        this.flapping *= 0.9F;
+        Vec3 velocity = this.getDeltaMovement();
+        if (!this.onGround() && velocity.y < 0.0D) {
+            this.setDeltaMovement(velocity.multiply(1.0D, 0.6D, 1.0D));
+        }
+
+        this.flap += this.flapping * 2.0F;
+
+        if (!this.level().isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey()) {
+            this.tickResourceLaying();
+        }
+    }
+
+    private void tickResourceLaying() {
+        this.layTime--;
+        // Keep the synced lay progress field in step with the ticking timer so
+        // analysers and Jade overlays report the same countdown the legacy mod did.
+        this.updateLayProgress();
+        if (this.layTime > 0) {
+            return;
+        }
+
+        ChickensRegistryItem description = this.getChickenDescription();
+        if (description != null) {
+            ItemStack toLay = description.createLayItem();
+            // Deliver eggs to nearby henhouses before falling back to
+            // item drops so long-running automation setups continue to work.
+            this.spawnEggStack(toLay, description);
+        }
+        this.resetTimeUntilNextEgg();
     }
 
     private void spawnEggStack(ItemStack stack, ChickensRegistryItem description) {

@@ -16,3 +16,4 @@
 - Add a simple asset lint or data-driven test that loads each spawn egg model to catch future texture regressions before they make it into a release build.
 - Introduce a gameplay regression test (or QA checklist) that spawns and throws each coloured egg in a multiplayer environment to ensure entity data sync stays within vanilla bounds after future refactors.
 - Add a small helper on `ChickensChicken` that returns a spawn group data wrapper for a given chicken id so dispensers and future spawn egg paths can inject the correct breed without reordering spawn logic by hand.
+- Extend automated checks (or a QA script) to confirm chickens never emit vanilla eggs after the custom drop refactor so future merges that touch `aiStep` keep the bespoke laying behaviour intact.

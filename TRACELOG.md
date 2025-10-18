@@ -138,3 +138,11 @@
   2. Reordered the spawn logic to run `finalizeSpawn` first, hydrate any stored entity data, and then apply the egg's chicken id so the randomisation hook cannot clobber the intended breed.
   3. Documented the sequencing fix directly in the code and rebuilt the project to ensure the change compiles without introducing new regressions.
 - **Rationale**: Assigning the chicken type after the entity's spawn routine finishes guarantees the spawn egg's metadata wins, restoring deterministic breed spawns while keeping the rest of the spawn initialisation intact.
+
+## Entry 18
+- **Prompt/Task**: ModernChickens only lay vanilla eggs instead of their configured resources.
+- **Steps**:
+  1. Investigated the overridden `aiStep` method and confirmed the call to `super.aiStep()` executed after our custom logic, letting the vanilla chicken routine fire and spawn standard eggs each tick.
+  2. Inlined the flap animation updates from the base chicken implementation so the override can execute the movement code while bypassing the default egg drop.
+  3. Moved the resource-laying routine into a dedicated helper that now runs after the animation updates, ensuring only the modded drops trigger before rebuilding to verify compilation.
+- **Rationale**: Replicating the vanilla movement behaviour while suppressing its egg spawn hook restores the intended diamond/coal/etc. drops without regressing chicken animations or physics.
