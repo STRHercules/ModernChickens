@@ -37,18 +37,23 @@ public final class DefaultChickens {
                 new ItemStack(Items.EGG),
                 0xffffff, 0xffff00).setSpawnType(SpawnType.NONE));
 
-        ChickensRegistryItem whiteChicken = createDyeChicken(DyeColor.WHITE, "WhiteChicken")
-                .setDropItem(new ItemStack(Items.BONE)).setSpawnType(SpawnType.NORMAL);
+        // Configure the base dye chickens to lay the legacy resource items instead of modern dyes.
+        ChickensRegistryItem whiteChicken = createDyeChicken(DyeColor.WHITE, "WhiteChicken");
+        whiteChicken.setLayItem(new ItemStack(Items.BONE));
+        whiteChicken.setDropItem(new ItemStack(Items.BONE));
+        whiteChicken.setSpawnType(SpawnType.NORMAL);
         chickens.add(whiteChicken);
         ChickensRegistryItem yellowChicken = createDyeChicken(DyeColor.YELLOW, "YellowChicken");
         chickens.add(yellowChicken);
         ChickensRegistryItem blueChicken = createDyeChicken(DyeColor.BLUE, "BlueChicken");
+        blueChicken.setLayItem(new ItemStack(Items.LAPIS_LAZULI));
         chickens.add(blueChicken);
         ChickensRegistryItem greenChicken = createDyeChicken(DyeColor.GREEN, "GreenChicken");
         chickens.add(greenChicken);
         ChickensRegistryItem redChicken = createDyeChicken(DyeColor.RED, "RedChicken");
         chickens.add(redChicken);
         ChickensRegistryItem blackChicken = createDyeChicken(DyeColor.BLACK, "BlackChicken");
+        blackChicken.setLayItem(new ItemStack(Items.INK_SAC));
         chickens.add(blackChicken);
 
         ChickensRegistryItem pinkChicken = createDyeChicken(DyeColor.PINK, "PinkChicken")
@@ -149,8 +154,9 @@ public final class DefaultChickens {
                 flintChicken, logChicken);
         chickens.add(coalChicken);
 
-        ChickensRegistryItem brownChicken = createDyeChicken(DyeColor.BROWN, "BrownChicken")
-                .setParentsNew(redChicken, greenChicken);
+        ChickensRegistryItem brownChicken = createDyeChicken(DyeColor.BROWN, "BrownChicken");
+        brownChicken.setParentsNew(redChicken, greenChicken);
+        brownChicken.setLayItem(new ItemStack(Items.COCOA_BEANS));
         chickens.add(brownChicken);
 
         ChickensRegistryItem goldChicken = new ChickensRegistryItem(

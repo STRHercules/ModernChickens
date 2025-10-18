@@ -28,8 +28,10 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
+
+import net.neoforged.neoforge.common.Tags;
+import net.minecraft.world.level.block.Block;
 
 /**
  * Storage block entity that emulates the Forge 1.10 henhouse logic. It exposes
@@ -46,7 +48,9 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     public static final int HAY_BALE_ENERGY = 100;
     private static final double HENHOUSE_RADIUS = 0.5D;
     private static final double FENCE_THRESHOLD = 0.5D;
-    private static final double SEARCH_RADIUS = 4.0D + HENHOUSE_RADIUS + FENCE_THRESHOLD;
+    private static final double MAX_ENTITY_RADIUS = 2.0D;
+    private static final double BASE_RADIUS = 4.0D;
+    private static final double SEARCH_RADIUS = BASE_RADIUS + HENHOUSE_RADIUS + FENCE_THRESHOLD;
 
     private static final int[] UP_SLOTS = new int[] { HAY_SLOT };
     private static final int[] DOWN_SLOTS;
@@ -111,37 +115,53 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     private static List<HenhouseBlockEntity> findHenhouses(Level level, Vec3 origin, double radius) {
-        int minX = Mth.floor(origin.x - radius);
-        int maxX = Mth.ceil(origin.x + radius);
-        int minY = Mth.floor(origin.y - radius);
-        int maxY = Mth.ceil(origin.y + radius);
-        int minZ = Mth.floor(origin.z - radius);
-        int maxZ = Mth.ceil(origin.z + radius);
+        int minX = Mth.floor((origin.x - radius - MAX_ENTITY_RADIUS));
+        int maxX = Mth.ceil((origin.x + radius + MAX_ENTITY_RADIUS));
+        int minY = Mth.floor((origin.y - radius - MAX_ENTITY_RADIUS));
+        int maxY = Mth.ceil((origin.y + radius + MAX_ENTITY_RADIUS));
+        int minZ = Mth.floor((origin.z - radius - MAX_ENTITY_RADIUS));
+        int maxZ = Mth.ceil((origin.z + radius + MAX_ENTITY_RADIUS));
 
+        List<Double> distances = new ArrayList<>();
         List<HenhouseBlockEntity> result = new ArrayList<>();
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     cursor.set(x, y, z);
-                    if (!isWithinRange(origin, cursor, radius)) {
+                    BlockEntity blockEntity = level.getBlockEntity(cursor);
+                    if (!(blockEntity instanceof HenhouseBlockEntity henhouse)) {
                         continue;
                     }
-                    BlockEntity blockEntity = level.getBlockEntity(cursor);
-                    if (blockEntity instanceof HenhouseBlockEntity henhouse) {
-                        result.add(henhouse);
+                    Vec3 target = Vec3.atLowerCornerOf(cursor).add(HENHOUSE_RADIUS, HENHOUSE_RADIUS, HENHOUSE_RADIUS);
+                    if (!isWithinRange(origin, target, radius)) {
+                        continue;
                     }
+                    double distance = target.distanceTo(origin);
+                    insertSorted(result, distances, henhouse, distance);
                 }
             }
         }
-        result.sort(Comparator.comparingDouble(henhouse -> henhouse.distanceTo(origin)));
         return result;
     }
 
-    private static boolean isWithinRange(Vec3 origin, BlockPos pos, double radius) {
-        Vec3 target = Vec3.atLowerCornerOf(pos).add(HENHOUSE_RADIUS, HENHOUSE_RADIUS, HENHOUSE_RADIUS);
-        return Math.abs(origin.x - target.x) <= radius && Math.abs(origin.y - target.y) <= radius
+    private static boolean isWithinRange(Vec3 origin, Vec3 target, double radius) {
+        return Math.abs(origin.x - target.x) <= radius
+                && Math.abs(origin.y - target.y) <= radius
                 && Math.abs(origin.z - target.z) <= radius;
+    }
+
+    private static void insertSorted(List<HenhouseBlockEntity> henhouses, List<Double> distances,
+            HenhouseBlockEntity candidate, double distance) {
+        for (int i = 0; i < distances.size(); i++) {
+            if (distance < distances.get(i)) {
+                distances.add(i, distance);
+                henhouses.add(i, candidate);
+                return;
+            }
+        }
+        distances.add(distance);
+        henhouses.add(candidate);
     }
 
     private double distanceTo(Vec3 origin) {
@@ -149,23 +169,38 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         return target.distanceTo(origin);
     }
 
+    private static boolean isHayFuel(ItemStack stack) {
+        return !stack.isEmpty()
+                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(Tags.Items.STORAGE_BLOCKS_WHEAT));
+    }
+
     private ItemStack pushIntoInventory(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
         ItemStack remaining = stack.copy();
         int capacity = getEffectiveCapacity();
         if (capacity <= 0) {
             return remaining;
         }
 
-        for (int slot = FIRST_OUTPUT_SLOT; slot <= LAST_OUTPUT_SLOT; slot++) {
+        boolean modified = false;
+        for (int slot = FIRST_OUTPUT_SLOT; slot <= LAST_OUTPUT_SLOT && capacity > 0 && !remaining.isEmpty(); slot++) {
             ItemStack slotStack = items.get(slot);
             int canAdd = canAdd(slotStack, remaining);
+            if (canAdd <= 0) {
+                continue;
+            }
             int willAdd = Math.min(canAdd, capacity);
             if (willAdd <= 0) {
                 continue;
             }
 
-            consumeEnergy(willAdd);
+            if (!consumeEnergy(willAdd)) {
+                break;
+            }
             capacity -= willAdd;
+            modified = true;
 
             if (slotStack.isEmpty()) {
                 ItemStack placed = remaining.split(willAdd);
@@ -174,36 +209,31 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
                 slotStack.grow(willAdd);
                 remaining.shrink(willAdd);
             }
-
-            if (remaining.isEmpty()) {
-                setChanged();
-                return ItemStack.EMPTY;
-            }
         }
 
-        setChanged();
-        return remaining;
+        if (modified) {
+            sync();
+        }
+        return remaining.isEmpty() ? ItemStack.EMPTY : remaining;
     }
 
-    private void consumeEnergy(int amount) {
+    private boolean consumeEnergy(int amount) {
+        boolean modified = false;
         while (amount > 0) {
-            if (energy <= 0) {
-                ItemStack hayStack = items.get(HAY_SLOT);
-                if (!hayStack.isEmpty() && hayStack.is(Blocks.HAY_BLOCK.asItem())) {
-                    hayStack.shrink(1);
-                    if (hayStack.isEmpty()) {
-                        items.set(HAY_SLOT, ItemStack.EMPTY);
-                    }
-                    energy += HAY_BALE_ENERGY;
-                } else {
-                    // Without hay bales we can no longer convert eggs into dirt.
+            if (energy == 0) {
+                if (!chargeFromHay()) {
                     break;
                 }
+                modified = true;
             }
 
             int consumed = Math.min(amount, energy);
+            if (consumed <= 0) {
+                break;
+            }
             energy -= consumed;
             amount -= consumed;
+            modified = true;
 
             if (energy <= 0) {
                 ItemStack dirtStack = items.get(DIRT_SLOT);
@@ -211,12 +241,27 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
                     items.set(DIRT_SLOT, new ItemStack(Blocks.DIRT));
                 } else if (dirtStack.is(Blocks.DIRT.asItem()) && dirtStack.getCount() < dirtStack.getMaxStackSize()) {
                     dirtStack.grow(1);
-                } else {
-                    // Unexpected items block dirt production; halt to avoid loops.
-                    break;
                 }
+                modified = true;
             }
         }
+        if (modified) {
+            sync();
+        }
+        return modified;
+    }
+
+    private boolean chargeFromHay() {
+        ItemStack hayStack = items.get(HAY_SLOT);
+        if (!isHayFuel(hayStack)) {
+            return false;
+        }
+        hayStack.shrink(1);
+        if (hayStack.isEmpty()) {
+            items.set(HAY_SLOT, ItemStack.EMPTY);
+        }
+        energy += HAY_BALE_ENERGY;
+        return true;
     }
 
     private int canAdd(ItemStack slotStack, ItemStack input) {
@@ -240,7 +285,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     private int getInputCapacity() {
         int potential = energy;
         ItemStack hayStack = items.get(HAY_SLOT);
-        if (!hayStack.isEmpty() && hayStack.is(Blocks.HAY_BLOCK.asItem())) {
+        if (isHayFuel(hayStack)) {
             potential += hayStack.getCount() * HAY_BALE_ENERGY;
         }
         return potential;
@@ -255,6 +300,15 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
             return 0;
         }
         return (dirtStack.getMaxStackSize() - dirtStack.getCount()) * HAY_BALE_ENERGY;
+    }
+
+    private void sync() {
+        setChanged();
+        Level level = getLevel();
+        if (level != null && !level.isClientSide) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(this.worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override
@@ -305,7 +359,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     public ItemStack removeItem(int index, int count) {
         ItemStack stack = ContainerHelper.removeItem(items, index, count);
         if (!stack.isEmpty()) {
-            setChanged();
+            sync();
         }
         return stack;
     }
@@ -317,6 +371,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
             return ItemStack.EMPTY;
         }
         items.set(index, ItemStack.EMPTY);
+        sync();
         return stack;
     }
 
@@ -326,7 +381,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         if (!stack.isEmpty() && stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
         }
-        setChanged();
+        sync();
     }
 
     @Override
@@ -343,6 +398,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         for (int i = 0; i < items.size(); i++) {
             items.set(i, ItemStack.EMPTY);
         }
+        sync();
     }
 
     @Override
@@ -373,7 +429,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     private boolean isItemValid(int index, ItemStack stack) {
         if (index == HAY_SLOT) {
-            return stack.is(Blocks.HAY_BLOCK.asItem());
+            return isHayFuel(stack);
         }
         if (index == DIRT_SLOT) {
             return false;

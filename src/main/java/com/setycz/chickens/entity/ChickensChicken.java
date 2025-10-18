@@ -172,6 +172,9 @@ public class ChickensChicken extends Chicken {
 
     @Override
     public void aiStep() {
+        // Keep the vanilla egg timer out of range so only the custom resource
+        // laying logic below produces drops.
+        this.eggTime = Math.max(this.eggTime, 6000);
         super.aiStep();
 
         // Inline the vanilla wing animation updates so overriding this method lets us
