@@ -5,13 +5,11 @@ import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -22,7 +20,13 @@ import net.minecraft.world.level.gameevent.GameEvent;
  * framework used by newer Minecraft versions.
  */
 public class ColoredEgg extends ThrownEgg {
-    private static final EntityDataAccessor<Integer> DATA_CHICKEN_TYPE = SynchedEntityData.defineId(ColoredEgg.class, EntityDataSerializers.INT);
+    /**
+     * Remember the encoded chicken id separately from the projectile's item
+     * stack. The item stack already serialises the data for rendering, but the
+     * cached copy lets the server resolve the chicken quickly even if the
+     * stack is temporarily empty (e.g. after mods mutate the watched item).
+     */
+    private int chickenType = -1;
 
     public ColoredEgg(EntityType<? extends ColoredEgg> type, Level level) {
         super(type, level);
@@ -36,18 +40,33 @@ public class ColoredEgg extends ThrownEgg {
         super(level, x, y, z);
     }
 
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(DATA_CHICKEN_TYPE, 0);
-    }
-
     public void setChickenType(int type) {
-        this.entityData.set(DATA_CHICKEN_TYPE, type);
+        this.chickenType = type;
+        // Keep the thrown egg's item stack in sync so the client renders the
+        // right tint and the information survives entity save/load cycles.
+        ItemStack stack = this.getItem();
+        if (!stack.isEmpty()) {
+            ItemStack copy = stack.copy();
+            ChickenItemHelper.setChickenType(copy, type);
+            this.setItem(copy);
+        }
     }
 
     public int getChickenType() {
-        return this.entityData.get(DATA_CHICKEN_TYPE);
+        if (this.chickenType == -1) {
+            this.chickenType = ChickenItemHelper.getChickenType(this.getItem());
+        }
+        return this.chickenType;
+    }
+
+    @Override
+    public void setItem(ItemStack stack) {
+        super.setItem(stack);
+        // When the watched stack changes (e.g. after syncing from the server)
+        // refresh the cached chicken id so both sides stay in agreement.
+        if (!stack.isEmpty()) {
+            this.chickenType = ChickenItemHelper.getChickenType(stack);
+        }
     }
 
     @Override

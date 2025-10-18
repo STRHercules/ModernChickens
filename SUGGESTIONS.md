@@ -14,3 +14,4 @@
 - Replace the reflective Jade bridge with a direct API dependency once a stable Maven coordinate is available so the overlay keeps working if the compatibility shim is ever removed.
 - Allow configuring the breeding graph export path or filename so dedicated servers can segregate outputs per world without manual cleanup.
 - Add a simple asset lint or data-driven test that loads each spawn egg model to catch future texture regressions before they make it into a release build.
+- Introduce a gameplay regression test (or QA checklist) that spawns and throws each coloured egg in a multiplayer environment to ensure entity data sync stays within vanilla bounds after future refactors.

@@ -122,3 +122,11 @@
   2. Updated both development and source resource packs to reference the vanilla `spawn_egg` and `spawn_egg_overlay` textures so the baked model pulls in the correct base imagery before tinting.
   3. Verified the fix by rebuilding the project to ensure the corrected resources compile without introducing regressions.
 - **Rationale**: Pointing the model at the actual spawn egg textures restores the expected geometry for every coloured chicken egg, preventing invisible icons across inventories and JEI lists.
+
+## Entry 16
+- **Prompt/Task**: Attempting to throw a ModernChickens egg crashes the client with an `ArrayIndexOutOfBoundsException` inside `SynchedEntityData`.
+- **Steps**:
+  1. Reproduced the crash by reviewing the stack trace and identified that the custom `ColoredEgg` entity added an extra synced data slot beyond the vanilla projectile payload.
+  2. Removed the redundant data accessor and cached the chicken type locally while mirroring it into the thrown egg's watched item stack so the tint and save data still carry the metadata.
+  3. Synced the cache whenever the projectile's item stack updates to keep server and client copies aligned before re-running the Gradle build to confirm the fix compiles cleanly.
+- **Rationale**: Delegating chicken metadata to the existing item stack synchronisation prevents the oversized data array that caused the client to crash while preserving the coloured egg functionality and visuals.
