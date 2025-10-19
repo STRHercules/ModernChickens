@@ -5,6 +5,7 @@ import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -141,5 +142,15 @@ public class HenhouseBlock extends HorizontalDirectionalBlock implements EntityB
             }
         }
         super.onRemove(state, level, pos, newState, isMoving);
+    }
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
+            ItemStack tool) {
+        player.awardStat(Stats.BLOCK_MINED.get(this));
+        player.causeFoodExhaustion(0.005F);
+        if (MachineBlockHelper.canHarvestWith(tool)) {
+            MachineBlockHelper.dropMachine(level, pos, this, blockEntity, player);
+        }
     }
 }

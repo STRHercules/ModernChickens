@@ -6,6 +6,7 @@ import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
@@ -158,5 +159,15 @@ public class BreederBlock extends HorizontalDirectionalBlock implements EntityBl
     @Override
     public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
+            ItemStack tool) {
+        player.awardStat(Stats.BLOCK_MINED.get(this));
+        player.causeFoodExhaustion(0.005F);
+        if (MachineBlockHelper.canHarvestWith(tool)) {
+            MachineBlockHelper.dropMachine(level, pos, this, blockEntity, player);
+        }
     }
 }

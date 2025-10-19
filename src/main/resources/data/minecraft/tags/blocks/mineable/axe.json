@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "chickens:breeder",
+    "chickens:collector",
+    "chickens:roost",
+    "chickens:henhouse",
+    "chickens:henhouse_spruce",
+    "chickens:henhouse_birch",
+    "chickens:henhouse_jungle",
+    "chickens:henhouse_acacia",
+    "chickens:henhouse_dark_oak"
+  ]
+}

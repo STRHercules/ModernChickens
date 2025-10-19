@@ -6,9 +6,11 @@ import com.setycz.chickens.blockentity.CollectorBlockEntity;
 import com.setycz.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -94,5 +96,15 @@ public class CollectorBlock extends Block implements EntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity,
+            ItemStack tool) {
+        player.awardStat(Stats.BLOCK_MINED.get(this));
+        player.causeFoodExhaustion(0.005F);
+        if (MachineBlockHelper.canHarvestWith(tool)) {
+            MachineBlockHelper.dropMachine(level, pos, this, blockEntity, player);
+        }
     }
 }
