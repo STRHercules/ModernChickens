@@ -45,7 +45,11 @@ public class BreederBlock extends HorizontalDirectionalBlock implements EntityBl
     public static final BooleanProperty HAS_SEEDS = BooleanProperty.create("has_seeds");
 
     public BreederBlock() {
-        this(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 5.0F).sound(SoundType.WOOD));
+        this(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(2.0F, 5.0F)
+                .sound(SoundType.WOOD)
+                .noOcclusion());
     }
 
     public BreederBlock(BlockBehaviour.Properties properties) {
