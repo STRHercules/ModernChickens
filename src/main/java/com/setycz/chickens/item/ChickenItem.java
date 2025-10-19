@@ -91,7 +91,7 @@ public class ChickenItem extends Item {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
             tooltip.add(Component.translatable("item.chickens.chicken.type",
-                            Component.translatable("entity." + chicken.getEntityName() + ".name"))
+                            chicken.getDisplayName())
                     .withStyle(ChatFormatting.GRAY));
             ChickenStats stats = ChickenItemHelper.getStats(stack);
             tooltip.add(Component.translatable("item.chickens.chicken.stats", stats.gain(), stats.growth(), stats.strength())

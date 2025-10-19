@@ -349,6 +349,7 @@ public final class ChickensDataLoader {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.SERVER_DATA_LOAD
                 || event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             ModdedChickens.retryPending();
+            DynamicMaterialChickens.refresh();
         }
     }
 

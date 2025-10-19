@@ -275,6 +275,7 @@ public final class DefaultChickens {
             byName.put(chicken.getEntityName().toLowerCase(Locale.ROOT), chicken);
         }
         ModdedChickens.register(chickens, byName);
+        DynamicMaterialChickens.register(chickens, byName);
 
         return chickens;
     }

@@ -50,7 +50,7 @@ public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem 
             return super.getName(stack);
         }
         return Component.translatable("item.chickens.spawn_egg.named",
-                Component.translatable("entity." + chicken.getEntityName() + ".name"))
+                chicken.getDisplayName())
                 .withStyle(ChatFormatting.YELLOW);
     }
 

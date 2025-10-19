@@ -41,7 +41,7 @@ public class ColoredEggItem extends Item {
         if (chicken != null) {
             // Keep per-chicken egg names so creative inventory and JEI entries mirror the legacy mod.
             return Component.translatable("item.chickens.colored_egg.named",
-                    Component.translatable("entity." + chicken.getEntityName() + ".name"));
+                    chicken.getDisplayName());
         }
         return super.getName(stack);
     }
@@ -50,7 +50,7 @@ public class ColoredEggItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
-            tooltip.add(Component.translatable("item.chickens.colored_egg.tooltip", Component.translatable("entity." + chicken.getEntityName() + ".name")).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("item.chickens.colored_egg.tooltip", chicken.getDisplayName()).withStyle(ChatFormatting.GRAY));
         }
     }
 

@@ -176,7 +176,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
                 int dropCount = gain >= 10 ? 3 : gain >= 5 ? 2 : 1;
                 ItemStack drop = chicken.createDropItem();
                 drop.setCount(dropCount);
-                tooltip.add(Component.translatable("tooltip.chickens.roost.summary", chicken.getEntityName(), chickens,
+                tooltip.add(Component.translatable("tooltip.chickens.roost.summary", chicken.getDisplayName(), chickens,
                         drop.getHoverName(), dropCount));
             }
         }

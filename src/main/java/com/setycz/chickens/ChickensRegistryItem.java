@@ -1,5 +1,6 @@
 package com.setycz.chickens;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -27,6 +28,8 @@ public class ChickensRegistryItem {
     private SpawnType spawnType;
     private boolean enabled = true;
     private float layCoefficient = 1.0f;
+    @Nullable
+    private Component displayName;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -57,6 +60,11 @@ public class ChickensRegistryItem {
 
     public ChickensRegistryItem setLayCoefficient(float coefficient) {
         layCoefficient = coefficient;
+        return this;
+    }
+
+    public ChickensRegistryItem setDisplayName(Component name) {
+        displayName = name;
         return this;
     }
 
@@ -178,5 +186,12 @@ public class ChickensRegistryItem {
 
     public boolean isBreedable() {
         return parent1 != null && parent2 != null;
+    }
+
+    public Component getDisplayName() {
+        if (displayName != null) {
+            return displayName.copy();
+        }
+        return Component.translatable("entity." + entityName + ".name");
     }
 }

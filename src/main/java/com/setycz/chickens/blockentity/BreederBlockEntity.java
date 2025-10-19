@@ -269,8 +269,8 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
             ChickensRegistryItem left = ChickensRegistry.getByType(data.getInt("LeftChickenId"));
             ChickensRegistryItem right = ChickensRegistry.getByType(data.getInt("RightChickenId"));
             if (left != null && right != null) {
-                tooltip.add(Component.translatable("tooltip.chickens.breeder.parents", left.getEntityName(),
-                        right.getEntityName()));
+                tooltip.add(Component.translatable("tooltip.chickens.breeder.parents", left.getDisplayName(),
+                        right.getDisplayName()));
             }
         }
         tooltip.add(Component.translatable("tooltip.chickens.breeder.seeds", data.getInt("SeedCount")));

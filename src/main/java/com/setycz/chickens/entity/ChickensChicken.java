@@ -167,7 +167,7 @@ public class ChickensChicken extends Chicken {
         if (description == null) {
             return super.getName();
         }
-        return Component.translatable("entity." + description.getEntityName() + ".name");
+        return description.getDisplayName();
     }
 
     @Override
