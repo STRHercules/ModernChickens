@@ -344,3 +344,11 @@
   3. Ran `./gradlew build` to ensure the resource change compiles cleanly.
 - **Rationale**: Keeping the predicates sorted preserves Minecraft's last-match selection rule, so each chicken item renders with its matching PNG instead of inheriting a later override.
 
+## Entry 43
+- **Prompt/Task**: Compose a detailed README covering build steps and ModernChickens features.
+- **Steps**:
+  1. Summarised the port’s chicken catalogue, automation blocks, dedicated items, and integrations to describe the gameplay loop for new players.
+  2. Documented repository layout, build prerequisites, and common Gradle run configurations so contributors can onboard quickly.
+  3. Highlighted configuration touchpoints and support expectations while noting the MIT license heritage.
+- **Rationale**: A thorough README gives players and contributors a single reference for features, builds, and support expectations, reducing onboarding friction and repeated questions.
+
