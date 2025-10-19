@@ -261,3 +261,27 @@
   3. Rebuilt the project with `./gradlew.bat build` to ensure the resource remap succeeds.
 - **Rationale**: Reinstating the classic egg artwork keeps ModernChickens visually faithful to the OriginalChickens mod while retaining Roost-only sprites for chickens, machines, and tools.
 
+## Entry 33
+- **Prompt/Task**: Chicken Breeder GUI missing/incorrect. Seems to be functioning properly otherwise.
+- **Steps**:
+  1. Embedded the legacy Roost breeder artwork as Base64 in a new `GuiTextures` helper and registered it as a dynamic texture so the client loads the classic backdrop without committing binaries.
+  2. Reworked `BreederScreen` to use the ported texture, restored the original dimensions, progress bar, and tooltip hotspot, and retained the seed warning text for parity with the screenshot.
+  3. Ran `./gradlew.bat compileJava` to confirm the updated screen and helper compile cleanly.
+- **Rationale**: Recreating the Roost breeder layout keeps ModernChickens visually consistent with the legacy mod, making the GUI intuitive while the codebase still disallows shipping binary art files.
+
+## Entry 34
+- **Prompt/Task**: Crash when opening breeder screen due to `IllegalStateException: Failed to decode breeder GUI texture`.
+- **Steps**:
+  1. Re-encoded the breeder GUI PNG via a truncated-chunk-safe pipeline and updated `GuiTextures` with the sanitized Base64 payload while logging and falling back to the shulker UI when decoding fails.
+  2. Guarded overlay rendering and tooltips in `BreederScreen` so the progress bar only draws when the bespoke texture loads successfully, while stripping the temporary progress/seeds labels to match the legacy look-and-feel.
+  3. Rebuilt with `./gradlew.bat compileJava` to verify the crash fix compiles without regressions.
+- **Rationale**: Sanitising the embedded texture and adding graceful degradation keeps the nostalgic breeder art available while eliminating runtime crashes on PNG parsers that reject unsupported chunks.
+
+## Entry 35
+- **Prompt/Task**: Replace placeholder GUIs with the original Roost textures for ModernChickens machines.
+- **Steps**:
+  1. Copied `roost.png` and `breeder.png` from the legacy mod into `src/main/resources/assets/chickens/textures/gui/`, replacing the temporary vanilla backdrops.
+  2. Removed the Base64 dynamic texture helper and rewired `BreederScreen` and `RoostScreen` to bind the ported textures, replicating the heart and arrow progress overlays plus matching tooltip hotspots.
+  3. Updated the roost screen to drop the textual progress label in favour of the classic arrow fill and ran `./gradlew.bat compileJava` to confirm both screens compile against the new assets.
+- **Rationale**: Reusing the authentic GUI art restores the 1.12 presentation, keeping ModernChickens visually faithful to Roost now that shipping the original PNGs is permitted.
+
