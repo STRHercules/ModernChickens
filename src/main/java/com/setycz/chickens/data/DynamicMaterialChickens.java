@@ -97,7 +97,7 @@ final class DynamicMaterialChickens {
             if (smartChicken != null) {
                 chicken.setParentsNew(smartChicken, smartChicken);
             }
-            chicken.setDisplayName(buildDisplayName(stack, key));
+            chicken.setDisplayName(buildDisplayName(stack, key)).setGeneratedTexture(true);
 
             byName.put(nameKey, chicken);
             if (collector != null) {

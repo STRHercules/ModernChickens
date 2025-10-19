@@ -23,6 +23,9 @@ public class ChickensChickenRenderer extends ChickenRenderer {
         if (chicken instanceof ChickensChicken modChicken) {
             ChickensRegistryItem description = ChickensRegistry.getByType(modChicken.getChickenType());
             if (description != null) {
+                if (description.hasGeneratedTexture()) {
+                    return DynamicChickenTextures.textureFor(description);
+                }
                 return description.getTexture();
             }
         }

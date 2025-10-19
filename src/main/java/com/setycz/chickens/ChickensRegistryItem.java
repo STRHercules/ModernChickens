@@ -30,6 +30,7 @@ public class ChickensRegistryItem {
     private float layCoefficient = 1.0f;
     @Nullable
     private Component displayName;
+    private boolean generatedTexture;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -65,6 +66,11 @@ public class ChickensRegistryItem {
 
     public ChickensRegistryItem setDisplayName(Component name) {
         displayName = name;
+        return this;
+    }
+
+    public ChickensRegistryItem setGeneratedTexture(boolean value) {
+        generatedTexture = value;
         return this;
     }
 
@@ -193,5 +199,9 @@ public class ChickensRegistryItem {
             return displayName.copy();
         }
         return Component.translatable("entity." + entityName + ".name");
+    }
+
+    public boolean hasGeneratedTexture() {
+        return generatedTexture;
     }
 }

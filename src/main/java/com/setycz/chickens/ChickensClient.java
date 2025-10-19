@@ -1,9 +1,9 @@
 package com.setycz.chickens;
 
-import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
+import com.setycz.chickens.client.render.DynamicChickenTextures;
 import com.setycz.chickens.client.render.blockentity.BreederBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.CollectorBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.RoostBlockEntityRenderer;
@@ -27,6 +27,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 /**
@@ -67,6 +68,11 @@ public final class ChickensClient {
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(DynamicChickenTextures.reloadListener());
     }
 
     private static int getChickenColor(ItemStack stack, boolean primary) {
