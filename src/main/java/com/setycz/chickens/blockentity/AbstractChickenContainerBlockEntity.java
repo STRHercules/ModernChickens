@@ -255,13 +255,27 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
      */
     @Nullable
     public RenderData getRenderData(int slot) {
-        ChickenContainerEntry entry = getChickenEntry(slot);
-        if (entry == null) {
+
+        if (slot < 0 || slot >= items.size()) {
             return null;
         }
         ItemStack stack = getItem(slot);
         if (stack.isEmpty()) {
             return null;
+        }
+        ChickenContainerEntry entry = getChickenEntry(slot);
+        if (entry == null) {
+            entry = createChickenData(slot, stack);
+            if (entry == null) {
+                return null;
+            }
+            if (slot < chickenData.length) {
+                Level level = getLevel();
+                if (level != null && level.isClientSide) {
+                    // Cache the generated entry client-side so renderers keep working before the next server sync.
+                    chickenData[slot] = entry;
+                }
+            }
         }
         return new RenderData(entry.chicken(), entry.stats(), stack.getCount());
     }

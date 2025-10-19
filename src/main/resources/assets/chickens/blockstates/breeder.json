@@ -8,13 +8,13 @@
     "breeding=false,has_seeds=true,facing=south": { "model": "chickens:block/breeder", "y": 180 },
     "breeding=false,has_seeds=true,facing=west": { "model": "chickens:block/breeder", "y": 270 },
     "breeding=false,has_seeds=true,facing=east": { "model": "chickens:block/breeder", "y": 90 },
-    "breeding=true,has_seeds=false,facing=north": { "model": "chickens:block/breeder" },
-    "breeding=true,has_seeds=false,facing=south": { "model": "chickens:block/breeder", "y": 180 },
-    "breeding=true,has_seeds=false,facing=west": { "model": "chickens:block/breeder", "y": 270 },
-    "breeding=true,has_seeds=false,facing=east": { "model": "chickens:block/breeder", "y": 90 },
-    "breeding=true,has_seeds=true,facing=north": { "model": "chickens:block/breeder" },
-    "breeding=true,has_seeds=true,facing=south": { "model": "chickens:block/breeder", "y": 180 },
-    "breeding=true,has_seeds=true,facing=west": { "model": "chickens:block/breeder", "y": 270 },
-    "breeding=true,has_seeds=true,facing=east": { "model": "chickens:block/breeder", "y": 90 }
+    "breeding=true,has_seeds=false,facing=north": { "model": "chickens:block/breeder_empty" },
+    "breeding=true,has_seeds=false,facing=south": { "model": "chickens:block/breeder_empty", "y": 180 },
+    "breeding=true,has_seeds=false,facing=west": { "model": "chickens:block/breeder_empty", "y": 270 },
+    "breeding=true,has_seeds=false,facing=east": { "model": "chickens:block/breeder_empty", "y": 90 },
+    "breeding=true,has_seeds=true,facing=north": { "model": "chickens:block/breeder_privacy" },
+    "breeding=true,has_seeds=true,facing=south": { "model": "chickens:block/breeder_privacy", "y": 180 },
+    "breeding=true,has_seeds=true,facing=west": { "model": "chickens:block/breeder_privacy", "y": 270 },
+    "breeding=true,has_seeds=true,facing=east": { "model": "chickens:block/breeder_privacy", "y": 90 }
   }
 }

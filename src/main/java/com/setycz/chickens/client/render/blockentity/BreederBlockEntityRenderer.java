@@ -64,7 +64,7 @@ public class BreederBlockEntityRenderer implements BlockEntityRenderer<BreederBl
         poseStack.translate(xOffset, 0.0D, 0.1D);
         poseStack.scale(0.35F, 0.35F, 0.35F);
 
-        RoostBlockEntityRenderer.resetPose(chicken);
+        ChickenRenderHelper.resetPose(chicken);
         dispatcher.render(chicken, 0.0D, 0.0D, 0.0D, 0.0F, partialTicks, poseStack, buffer, packedLight);
         poseStack.popPose();
     }

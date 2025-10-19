@@ -285,3 +285,54 @@
   3. Updated the roost screen to drop the textual progress label in favour of the classic arrow fill and ran `./gradlew.bat compileJava` to confirm both screens compile against the new assets.
 - **Rationale**: Reusing the authentic GUI art restores the 1.12 presentation, keeping ModernChickens visually faithful to Roost now that shipping the original PNGs is permitted.
 
+## Entry 36
+- **Prompt/Task**: Restore the in-world roost chicken display and add the legacy curtain behaviour to the breeder.
+- **Steps**:
+  1. Reviewed the original Roost breeder blockstates and tile entity sync to understand when the privacy curtain should appear and how render data is populated.
+  2. Updated `AbstractChickenContainerBlockEntity#getRenderData` to synthesise and cache chicken entries on the client so roost block entity renderers receive the necessary data without waiting for a server tick.
+  3. Added `breeder_privacy.json` and `breeder_empty.json` models plus refreshed blockstate variants so the breeder swaps between open, empty, and curtained presentations using vanilla textures as placeholders.
+  4. Executed `./gradlew build` to verify the code and resource updates compile cleanly.
+- **Rationale**: Ensuring render data exists client-side brings back the animated roost occupant, while the new models mirror Roost's visual feedback that breeding is underway without introducing forbidden binary assets.
+
+## Entry 37
+- **Prompt/Task**: Reuse Roost curtain and hay textures and analyse how legacy roost blocks displayed their chickens.
+- **Steps**:
+  1. Hooked `generateRoostTextures` into the Gradle build so the original `curtain_*.png`, `hay_*.png`, `plain_face.png`, and `slat_side.png` files are copied from the read-only Roost sources into a generated resource folder without committing binaries.
+  2. Swapped the breeder and roost block models to reference the regenerated textures, matching the 1.12 curtain and hay presentation while keeping the existing blockstate wiring intact.
+  3. Documented the legacy Roost asset usage (including the baked `chicken` models) to confirm that ModernChickens now renders living entities rather than sprite boxes, preserving behaviour parity with the NeoForge renderer.
+  4. Ran `./gradlew build` to confirm the new resource pipeline and model updates compile successfully.
+- **Rationale**: Generating the classic textures at build time lets ModernChickens reuse Roost's art legally, and aligning the models with their 1.12 counterparts keeps the curtain and hay visuals consistent while the renderer analysis captures how chickens were originally displayed.
+
+## Entry 38
+- **Prompt/Task**: Fix breeder tooltip so the seed warning only appears when seeds are missing.
+- **Steps**:
+  1. Updated `BreederScreen#renderProgressTooltip` to inspect the seed slot directly and fall back to the progress tooltip whenever any seeds are present.
+  2. Kept the percentage calculation intact so players always see the breeding progress, defaulting to `Needs seeds to operate` only when the slot is empty.
+  3. Rebuilt with `./gradlew build` to validate the screen tweak.
+- **Rationale**: Matching the tooltip behaviour from the legacy Roost GUI clears up confusion for players who have already loaded seeds, ensuring the hearts reflect progress rather than incorrectly warning about missing inputs.
+
+## Entry 39
+- **Prompt/Task**: Correct Roost and Breeder inventory icons so they align with vanilla slot origins.
+- **Steps**:
+  1. Removed the bespoke GUI/third-person transforms from the breeder and curtain models, restoring the vanilla item transforms that keep icons centred in slots.
+  2. Trimmed the roost block model transforms down to the original first-person adjustment so the item version once again sits flush alongside vanilla blocks.
+  3. Ran `./gradlew build` to confirm the resource edits compile successfully.
+- **Rationale**: The extra translations we had inherited were nudging the items off-centre in inventories; reverting to the default display stack mirrors the 1.12 presentation and keeps ModernChickens machines visually consistent with surrounding blocks.
+
+## Entry 40
+- **Prompt/Task**: Tweak roost renderer so the in-block chickens match the classic Roost look.
+- **Steps**:
+  1. Replaced the temporary item-sprite renderer with the animated chicken entity renderer and added a neutral `resetPose` helper so the birds stay still in the pen.
+  2. Adjusted translation, facing, and scaling so the entity sits on the hay floor and presses against the front wall like the 1.12 sprite.
+  3. Rebuilt with `./gradlew build` to confirm the renderer changes compile.
+- **Rationale**: Mapping the entity back into the roost cavity restores the forward-facing silhouette players expect from the original mod while keeping the animation pipeline lightweight.
+
+## Entry 41
+- **Prompt/Task**: Fine-tune roost chicken placement and brighten the interior.
+- **Steps**:
+  1. Lowered and pushed the chicken forward a little further so it rests directly on the hay pile and meets the front curtain edge.
+  2. Forced the renderer to use full-bright lighting, preventing the interior shadowing that made the sprite hard to see.
+  3. Hardened `RoostBlock` lighting by blocking skylight propagation so neighbouring roosts no longer dim each other.
+  4. Ran `./gradlew build` to verify everything still compiles.
+- **Rationale**: The extra positioning tweaks and lighting bump bring the roost presentation even closer to the 1.12 look, making the contained chicken immediately visible in-game.
+

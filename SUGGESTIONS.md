@@ -24,3 +24,5 @@
 - Monitor the maturation of NeoForge’s transfer API and migrate the new capability bindings away from `SidedInvWrapper` once a public `WorldlyContainerWrapper`/resource handler is exposed, keeping the item automation bridge future-proof.
 - Add a lightweight validation (e.g., data gen or unit test) that asserts spawn egg stacks populate `CustomModelData`, catching regressions that would revert the icons to vanilla eggs.
 - Consider exposing a config toggle that lets packs opt back into the Roost-style chicken icons for spawn eggs if they prefer the newer look.
+- Replace the vanilla wool/trapdoor stand-ins used by the breeder curtain models with the original Roost curtain textures once binary assets can ship again, so the privacy state fully matches the legacy presentation.
+- Add a Gradle validation step that warns when the legacy Roost texture folder is absent so developers notice missing art before packaging builds.

@@ -20,8 +20,23 @@ sourceSets {
         resources {
             srcDir 'src/main/resources'
             srcDir 'build/generated/resources'
+            srcDir layout.buildDirectory.dir('generated/roostAssets')
         }
     }
+}
+
+def roostTextureSourceDir = layout.projectDirectory.dir('roost/src/main/resources/assets/roost/textures/blocks')
+def generatedRoostDir = layout.buildDirectory.dir('generated/roostAssets')
+
+tasks.register('generateRoostTextures', Copy) {
+    onlyIf { roostTextureSourceDir.asFile.exists() }
+    from(roostTextureSourceDir) {
+        include 'curtain_empty.png', 'curtain_side.png', 'hay_floor.png', 'hay_side.png', 'plain_face.png', 'slat_side.png'
+        include 'chicken/*.png'
+        into 'assets/chickens/textures/block'
+    }
+    into generatedRoostDir
+    includeEmptyDirs = false
 }
 
 repositories {
@@ -32,7 +47,9 @@ repositories {
 
 tasks.named('processResources') {
     notCompatibleWithConfigurationCache("Resource remapping mutates RelativePath instances at execution time")
+    dependsOn 'generateRoostTextures'
     from('OriginalChickens/src/main/resources')
+    from(generatedRoostDir)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     inputs.property('modVersion', version)
     filesMatching('META-INF/neoforge.mods.toml') {

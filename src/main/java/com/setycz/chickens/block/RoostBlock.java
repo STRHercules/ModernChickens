@@ -110,6 +110,16 @@ public class RoostBlock extends HorizontalDirectionalBlock implements EntityBloc
     }
 
     @Override
+    public int getLightBlock(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return 15;
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return false;
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }

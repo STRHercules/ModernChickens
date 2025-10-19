@@ -61,4 +61,17 @@ public final class ChickenRenderHelper {
         chicken.setChickenType(type);
         chicken.setAge(0);
     }
+
+    /**
+     * Resets the orientation of a chicken so renderers start from a neutral pose.
+     */
+    public static void resetPose(ChickensChicken chicken) {
+        chicken.setYRot(0.0F);
+        chicken.setXRot(0.0F);
+        chicken.setYBodyRot(0.0F);
+        chicken.yBodyRotO = 0.0F;
+        chicken.setYHeadRot(0.0F);
+        chicken.yHeadRotO = 0.0F;
+        chicken.tickCount = 0;
+    }
 }

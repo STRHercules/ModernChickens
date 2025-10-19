@@ -2,11 +2,11 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "particle": "minecraft:block/oak_planks",
-    "wood": "minecraft:block/oak_planks",
-    "front": "minecraft:block/oak_trapdoor",
-    "hay_side": "minecraft:block/hay_block_side",
-    "hay": "minecraft:block/hay_block_top"
+    "particle": "chickens:block/plain_face",
+    "wood": "chickens:block/plain_face",
+    "front": "chickens:block/curtain_side",
+    "hay_side": "chickens:block/hay_side",
+    "hay": "chickens:block/hay_floor"
   },
   "elements": [
     {
@@ -68,38 +68,10 @@
     }
   ],
   "display": {
-    "gui": {
-      "rotation": [30, 45, 0],
-      "translation": [0, -2, 0],
-      "scale": [0.7, 0.7, 0.7]
-    },
-    "ground": {
-      "translation": [0, 3, 0],
-      "scale": [0.45, 0.45, 0.45]
-    },
-    "fixed": {
-      "translation": [0, 0, 0],
-      "scale": [0.6, 0.6, 0.6]
-    },
-    "thirdperson_righthand": {
-      "rotation": [75, 45, 0],
-      "translation": [0, 2.5, 0],
-      "scale": [0.6, 0.6, 0.6]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [75, 225, 0],
-      "translation": [0, 2.5, 0],
-      "scale": [0.6, 0.6, 0.6]
-    },
     "firstperson_righthand": {
       "rotation": [0, 135, 0],
       "translation": [0, 0, 0],
-      "scale": [0.5, 0.5, 0.5]
-    },
-    "firstperson_lefthand": {
-      "rotation": [0, 225, 0],
-      "translation": [0, 0, 0],
-      "scale": [0.5, 0.5, 0.5]
+      "scale": [0.4, 0.4, 0.4]
     }
   }
 }
