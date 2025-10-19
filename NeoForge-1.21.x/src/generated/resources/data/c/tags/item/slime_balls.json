@@ -1,9 +1,0 @@
-{
-  "values": [
-    "minecraft:slime_ball",
-    {
-      "id": "#forge:slime_balls",
-      "required": false
-    }
-  ]
-}
