@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "W W",
+    "HHH"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:planks"
+    },
+    "H": {
+      "item": "minecraft:hay_block"
+    }
+  },
+  "result": {
+    "id": "chickens:roost"
+  }
+}

@@ -107,6 +107,10 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    I:maxBroodSize=%d%n", general.getMaxBroodSize()));
             writer.write(String.format(Locale.ROOT, "    D:netherSpawnChanceMultiplier=%.3f%n", general.getNetherSpawnChanceMultiplier()));
             writer.write(String.format(Locale.ROOT, "    B:alwaysShowStats=%s%n", general.isAlwaysShowStats()));
+            writer.write(String.format(Locale.ROOT, "    D:roostSpeed=%.3f%n", general.getRoostSpeedMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    D:breederSpeed=%.3f%n", general.getBreederSpeedMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    B:disableEggLaying=%s%n", general.isVanillaEggLayingDisabled()));
+            writer.write(String.format(Locale.ROOT, "    I:collectorScanRange=%d%n", general.getCollectorScanRange()));
             writer.write("}\n\n");
 
             for (ChickensRegistryItem chicken : ordered) {
@@ -136,6 +140,10 @@ public final class LegacyConfigBridge {
             case "maxBroodSize" -> props.setProperty("general.maxBroodSize", value);
             case "netherSpawnChanceMultiplier" -> props.setProperty("general.netherSpawnChanceMultiplier", value);
             case "alwaysShowStats" -> props.setProperty("general.alwaysShowStats", value);
+            case "roostSpeed" -> props.setProperty("general.roostSpeedMultiplier", value);
+            case "breederSpeed" -> props.setProperty("general.breederSpeedMultiplier", value);
+            case "disableEggLaying" -> props.setProperty("general.disableVanillaEggLaying", value);
+            case "collectorScanRange" -> props.setProperty("general.collectorScanRange", value);
             default -> {
             }
         }

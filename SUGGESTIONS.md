@@ -17,3 +17,14 @@
 - Introduce a gameplay regression test (or QA checklist) that spawns and throws each coloured egg in a multiplayer environment to ensure entity data sync stays within vanilla bounds after future refactors.
 - Add a small helper on `ChickensChicken` that returns a spawn group data wrapper for a given chicken id so dispensers and future spawn egg paths can inject the correct breed without reordering spawn logic by hand.
 - Extend automated checks (or a QA script) to confirm chickens never emit vanilla eggs after the custom drop refactor so future merges that touch `aiStep` keep the bespoke laying behaviour intact.
+- Add automated coverage for the new breeder and collector menus so progress syncing, seed consumption, and item transfers stay reliable across future refactors.
+- Generate bespoke GUI textures for the roost, breeder, and collector once binary assets can be shipped so the new screens stop borrowing vanilla art.
+- Explore lightweight in-world upgrades (e.g., range charms) so individual collectors can extend or shrink their scan radius without relying on the global configuration.
+- Add a lightweight NeoForge config screen that exposes the new roost/breeder speed multipliers and egg toggle so pack makers can tweak values without hand-editing `chickens.properties`.
+- Monitor the maturation of NeoForge’s transfer API and migrate the new capability bindings away from `SidedInvWrapper` once a public `WorldlyContainerWrapper`/resource handler is exposed, keeping the item automation bridge future-proof.
+- Add a lightweight validation (e.g., data gen or unit test) that asserts spawn egg stacks populate `CustomModelData`, catching regressions that would revert the icons to vanilla eggs.
+- Consider exposing a config toggle that lets packs opt back into the Roost-style chicken icons for spawn eggs if they prefer the newer look.
+- Replace the vanilla wool/trapdoor stand-ins used by the breeder curtain models with the original Roost curtain textures once binary assets can ship again, so the privacy state fully matches the legacy presentation.
+- Add a Gradle validation step that warns when the legacy Roost texture folder is absent so developers notice missing art before packaging builds.
+- Automate the chicken item model overrides from the registry so future breeds stay sorted without manual JSON edits.
+

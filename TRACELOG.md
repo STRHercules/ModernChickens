@@ -146,3 +146,201 @@
   2. Inlined the flap animation updates from the base chicken implementation so the override can execute the movement code while bypassing the default egg drop.
   3. Moved the resource-laying routine into a dedicated helper that now runs after the animation updates, ensuring only the modded drops trigger before rebuilding to verify compilation.
 - **Rationale**: Replicating the vanilla movement behaviour while suppressing its egg spawn hook restores the intended diamond/coal/etc. drops without regressing chicken animations or physics.
+
+## Entry 19
+- **Prompt/Task**: Start porting Roost functionality into ModernChickens based on the Roost feature audit.
+- **Steps**:
+  1. Implemented a shared `AbstractChickenContainerBlockEntity` that modernises the legacy Roost inventory, timer, and progress synchronisation so specialised containers can reuse the logic on NeoForge.
+  2. Added the roost block, block entity, menu, and screen plus the chicken/catcher items, wiring them into the deferred registries, creative tabs, and client colour handlers while creating JSON assets for blockstates, models, loot, and recipes.
+  3. Ran `./gradlew build` to confirm the new gameplay code, UI, and assets compile cleanly before staging the changes.
+- **Rationale**: Establishing the reusable container core and the first functional roost provides a foundation for porting breeder/collector logic and item workflows in follow-up tasks while keeping the current build stable.
+
+## Entry 20
+- **Prompt/Task**: Finish porting the Roost breeder and collector features onto the new NeoForge container framework.
+- **Steps**:
+  1. Implemented `BreederBlockEntity`, block, menu, and screen on top of the shared container base, reusing the Chickens breeding logic, adding direct item interactions, and updating registries, client screens, and assets.
+  2. Added the collector block/entity/menu/screen that scans nearby roost-style containers, wiring new menu types, block entities, creative tab entries, loot tables, and crafting recipes.
+  3. Updated localisation keys plus ran `./gradlew build` to verify the expanded feature set compiles successfully.
+- **Rationale**: Reinstating both automation blocks restores parity with the legacy Roost mod, enabling automated breeding and drop collection while keeping all registration and client hooks aligned with ModernChickens’ architecture.
+
+## Entry 21
+- **Prompt/Task**: Continue porting Roost integrations by restoring JEI categories, Jade overlays, and egg suppression.
+- **Steps**:
+  1. Added JEI recipe types and categories for roosting, the breeder machine, and chicken catching while registering item subtypes so each chicken item renders distinct entries.
+  2. Ported the Jade block tooltip provider by exposing tooltip/tag hooks on the shared container base, letting roost, breeder, and collector report progress, seed status, and inventory data in overlays.
+  3. Introduced the `RoostEggPreventer` event listener to stop vanilla chickens from laying eggs and reran `./ModDevGradle-main/gradlew build --no-daemon` after clearing stale NeoForge locks.
+- **Rationale**: Restoring the auxiliary integrations and disabling vanilla egg spam completes the gameplay loop for Roost content, ensuring automation blocks surface their state to players and behave like the original mod.
+
+## Entry 22
+- **Prompt/Task**: Continue porting everything from Roost by recreating its in-world and item rendering on NeoForge.
+- **Steps**:
+  1. Extended the shared chicken container with a render-friendly DTO so client renderers can query chicken type, stats, and stack counts without poking at server internals.
+  2. Implemented dedicated roost and breeder block-entity renderers plus a chicken entity cache to mirror the original mod’s animated chickens and seed piles, registering them inside the client bootstrap.
+  3. Rebuilt the project with `bash ./ModDevGradle-main/gradlew build --no-daemon` to validate the new rendering hooks compile cleanly alongside the existing automation features.
+- **Rationale**: Bringing back the signature roost/breeder visuals ensures the port feels complete, matching the legacy mod’s presentation while staying compatible with NeoForge’s rendering pipeline.
+
+## Entry 23
+- **Prompt/Task**: Continue porting Roost by restoring gameplay configuration knobs, bespoke chicken item visuals, and distinctive automation block models.
+- **Steps**:
+  1. Reintroduced the roost/breeder speed multipliers and vanilla egg toggle to the configuration loader and legacy bridge, wiring block entities and the egg suppressor to respect the new settings.
+  2. Added a client `BlockEntityWithoutLevelRenderer` for the chicken item plus its model stub so inventory stacks once again display the correct animated breed.
+  3. Replaced the placeholder roost, breeder, and collector block models with multi-piece structures built from vanilla textures to better echo the original cages and crates.
+- **Rationale**: Matching the original mod’s configurability and presentation keeps the port feature-complete, letting players tune automation speed while regaining the recognisable item and block silhouettes without waiting on bespoke textures.
+
+## Entry 24
+- **Prompt/Task**: Continue porting outstanding Roost features that are still missing, rewriting for NeoForge when needed.
+- **Steps**:
+  1. Added a dedicated collector block entity renderer that orbits representative item stacks above the crate so the storage block regains the animated presentation from Roost.
+  2. Registered the new renderer inside the client bootstrap to ensure it loads alongside the existing roost and breeder visual hooks.
+  3. Updated the suggestions list with a follow-up configuration idea for tuning the collector’s scan range.
+- **Rationale**: Bringing the collector’s visual feedback in line with the other automation blocks completes the ported feature set and highlights future configuration work for pack makers.
+
+## Entry 25
+- **Prompt/Task**: Continue porting outstanding Roost features that are still missing, rewriting for NeoForge when needed.
+- **Steps**:
+  1. Investigated the failing build and traced the errors back to the missing transfer module classes and the new capability constants introduced in NeoForge 21.1.
+  2. Reworked the capability registration to target `Capabilities.ItemHandler` and wired each roost-style block entity through `SidedInvWrapper`, preserving automation support without relying on absent APIs.
+  3. Rebuilt the project with `./gradlew build` to confirm the capability bridge compiles cleanly.
+- **Rationale**: Restoring the item handler exposure keeps hoppers and pipes functional around Roost, Breeder, Collector, and Henhouse blocks, which is a core piece of the original mod’s automation loop.
+
+## Entry 26
+- **Prompt/Task**: Continue porting outstanding Roost features that are still missing, rewriting for NeoForge when needed.
+- **Steps**:
+  1. Added a `collectorScanRange` setting to the modern configuration bridge so pack makers can tune how aggressively collectors sweep nearby roost blocks.
+  2. Updated the legacy cfg exporter/importer to persist the new knob alongside the existing roost and breeder speed multipliers.
+  3. Reworked the collector block entity to respect the live configuration, recalculating its search pattern when the range changes and clamping runaway values for stability.
+- **Rationale**: Matching the configurability of the original automation suite lets players scale collectors to their layouts while keeping the default 4-block sweep for nostalgic parity.
+
+## Entry 27
+- **Prompt/Task**: Chicken Stick assets not working (black/pink grid) – port the asset so it loads correctly on NeoForge.
+- **Steps**:
+  1. Copied the legacy chicken catcher texture into `src/main/resources/assets/chickens/textures/item/catcher.png` so the NeoForge resource loader can find the sprite.
+  2. Added a simple generated-item model at `src/main/resources/assets/chickens/models/item/catcher.json` that points to the ported texture.
+  3. Rebuilt the project with `./gradlew build` to verify the resource pack compiles cleanly.
+- **Rationale**: Restoring the chicken stick artwork keeps the inventory presentation consistent with the original Roost content and avoids the missing-texture placeholder in-game.
+
+## Entry 28
+- **Prompt/Task**: Roost collector asset rendering incorrectly; GUI misaligned and block appears transparent.
+- **Steps**:
+  1. Ported the original Roost collector textures into `src/main/resources/assets/chickens/textures/block/collector_plain.png` and `collector_slats.png`, replacing the improvised scaffolding-based look.
+  2. Swapped the collector block model for a solid cube referencing the new textures so the crate no longer renders transparent slats or shows the orbiting items through the shell.
+  3. Updated the collector menu and screen to mimic a single chest (`generic_27`) while drawing the legacy collector background, ensuring slot positions align with the GUI art.
+  4. Built the project with `./gradlew build` to confirm the refreshed resources and GUI compile correctly.
+- **Rationale**: Aligning the collector visuals with the legacy mod removes the broken textures, fixes the UI layout, and restores an opaque crate that hides its internal item animation.
+
+## Entry 29
+- **Prompt/Task**: Render chicken items with the legacy Roost sprites instead of miniature entities.
+- **Steps**:
+  1. Copied the full Roost chicken item sprite set into `src/main/resources/assets/chickens/textures/item/chicken/` and registered them during texture stitching so they appear on the block atlas.
+  2. Reworked the chicken item renderer to draw the appropriate sprite quad per chicken type, falling back to the vanilla texture if a bespoke image is missing.
+  3. Restored the item’s baked model to rely on the custom renderer and verified the build via `./gradlew build`.
+- **Rationale**: Using the legacy 2D sprites keeps inventory visuals faithful to Roost while avoiding the readability issues of the 3D entity renderer.
+
+## Entry 30
+- **Prompt/Task**: Switch chicken items to the Roost sprites without a custom renderer.
+- **Steps**:
+  1. Wired chicken stacks to store their variant id in CustomModelData so vanilla item overrides can distinguish each type.
+  2. Added a data provider that generates chicken.json plus per-variant models pointing at 	extures/item/chicken/<name>.png, then copied the outputs into the main resources.
+  3. Removed the bespoke item renderer so the vanilla pipeline now renders the correct sprite based on custom_model_data.
+  4. Regenerated assets with ./gradlew runData and validated the build with ./gradlew build.
+- **Rationale**: Leaning on vanilla model overrides keeps the inventory display faithful to Roost while avoiding maintenance-heavy rendering code.
+
+## Entry 31
+- **Prompt/Task**: Make Roost spawn eggs render with their chicken sprites instead of default eggs.
+- **Steps**:
+  1. Pointed `spawn_egg.json` at the existing chicken override model so each egg stack now resolves to the Roost sprite that matches its `CustomModelData`.
+  2. Updated `ChickenItemHelper#getChickenType` to back-fill missing model data components, ensuring legacy or command-generated stacks still pick the correct baked model.
+  3. Ran `./gradlew.bat build` to confirm the resources and helper tweak compile without errors.
+- **Rationale**: Reusing the chicken override pipeline keeps spawn eggs visually consistent with Roost while guaranteeing older stacks adopt the new artwork automatically.
+
+## Entry 32
+- **Prompt/Task**: Restore the OriginalChickens spawn-egg sprites while keeping Roost visuals for the ported items.
+- **Steps**:
+  1. Replaced the spawn egg model so it once again references the legacy `spawn_egg` and `spawn_egg_overlay` textures instead of the Roost chicken override.
+  2. Confirmed the colored tint handler still applies by reusing the vanilla `template_spawn_egg` parent that exposes both render layers.
+  3. Rebuilt the project with `./gradlew.bat build` to ensure the resource remap succeeds.
+- **Rationale**: Reinstating the classic egg artwork keeps ModernChickens visually faithful to the OriginalChickens mod while retaining Roost-only sprites for chickens, machines, and tools.
+
+## Entry 33
+- **Prompt/Task**: Chicken Breeder GUI missing/incorrect. Seems to be functioning properly otherwise.
+- **Steps**:
+  1. Embedded the legacy Roost breeder artwork as Base64 in a new `GuiTextures` helper and registered it as a dynamic texture so the client loads the classic backdrop without committing binaries.
+  2. Reworked `BreederScreen` to use the ported texture, restored the original dimensions, progress bar, and tooltip hotspot, and retained the seed warning text for parity with the screenshot.
+  3. Ran `./gradlew.bat compileJava` to confirm the updated screen and helper compile cleanly.
+- **Rationale**: Recreating the Roost breeder layout keeps ModernChickens visually consistent with the legacy mod, making the GUI intuitive while the codebase still disallows shipping binary art files.
+
+## Entry 34
+- **Prompt/Task**: Crash when opening breeder screen due to `IllegalStateException: Failed to decode breeder GUI texture`.
+- **Steps**:
+  1. Re-encoded the breeder GUI PNG via a truncated-chunk-safe pipeline and updated `GuiTextures` with the sanitized Base64 payload while logging and falling back to the shulker UI when decoding fails.
+  2. Guarded overlay rendering and tooltips in `BreederScreen` so the progress bar only draws when the bespoke texture loads successfully, while stripping the temporary progress/seeds labels to match the legacy look-and-feel.
+  3. Rebuilt with `./gradlew.bat compileJava` to verify the crash fix compiles without regressions.
+- **Rationale**: Sanitising the embedded texture and adding graceful degradation keeps the nostalgic breeder art available while eliminating runtime crashes on PNG parsers that reject unsupported chunks.
+
+## Entry 35
+- **Prompt/Task**: Replace placeholder GUIs with the original Roost textures for ModernChickens machines.
+- **Steps**:
+  1. Copied `roost.png` and `breeder.png` from the legacy mod into `src/main/resources/assets/chickens/textures/gui/`, replacing the temporary vanilla backdrops.
+  2. Removed the Base64 dynamic texture helper and rewired `BreederScreen` and `RoostScreen` to bind the ported textures, replicating the heart and arrow progress overlays plus matching tooltip hotspots.
+  3. Updated the roost screen to drop the textual progress label in favour of the classic arrow fill and ran `./gradlew.bat compileJava` to confirm both screens compile against the new assets.
+- **Rationale**: Reusing the authentic GUI art restores the 1.12 presentation, keeping ModernChickens visually faithful to Roost now that shipping the original PNGs is permitted.
+
+## Entry 36
+- **Prompt/Task**: Restore the in-world roost chicken display and add the legacy curtain behaviour to the breeder.
+- **Steps**:
+  1. Reviewed the original Roost breeder blockstates and tile entity sync to understand when the privacy curtain should appear and how render data is populated.
+  2. Updated `AbstractChickenContainerBlockEntity#getRenderData` to synthesise and cache chicken entries on the client so roost block entity renderers receive the necessary data without waiting for a server tick.
+  3. Added `breeder_privacy.json` and `breeder_empty.json` models plus refreshed blockstate variants so the breeder swaps between open, empty, and curtained presentations using vanilla textures as placeholders.
+  4. Executed `./gradlew build` to verify the code and resource updates compile cleanly.
+- **Rationale**: Ensuring render data exists client-side brings back the animated roost occupant, while the new models mirror Roost's visual feedback that breeding is underway without introducing forbidden binary assets.
+
+## Entry 37
+- **Prompt/Task**: Reuse Roost curtain and hay textures and analyse how legacy roost blocks displayed their chickens.
+- **Steps**:
+  1. Hooked `generateRoostTextures` into the Gradle build so the original `curtain_*.png`, `hay_*.png`, `plain_face.png`, and `slat_side.png` files are copied from the read-only Roost sources into a generated resource folder without committing binaries.
+  2. Swapped the breeder and roost block models to reference the regenerated textures, matching the 1.12 curtain and hay presentation while keeping the existing blockstate wiring intact.
+  3. Documented the legacy Roost asset usage (including the baked `chicken` models) to confirm that ModernChickens now renders living entities rather than sprite boxes, preserving behaviour parity with the NeoForge renderer.
+  4. Ran `./gradlew build` to confirm the new resource pipeline and model updates compile successfully.
+- **Rationale**: Generating the classic textures at build time lets ModernChickens reuse Roost's art legally, and aligning the models with their 1.12 counterparts keeps the curtain and hay visuals consistent while the renderer analysis captures how chickens were originally displayed.
+
+## Entry 38
+- **Prompt/Task**: Fix breeder tooltip so the seed warning only appears when seeds are missing.
+- **Steps**:
+  1. Updated `BreederScreen#renderProgressTooltip` to inspect the seed slot directly and fall back to the progress tooltip whenever any seeds are present.
+  2. Kept the percentage calculation intact so players always see the breeding progress, defaulting to `Needs seeds to operate` only when the slot is empty.
+  3. Rebuilt with `./gradlew build` to validate the screen tweak.
+- **Rationale**: Matching the tooltip behaviour from the legacy Roost GUI clears up confusion for players who have already loaded seeds, ensuring the hearts reflect progress rather than incorrectly warning about missing inputs.
+
+## Entry 39
+- **Prompt/Task**: Correct Roost and Breeder inventory icons so they align with vanilla slot origins.
+- **Steps**:
+  1. Removed the bespoke GUI/third-person transforms from the breeder and curtain models, restoring the vanilla item transforms that keep icons centred in slots.
+  2. Trimmed the roost block model transforms down to the original first-person adjustment so the item version once again sits flush alongside vanilla blocks.
+  3. Ran `./gradlew build` to confirm the resource edits compile successfully.
+- **Rationale**: The extra translations we had inherited were nudging the items off-centre in inventories; reverting to the default display stack mirrors the 1.12 presentation and keeps ModernChickens machines visually consistent with surrounding blocks.
+
+## Entry 40
+- **Prompt/Task**: Tweak roost renderer so the in-block chickens match the classic Roost look.
+- **Steps**:
+  1. Replaced the temporary item-sprite renderer with the animated chicken entity renderer and added a neutral `resetPose` helper so the birds stay still in the pen.
+  2. Adjusted translation, facing, and scaling so the entity sits on the hay floor and presses against the front wall like the 1.12 sprite.
+  3. Rebuilt with `./gradlew build` to confirm the renderer changes compile.
+- **Rationale**: Mapping the entity back into the roost cavity restores the forward-facing silhouette players expect from the original mod while keeping the animation pipeline lightweight.
+
+## Entry 41
+- **Prompt/Task**: Fine-tune roost chicken placement and brighten the interior.
+- **Steps**:
+  1. Lowered and pushed the chicken forward a little further so it rests directly on the hay pile and meets the front curtain edge.
+  2. Forced the renderer to use full-bright lighting, preventing the interior shadowing that made the sprite hard to see.
+  3. Hardened `RoostBlock` lighting by blocking skylight propagation so neighbouring roosts no longer dim each other.
+  4. Ran `./gradlew build` to verify everything still compiles.
+- **Rationale**: The extra positioning tweaks and lighting bump bring the roost presentation even closer to the 1.12 look, making the contained chicken immediately visible in-game.
+
+## Entry 42
+- **Prompt/Task**: Sort the chicken item model overrides so each custom model data resolves to the correct texture.
+- **Steps**:
+  1. Parsed `assets/chickens/models/item/chicken.json` and reordered every override by its `custom_model_data` value to remove predicate fallthroughs.
+  2. Spot-checked the reordered section around the slime and gold chickens to confirm their ids now appear in ascending order.
+  3. Ran `./gradlew build` to ensure the resource change compiles cleanly.
+- **Rationale**: Keeping the predicates sorted preserves Minecraft's last-match selection rule, so each chicken item renders with its matching PNG instead of inheriting a later override.
+

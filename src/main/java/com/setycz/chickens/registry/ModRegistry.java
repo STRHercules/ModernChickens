@@ -5,10 +5,15 @@ import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.block.BreederBlock;
+import com.setycz.chickens.block.CollectorBlock;
 import com.setycz.chickens.block.HenhouseBlock;
+import com.setycz.chickens.block.RoostBlock;
 import com.setycz.chickens.item.AnalyzerItem;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
 import com.setycz.chickens.item.ColoredEggItem;
+import com.setycz.chickens.item.ChickenItem;
+import com.setycz.chickens.item.ChickenCatcherItem;
 import com.setycz.chickens.item.LiquidEggItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -58,6 +63,9 @@ public final class ModRegistry {
             () -> new LiquidEggItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
+    public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());
+    public static final DeferredBlock<BreederBlock> BREEDER = BLOCKS.register("breeder", () -> new BreederBlock());
+    public static final DeferredBlock<CollectorBlock> COLLECTOR = BLOCKS.register("collector", () -> new CollectorBlock());
     // Register the henhouse block and its item form so players can place the storage structure.
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
@@ -76,11 +84,20 @@ public final class ModRegistry {
     public static final DeferredItem<BlockItem> HENHOUSE_JUNGLE_ITEM = registerHenhouseItem("henhouse_jungle", HENHOUSE_JUNGLE);
     public static final DeferredItem<BlockItem> HENHOUSE_ACACIA_ITEM = registerHenhouseItem("henhouse_acacia", HENHOUSE_ACACIA);
     public static final DeferredItem<BlockItem> HENHOUSE_DARK_OAK_ITEM = registerHenhouseItem("henhouse_dark_oak", HENHOUSE_DARK_OAK);
+    public static final DeferredItem<BlockItem> ROOST_ITEM = ITEMS.register("roost", () -> new BlockItem(ROOST.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> BREEDER_ITEM = ITEMS.register("breeder",
+            () -> new BlockItem(BREEDER.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> COLLECTOR_ITEM = ITEMS.register("collector",
+            () -> new BlockItem(COLLECTOR.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
             HENHOUSE_JUNGLE_ITEM, HENHOUSE_ACACIA_ITEM, HENHOUSE_DARK_OAK_ITEM
     );
+    public static final DeferredItem<ChickenItem> CHICKEN_ITEM = ITEMS.register("chicken",
+            () -> new ChickenItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<ChickenCatcherItem> CATCHER = ITEMS.register("catcher",
+            () -> new ChickenCatcherItem(new Item.Properties().stacksTo(1).durability(64)));
 
     public static List<DeferredItem<BlockItem>> getHenhouseItems() {
         // Expose an immutable view so creative tabs can iterate every variant without
@@ -104,8 +121,13 @@ public final class ModRegistry {
             for (DeferredItem<BlockItem> item : HENHOUSE_ITEMS) {
                 event.accept(item.get());
             }
+            event.accept(ROOST_ITEM.get());
+            event.accept(BREEDER_ITEM.get());
+            event.accept(COLLECTOR_ITEM.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ANALYZER.get());
+            event.accept(CHICKEN_ITEM.get());
+            event.accept(CATCHER.get());
             for (LiquidEggRegistryItem liquid : LiquidEggRegistry.getAll()) {
                 event.accept(LiquidEggItem.createFor(liquid));
             }

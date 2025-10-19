@@ -1,8 +1,13 @@
 package com.setycz.chickens.integration.jade;
 
+import com.setycz.chickens.blockentity.AbstractChickenContainerBlockEntity;
+import com.setycz.chickens.blockentity.BreederBlockEntity;
+import com.setycz.chickens.blockentity.CollectorBlockEntity;
+import com.setycz.chickens.blockentity.RoostBlockEntity;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.entity.ChickensChicken;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.ModList;
 import org.slf4j.Logger;
@@ -52,13 +57,26 @@ public final class JadeIntegration {
     private static void registerProvider(String target, Object registrar) {
         try {
             Class<?> registrarClass = Class.forName("mcp.mobius.waila.api.IWailaRegistrar");
-            Class<?> providerClass = Class.forName("mcp.mobius.waila.api.IWailaEntityProvider");
+            Class<?> entityProviderClass = Class.forName("mcp.mobius.waila.api.IWailaEntityProvider");
+            Class<?> blockProviderClass = Class.forName("mcp.mobius.waila.api.IWailaDataProvider");
 
-            Object provider = Proxy.newProxyInstance(providerClass.getClassLoader(), new Class<?>[]{providerClass},
-                    new TooltipProvider());
+            Object entityProvider = Proxy.newProxyInstance(entityProviderClass.getClassLoader(),
+                    new Class<?>[]{entityProviderClass}, new TooltipProvider());
+            Object blockProvider = Proxy.newProxyInstance(blockProviderClass.getClassLoader(),
+                    new Class<?>[]{blockProviderClass}, new BlockTooltipProvider());
 
-            Method registerBody = registrarClass.getMethod("registerBodyProvider", providerClass, Class.class);
-            registerBody.invoke(registrar, provider, ChickensChicken.class);
+            Method registerBody = registrarClass.getMethod("registerBodyProvider", entityProviderClass, Class.class);
+            registerBody.invoke(registrar, entityProvider, ChickensChicken.class);
+
+            Method registerTail = registrarClass.getMethod("registerTailProvider", blockProviderClass, Class.class);
+            registerTail.invoke(registrar, blockProvider, RoostBlockEntity.class);
+            registerTail.invoke(registrar, blockProvider, BreederBlockEntity.class);
+            registerTail.invoke(registrar, blockProvider, CollectorBlockEntity.class);
+
+            Method registerNbt = registrarClass.getMethod("registerNBTProvider", blockProviderClass, Class.class);
+            registerNbt.invoke(registrar, blockProvider, RoostBlockEntity.class);
+            registerNbt.invoke(registrar, blockProvider, BreederBlockEntity.class);
+            registerNbt.invoke(registrar, blockProvider, CollectorBlockEntity.class);
         } catch (ClassNotFoundException ex) {
             LOGGER.warn("{} advertised Waila compatibility but the API was missing", target);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
@@ -123,6 +141,66 @@ public final class JadeIntegration {
             }
 
             return tooltip;
+        }
+    }
+
+    /**
+     * Reflection backed block provider used to show Roost/Breeder/Collector state
+     * in Jade. The implementation mirrors the legacy 1.12 logic but translates it
+     * into modern {@link Component} strings.
+     */
+    private static final class BlockTooltipProvider implements InvocationHandler {
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            String name = method.getName();
+            if ("getWailaTail".equals(name)) {
+                return handleTail(args);
+            }
+            if ("getNBTData".equals(name)) {
+                return handleNbt(args);
+            }
+            return null;
+        }
+
+        private Object handleTail(Object[] args) throws Throwable {
+            if (args == null || args.length < 3) {
+                return args != null && args.length > 1 ? args[1] : null;
+            }
+            Object tooltipObject = args[1];
+            Object accessor = args[2];
+            if (!(tooltipObject instanceof List<?> list)) {
+                return tooltipObject;
+            }
+            Method getTileEntity = accessor.getClass().getMethod("getTileEntity");
+            Method getNbt = accessor.getClass().getMethod("getNBTData");
+            Object tile = getTileEntity.invoke(accessor);
+            Object nbtObj = getNbt.invoke(accessor);
+            if (!(tile instanceof AbstractChickenContainerBlockEntity container) || !(list instanceof List<?>)) {
+                return tooltipObject;
+            }
+            CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
+            List<Component> components = new java.util.ArrayList<>();
+            container.appendTooltip(components, tag);
+            @SuppressWarnings("unchecked")
+            List<String> tooltip = (List<String>) list;
+            for (Component component : components) {
+                tooltip.add(component.getString());
+            }
+            return tooltip;
+        }
+
+        private Object handleNbt(Object[] args) {
+            if (args == null || args.length < 3) {
+                return args != null && args.length > 2 ? args[2] : null;
+            }
+            Object tile = args[1];
+            Object tagObject = args[2];
+            if (!(tile instanceof AbstractChickenContainerBlockEntity container)) {
+                return tagObject;
+            }
+            CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
+            container.storeTooltipData(tag);
+            return tag;
         }
     }
 }

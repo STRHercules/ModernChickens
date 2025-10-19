@@ -3,22 +3,31 @@ package com.setycz.chickens.integration.jei;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.integration.jei.category.BreederCategory;
 import com.setycz.chickens.integration.jei.category.BreedingCategory;
+import com.setycz.chickens.integration.jei.category.CatchingCategory;
 import com.setycz.chickens.integration.jei.category.DropCategory;
 import com.setycz.chickens.integration.jei.category.HenhousingCategory;
 import com.setycz.chickens.integration.jei.category.LayingCategory;
+import com.setycz.chickens.integration.jei.category.RoostingCategory;
 import com.setycz.chickens.integration.jei.category.ThrowingCategory;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
 import com.setycz.chickens.item.ColoredEggItem;
+import com.setycz.chickens.item.ChickenItem;
+import com.setycz.chickens.item.ChickenItemHelper;
+import com.setycz.chickens.item.ChickenStats;
 import com.setycz.chickens.registry.ModRegistry;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
@@ -39,14 +48,33 @@ public class ChickensJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void registerItemSubtypes(ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(ModRegistry.CHICKEN_ITEM.get(), (stack, context) -> {
+            if (!(stack.getItem() instanceof ChickenItem)) {
+                return IIngredientSubtypeInterpreter.NONE;
+            }
+            ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
+            if (chicken == null) {
+                return IIngredientSubtypeInterpreter.NONE;
+            }
+            ChickenStats stats = ChickenItemHelper.getStats(stack);
+            return String.format("%d/%d/%d/%d/%s", chicken.getId(), stats.gain(), stats.growth(), stats.strength(),
+                    stats.analysed());
+        });
+    }
+
+    @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(
                 new LayingCategory(guiHelper),
                 new DropCategory(guiHelper),
                 new BreedingCategory(guiHelper),
+                new BreederCategory(guiHelper),
                 new ThrowingCategory(guiHelper),
-                new HenhousingCategory(guiHelper)
+                new HenhousingCategory(guiHelper),
+                new RoostingCategory(guiHelper),
+                new CatchingCategory(guiHelper)
         );
     }
 
@@ -57,6 +85,9 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.BREEDING, buildBreedingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.THROWING, buildThrowingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.HENHOUSE, buildHenhouseRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.ROOSTING, buildRoostingRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.CATCHING, buildCatchingRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.BREEDER, buildBreederRecipes());
     }
 
     @Override
@@ -67,6 +98,9 @@ public class ChickensJeiPlugin implements IModPlugin {
         for (ItemStack itemStack : buildHenhouseCatalysts()) {
             registration.addRecipeCatalyst(itemStack, ChickensJeiRecipeTypes.HENHOUSE);
         }
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.ROOST.get()), ChickensJeiRecipeTypes.ROOSTING);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.BREEDER.get()), ChickensJeiRecipeTypes.BREEDER);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.CATCHER.get()), ChickensJeiRecipeTypes.CATCHING);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -114,6 +148,45 @@ public class ChickensJeiPlugin implements IModPlugin {
         return List.of(new ChickensJeiRecipeTypes.HenhouseRecipe(
                 new ItemStack(Blocks.HAY_BLOCK),
                 new ItemStack(Blocks.DIRT)));
+    }
+
+    private static List<ChickensJeiRecipeTypes.RoostingRecipe> buildRoostingRecipes() {
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        return ChickensRegistry.getItems().stream()
+                .filter(ChickensRegistryItem::isEnabled)
+                .map(chicken -> {
+                    ItemStack stack = chickenItem.createFor(chicken);
+                    stack.setCount(16);
+                    ItemStack drop = chicken.createDropItem();
+                    return new ChickensJeiRecipeTypes.RoostingRecipe(stack, drop, stack.getCount());
+                })
+                .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.CatchingRecipe> buildCatchingRecipes() {
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        ItemStack catcher = new ItemStack(ModRegistry.CATCHER.get());
+        return ChickensRegistry.getItems().stream()
+                .filter(ChickensRegistryItem::isEnabled)
+                .map(chicken -> new ChickensJeiRecipeTypes.CatchingRecipe(
+                        catcher.copy(),
+                        ChickensSpawnEggItem.createFor(chicken),
+                        chickenItem.createFor(chicken)))
+                .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.BreederRecipe> buildBreederRecipes() {
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        ItemStack seeds = new ItemStack(Items.WHEAT_SEEDS, 2);
+        return ChickensRegistry.getItems().stream()
+                .filter(chicken -> chicken.isEnabled() && chicken.isBreedable())
+                .map(chicken -> new ChickensJeiRecipeTypes.BreederRecipe(
+                        chickenItem.createFor(chicken.getParent1()),
+                        chickenItem.createFor(chicken.getParent2()),
+                        seeds.copy(),
+                        chickenItem.createFor(chicken),
+                        Math.round(ChickensRegistry.getChildChance(chicken))))
+                .toList();
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {
