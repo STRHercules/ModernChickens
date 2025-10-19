@@ -336,3 +336,11 @@
   4. Ran `./gradlew build` to verify everything still compiles.
 - **Rationale**: The extra positioning tweaks and lighting bump bring the roost presentation even closer to the 1.12 look, making the contained chicken immediately visible in-game.
 
+## Entry 42
+- **Prompt/Task**: Sort the chicken item model overrides so each custom model data resolves to the correct texture.
+- **Steps**:
+  1. Parsed `assets/chickens/models/item/chicken.json` and reordered every override by its `custom_model_data` value to remove predicate fallthroughs.
+  2. Spot-checked the reordered section around the slime and gold chickens to confirm their ids now appear in ascending order.
+  3. Ran `./gradlew build` to ensure the resource change compiles cleanly.
+- **Rationale**: Keeping the predicates sorted preserves Minecraft's last-match selection rule, so each chicken item renders with its matching PNG instead of inheriting a later override.
+

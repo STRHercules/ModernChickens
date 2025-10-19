@@ -2,15 +2,27 @@
   "parent": "minecraft:item/generated",
   "overrides": [
     {
-      "model": "chickens:item/chicken/smartchicken",
-      "predicate": {
-        "custom_model_data": 50
-      }
-    },
-    {
       "model": "chickens:item/chicken/whitechicken",
       "predicate": {
         "custom_model_data": 0
+      }
+    },
+    {
+      "model": "chickens:item/chicken/orangechicken",
+      "predicate": {
+        "custom_model_data": 1
+      }
+    },
+    {
+      "model": "chickens:item/chicken/magentachicken",
+      "predicate": {
+        "custom_model_data": 2
+      }
+    },
+    {
+      "model": "chickens:item/chicken/lightbluechicken",
+      "predicate": {
+        "custom_model_data": 3
       }
     },
     {
@@ -20,9 +32,51 @@
       }
     },
     {
+      "model": "chickens:item/chicken/limechicken",
+      "predicate": {
+        "custom_model_data": 5
+      }
+    },
+    {
+      "model": "chickens:item/chicken/pinkchicken",
+      "predicate": {
+        "custom_model_data": 6
+      }
+    },
+    {
+      "model": "chickens:item/chicken/graychicken",
+      "predicate": {
+        "custom_model_data": 7
+      }
+    },
+    {
+      "model": "chickens:item/chicken/silverdyechicken",
+      "predicate": {
+        "custom_model_data": 8
+      }
+    },
+    {
+      "model": "chickens:item/chicken/cyanchicken",
+      "predicate": {
+        "custom_model_data": 9
+      }
+    },
+    {
+      "model": "chickens:item/chicken/purplechicken",
+      "predicate": {
+        "custom_model_data": 10
+      }
+    },
+    {
       "model": "chickens:item/chicken/bluechicken",
       "predicate": {
         "custom_model_data": 11
+      }
+    },
+    {
+      "model": "chickens:item/chicken/brownchicken",
+      "predicate": {
+        "custom_model_data": 12
       }
     },
     {
@@ -44,93 +98,9 @@
       }
     },
     {
-      "model": "chickens:item/chicken/pinkchicken",
+      "model": "chickens:item/chicken/smartchicken",
       "predicate": {
-        "custom_model_data": 6
-      }
-    },
-    {
-      "model": "chickens:item/chicken/purplechicken",
-      "predicate": {
-        "custom_model_data": 10
-      }
-    },
-    {
-      "model": "chickens:item/chicken/orangechicken",
-      "predicate": {
-        "custom_model_data": 1
-      }
-    },
-    {
-      "model": "chickens:item/chicken/lightbluechicken",
-      "predicate": {
-        "custom_model_data": 3
-      }
-    },
-    {
-      "model": "chickens:item/chicken/limechicken",
-      "predicate": {
-        "custom_model_data": 5
-      }
-    },
-    {
-      "model": "chickens:item/chicken/graychicken",
-      "predicate": {
-        "custom_model_data": 7
-      }
-    },
-    {
-      "model": "chickens:item/chicken/cyanchicken",
-      "predicate": {
-        "custom_model_data": 9
-      }
-    },
-    {
-      "model": "chickens:item/chicken/silverdyechicken",
-      "predicate": {
-        "custom_model_data": 8
-      }
-    },
-    {
-      "model": "chickens:item/chicken/magentachicken",
-      "predicate": {
-        "custom_model_data": 2
-      }
-    },
-    {
-      "model": "chickens:item/chicken/flintchicken",
-      "predicate": {
-        "custom_model_data": 101
-      }
-    },
-    {
-      "model": "chickens:item/chicken/quartzchicken",
-      "predicate": {
-        "custom_model_data": 104
-      }
-    },
-    {
-      "model": "chickens:item/chicken/logchicken",
-      "predicate": {
-        "custom_model_data": 108
-      }
-    },
-    {
-      "model": "chickens:item/chicken/sandchicken",
-      "predicate": {
-        "custom_model_data": 105
-      }
-    },
-    {
-      "model": "chickens:item/chicken/stringchicken",
-      "predicate": {
-        "custom_model_data": 303
-      }
-    },
-    {
-      "model": "chickens:item/chicken/glowstonechicken",
-      "predicate": {
-        "custom_model_data": 202
+        "custom_model_data": 50
       }
     },
     {
@@ -140,15 +110,69 @@
       }
     },
     {
-      "model": "chickens:item/chicken/redstonechicken",
+      "model": "chickens:item/chicken/flintchicken",
       "predicate": {
-        "custom_model_data": 201
+        "custom_model_data": 101
+      }
+    },
+    {
+      "model": "chickens:item/chicken/snowballchicken",
+      "predicate": {
+        "custom_model_data": 102
+      }
+    },
+    {
+      "model": "chickens:item/chicken/lavachicken",
+      "predicate": {
+        "custom_model_data": 103
+      }
+    },
+    {
+      "model": "chickens:item/chicken/quartzchicken",
+      "predicate": {
+        "custom_model_data": 104
+      }
+    },
+    {
+      "model": "chickens:item/chicken/sandchicken",
+      "predicate": {
+        "custom_model_data": 105
       }
     },
     {
       "model": "chickens:item/chicken/glasschicken",
       "predicate": {
         "custom_model_data": 106
+      }
+    },
+    {
+      "model": "chickens:item/chicken/leatherchicken",
+      "predicate": {
+        "custom_model_data": 107
+      }
+    },
+    {
+      "model": "chickens:item/chicken/logchicken",
+      "predicate": {
+        "custom_model_data": 108
+      }
+    },
+    {
+      "model": "chickens:item/chicken/claychicken",
+      "predicate": {
+        "custom_model_data": 200
+      }
+    },
+    {
+      "model": "chickens:item/chicken/redstonechicken",
+      "predicate": {
+        "custom_model_data": 201
+      }
+    },
+    {
+      "model": "chickens:item/chicken/glowstonechicken",
+      "predicate": {
+        "custom_model_data": 202
       }
     },
     {
@@ -164,21 +188,9 @@
       }
     },
     {
-      "model": "chickens:item/chicken/brownchicken",
+      "model": "chickens:item/chicken/slimechicken",
       "predicate": {
-        "custom_model_data": 12
-      }
-    },
-    {
-      "model": "chickens:item/chicken/goldchicken",
-      "predicate": {
-        "custom_model_data": 300
-      }
-    },
-    {
-      "model": "chickens:item/chicken/snowballchicken",
-      "predicate": {
-        "custom_model_data": 102
+        "custom_model_data": 205
       }
     },
     {
@@ -188,27 +200,15 @@
       }
     },
     {
-      "model": "chickens:item/chicken/lavachicken",
-      "predicate": {
-        "custom_model_data": 103
-      }
-    },
-    {
-      "model": "chickens:item/chicken/claychicken",
-      "predicate": {
-        "custom_model_data": 200
-      }
-    },
-    {
-      "model": "chickens:item/chicken/leatherchicken",
-      "predicate": {
-        "custom_model_data": 107
-      }
-    },
-    {
       "model": "chickens:item/chicken/netherwartchicken",
       "predicate": {
         "custom_model_data": 207
+      }
+    },
+    {
+      "model": "chickens:item/chicken/goldchicken",
+      "predicate": {
+        "custom_model_data": 300
       }
     },
     {
@@ -224,9 +224,15 @@
       }
     },
     {
-      "model": "chickens:item/chicken/slimechicken",
+      "model": "chickens:item/chicken/stringchicken",
       "predicate": {
-        "custom_model_data": 205
+        "custom_model_data": 303
+      }
+    },
+    {
+      "model": "chickens:item/chicken/emeraldchicken",
+      "predicate": {
+        "custom_model_data": 400
       }
     },
     {
@@ -239,12 +245,6 @@
       "model": "chickens:item/chicken/ghastchicken",
       "predicate": {
         "custom_model_data": 402
-      }
-    },
-    {
-      "model": "chickens:item/chicken/emeraldchicken",
-      "predicate": {
-        "custom_model_data": 400
       }
     },
     {
