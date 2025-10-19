@@ -90,7 +90,8 @@ public class ChickenItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
-            tooltip.add(Component.translatable("item.chickens.chicken.type", chicken.getEntityName())
+            tooltip.add(Component.translatable("item.chickens.chicken.type",
+                            Component.translatable("entity." + chicken.getEntityName() + ".name"))
                     .withStyle(ChatFormatting.GRAY));
             ChickenStats stats = ChickenItemHelper.getStats(stack);
             tooltip.add(Component.translatable("item.chickens.chicken.stats", stats.gain(), stats.growth(), stats.strength())
