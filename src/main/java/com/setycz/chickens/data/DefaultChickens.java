@@ -14,8 +14,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Recreates the legacy {@code generateDefaultChickens} method from the 1.10
@@ -267,6 +269,12 @@ public final class DefaultChickens {
                 0x1a0500, 0x000000,
                 slimeChicken, blazeChicken);
         chickens.add(magmaChicken);
+
+        Map<String, ChickensRegistryItem> byName = new HashMap<>();
+        for (ChickensRegistryItem chicken : chickens) {
+            byName.put(chicken.getEntityName().toLowerCase(Locale.ROOT), chicken);
+        }
+        ModdedChickens.register(chickens, byName);
 
         return chickens;
     }

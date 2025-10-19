@@ -2,14 +2,15 @@ package com.setycz.chickens;
 
 import com.setycz.chickens.command.ChickensCommands;
 import com.setycz.chickens.data.ChickensDataLoader;
-import com.setycz.chickens.entity.NetherPopulationHandler;
 import com.setycz.chickens.RoostEggPreventer;
+import com.setycz.chickens.entity.NetherPopulationHandler;
 import com.setycz.chickens.integration.jade.JadeIntegration;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.data.ChickenItemModelProvider;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public final class ChickensMod {
         JadeIntegration.init();
         NetherPopulationHandler.init();
         RoostEggPreventer.init();
+        NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
         modBus.addListener(this::onGatherData);
     }

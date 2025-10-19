@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -341,6 +342,13 @@ public final class ChickensDataLoader {
         } catch (NumberFormatException e) {
             props.setProperty(key, Double.toString(defaultValue));
             return defaultValue;
+        }
+    }
+
+    public static void onTagsUpdated(TagsUpdatedEvent event) {
+        if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.SERVER_DATA_LOAD
+                || event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
+            ModdedChickens.retryPending();
         }
     }
 

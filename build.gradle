@@ -49,6 +49,29 @@ tasks.named('processResources') {
     notCompatibleWithConfigurationCache("Resource remapping mutates RelativePath instances at execution time")
     dependsOn 'generateRoostTextures'
     from('OriginalChickens/src/main/resources')
+    from('MoreChickens/src/main/resources/assets/morechickens/textures/entity') {
+        into 'assets/chickens/textures/entity'
+    }
+    from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
+        include 'WaterChicken.png'
+        into 'assets/chickens/textures/entity'
+        rename { 'pshard_chicken.png' }
+    }
+    from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
+        include 'GlassChicken.png'
+        into 'assets/chickens/textures/entity'
+        rename { 'pcrystal_chicken.png' }
+    }
+    from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
+        include 'SandChicken.png'
+        into 'assets/chickens/textures/entity'
+        rename { 'soulsand_chicken.png' }
+    }
+    from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
+        include 'CoalChicken.png'
+        into 'assets/chickens/textures/entity'
+        rename { 'obsidian_chicken.png' }
+    }
     from(generatedRoostDir)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     inputs.property('modVersion', version)
