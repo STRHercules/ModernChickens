@@ -15,6 +15,15 @@ java {
     }
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+            srcDir 'build/generated/resources'
+        }
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases' }
@@ -64,7 +73,10 @@ neoForge {
     runs {
         client { client() }
         server { server() }
-        data { data() }
+        data {
+        data()
+        programArguments.addAll("--mod", "chickens")
+    }
     }
     mods {
         modernchickens {

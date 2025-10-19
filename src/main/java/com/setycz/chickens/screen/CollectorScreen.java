@@ -1,5 +1,6 @@
 package com.setycz.chickens.screen;
 
+import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.menu.CollectorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -18,7 +19,7 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
     public CollectorScreen(CollectorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 222;
+        this.imageHeight = 166;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
@@ -26,7 +27,7 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
     protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        graphics.blit(GUI_TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
+        graphics.blit(GUI_TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override

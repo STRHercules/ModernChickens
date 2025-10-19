@@ -7,6 +7,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
 
 import javax.annotation.Nullable;
 
@@ -24,12 +25,20 @@ public final class ChickenItemHelper {
 
     public static void setChickenType(ItemStack stack, int type) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(TAG_CHICKEN_TYPE, type));
+        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(type));
     }
 
     public static int getChickenType(ItemStack stack) {
         CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         if (data.contains(TAG_CHICKEN_TYPE)) {
-            return data.copyTag().getInt(TAG_CHICKEN_TYPE);
+            int type = data.copyTag().getInt(TAG_CHICKEN_TYPE);
+            CustomModelData modelData = stack.get(DataComponents.CUSTOM_MODEL_DATA);
+            if (modelData == null || modelData.value() != type) {
+                // Ensure the item displays with the correct baked model, even if an older stack
+                // or command-generated item forgot to sync the model data component.
+                stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(type));
+            }
+            return type;
         }
         return 0;
     }

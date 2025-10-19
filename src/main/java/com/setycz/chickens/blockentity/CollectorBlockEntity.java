@@ -1,10 +1,12 @@
 package com.setycz.chickens.blockentity;
 
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.menu.CollectorMenu;
 import com.setycz.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Mth;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,8 +25,11 @@ import java.util.List;
  */
 public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int INVENTORY_SIZE = 27;
-    private static final int SCAN_RANGE = 4;
+    private static final int VERTICAL_SCAN_LAYERS = 3;
+    private static final int MAX_SCAN_RANGE = 16;
     private int searchOffset = 0;
+    private int cachedScanRange = -1;
+    private int cycleLength = 1;
 
     public CollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.COLLECTOR.get(), pos, state, INVENTORY_SIZE, 0);
@@ -33,8 +38,8 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     @Override
     protected void runServerTick(Level level) {
         super.runServerTick(level);
-        updateSearchOffset();
-        gatherItems(level);
+        int range = updateSearchOffset(ChickensConfigHolder.get().getCollectorScanRange());
+        gatherItems(level, range);
     }
 
     @Override
@@ -72,14 +77,23 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         return null;
     }
 
-    private void updateSearchOffset() {
-        searchOffset = (searchOffset + 1) % 27;
+    private int updateSearchOffset(int configuredRange) {
+        int range = clampRange(configuredRange);
+        if (range != cachedScanRange) {
+            cachedScanRange = range;
+            int zCount = Math.max(1, cachedScanRange * 2 + 1);
+            cycleLength = Math.max(1, VERTICAL_SCAN_LAYERS * zCount);
+            searchOffset %= cycleLength;
+        }
+        searchOffset = (searchOffset + 1) % cycleLength;
+        return range;
     }
 
-    private void gatherItems(Level level) {
-        int y = searchOffset / 9;
-        int zOffset = (searchOffset % 9) - 4;
-        for (int xOffset = -SCAN_RANGE; xOffset <= SCAN_RANGE; xOffset++) {
+    private void gatherItems(Level level, int range) {
+        int zCount = Math.max(1, range * 2 + 1);
+        int y = searchOffset / zCount;
+        int zOffset = (searchOffset % zCount) - range;
+        for (int xOffset = -range; xOffset <= range; xOffset++) {
             BlockPos target = worldPosition.offset(xOffset, y, zOffset);
             if (target.equals(worldPosition) || !level.hasChunkAt(target)) {
                 continue;
@@ -130,5 +144,9 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         tooltip.add(Component.translatable("tooltip.chickens.collector.slots", data.getInt("FilledSlots"),
                 data.getInt("TotalSlots")));
         super.appendTooltip(tooltip, data);
+    }
+
+    private static int clampRange(int configuredRange) {
+        return Mth.clamp(configuredRange, 0, MAX_SCAN_RANGE);
     }
 }

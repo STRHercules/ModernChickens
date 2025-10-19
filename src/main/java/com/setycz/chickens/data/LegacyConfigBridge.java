@@ -110,6 +110,7 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    D:roostSpeed=%.3f%n", general.getRoostSpeedMultiplier()));
             writer.write(String.format(Locale.ROOT, "    D:breederSpeed=%.3f%n", general.getBreederSpeedMultiplier()));
             writer.write(String.format(Locale.ROOT, "    B:disableEggLaying=%s%n", general.isVanillaEggLayingDisabled()));
+            writer.write(String.format(Locale.ROOT, "    I:collectorScanRange=%d%n", general.getCollectorScanRange()));
             writer.write("}\n\n");
 
             for (ChickensRegistryItem chicken : ordered) {
@@ -142,6 +143,7 @@ public final class LegacyConfigBridge {
             case "roostSpeed" -> props.setProperty("general.roostSpeedMultiplier", value);
             case "breederSpeed" -> props.setProperty("general.breederSpeedMultiplier", value);
             case "disableEggLaying" -> props.setProperty("general.disableVanillaEggLaying", value);
+            case "collectorScanRange" -> props.setProperty("general.collectorScanRange", value);
             default -> {
             }
         }

@@ -1,0 +1,10 @@
+{
+  "sources": [
+    {
+      "type": "neoforge:namespaced_directory",
+      "namespace": "chickens",
+      "source": "item/chicken",
+      "prefix": "item/chicken/"
+    }
+  ]
+}

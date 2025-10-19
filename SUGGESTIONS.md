@@ -19,5 +19,8 @@
 - Extend automated checks (or a QA script) to confirm chickens never emit vanilla eggs after the custom drop refactor so future merges that touch `aiStep` keep the bespoke laying behaviour intact.
 - Add automated coverage for the new breeder and collector menus so progress syncing, seed consumption, and item transfers stay reliable across future refactors.
 - Generate bespoke GUI textures for the roost, breeder, and collector once binary assets can be shipped so the new screens stop borrowing vanilla art.
-- Expose a configuration option for the collector scan range so pack makers can tune how aggressively it hoovers roost drops.
+- Explore lightweight in-world upgrades (e.g., range charms) so individual collectors can extend or shrink their scan radius without relying on the global configuration.
 - Add a lightweight NeoForge config screen that exposes the new roost/breeder speed multipliers and egg toggle so pack makers can tweak values without hand-editing `chickens.properties`.
+- Monitor the maturation of NeoForge’s transfer API and migrate the new capability bindings away from `SidedInvWrapper` once a public `WorldlyContainerWrapper`/resource handler is exposed, keeping the item automation bridge future-proof.
+- Add a lightweight validation (e.g., data gen or unit test) that asserts spawn egg stacks populate `CustomModelData`, catching regressions that would revert the icons to vanilla eggs.
+- Consider exposing a config toggle that lets packs opt back into the Roost-style chicken icons for spawn eggs if they prefer the newer look.

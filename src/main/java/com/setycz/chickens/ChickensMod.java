@@ -6,9 +6,11 @@ import com.setycz.chickens.entity.NetherPopulationHandler;
 import com.setycz.chickens.RoostEggPreventer;
 import com.setycz.chickens.integration.jade.JadeIntegration;
 import com.setycz.chickens.registry.ModRegistry;
+import com.setycz.chickens.data.ChickenItemModelProvider;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ public final class ChickensMod {
         NetherPopulationHandler.init();
         RoostEggPreventer.init();
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
+        modBus.addListener(this::onGatherData);
     }
 
     public void onCommonSetup(FMLCommonSetupEvent event) {
@@ -38,5 +41,10 @@ public final class ChickensMod {
         // Defer the heavy registry bootstrap so it runs on the correct thread
         // once NeoForge has finished initialising its data tables.
         event.enqueueWork(ChickensDataLoader::bootstrap);
+    }
+
+    private void onGatherData(GatherDataEvent event) {
+        var generator = event.getGenerator();
+        generator.getVanillaPack(true).addProvider(ChickenItemModelProvider::new);
     }
 }

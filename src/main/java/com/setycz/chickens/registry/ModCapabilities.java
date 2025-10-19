@@ -1,9 +1,14 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.liquidegg.LiquidEggFluidWrapper;
+import com.setycz.chickens.registry.ModBlockEntities;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
  * Handles capability registration for the mod. Wiring the legacy fluid handler
@@ -22,5 +27,22 @@ public final class ModCapabilities {
         event.registerItem(Capabilities.FluidHandler.ITEM,
                 (stack, context) -> new LiquidEggFluidWrapper(stack),
                 ModRegistry.LIQUID_EGG.get());
+
+        // Expose container inventories through the NeoForge capability bridge so
+        // automation mods can interact with the roost-style blocks just like the
+        // legacy item handler wrappers allowed.
+        registerContainerCapability(event, ModBlockEntities.ROOST.get());
+        registerContainerCapability(event, ModBlockEntities.BREEDER.get());
+        registerContainerCapability(event, ModBlockEntities.COLLECTOR.get());
+        registerContainerCapability(event, ModBlockEntities.HENHOUSE.get());
+    }
+
+    private static <T extends BlockEntity & WorldlyContainer> void registerContainerCapability(
+            RegisterCapabilitiesEvent event,
+            BlockEntityType<T> type) {
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                type,
+                (blockEntity, direction) -> new SidedInvWrapper(blockEntity, direction));
     }
 }

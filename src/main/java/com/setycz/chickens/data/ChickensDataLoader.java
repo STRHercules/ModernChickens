@@ -275,8 +275,9 @@ public final class ChickensDataLoader {
         double roostSpeed = readDouble(props, "general.roostSpeedMultiplier", 1.0D);
         double breederSpeed = readDouble(props, "general.breederSpeedMultiplier", 1.0D);
         boolean disableEggLaying = readBoolean(props, "general.disableVanillaEggLaying", false);
+        int collectorRange = readInt(props, "general.collectorScanRange", 4);
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
-                roostSpeed, breederSpeed, disableEggLaying);
+                roostSpeed, breederSpeed, disableEggLaying, collectorRange);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {

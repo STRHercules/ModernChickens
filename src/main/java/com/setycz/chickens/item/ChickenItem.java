@@ -3,12 +3,9 @@ package com.setycz.chickens.item;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
-import com.setycz.chickens.client.render.item.ChickenItemRenderer;
 import com.setycz.chickens.entity.ChickensChicken;
 import com.setycz.chickens.registry.ModEntityTypes;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,11 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.sounds.SoundSource;
 
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Item representation of a chicken. Players can drop stacks into roosts or
@@ -105,23 +99,5 @@ public class ChickenItem extends Item {
                 tooltip.add(Component.translatable("item.chickens.chicken.analysed").withStyle(ChatFormatting.AQUA));
             }
         }
-    }
-
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        // Register a custom item renderer so inventory icons reuse the animated
-        // chicken entity instead of falling back to a flat generated texture.
-        consumer.accept(new IClientItemExtensions() {
-            private ChickenItemRenderer renderer;
-
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (renderer == null) {
-                    Minecraft minecraft = Minecraft.getInstance();
-                    renderer = new ChickenItemRenderer(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels());
-                }
-                return renderer;
-            }
-        });
     }
 }
