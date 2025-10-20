@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -55,8 +56,10 @@ final class DynamicMaterialChickens {
 
     private static void attemptRegistration(@Nullable List<ChickensRegistryItem> collector,
             Map<String, ChickensRegistryItem> byName, boolean registerImmediately) {
+        REGISTERED_KEYS.clear();
         Set<Integer> usedIds = collectUsedIds(collector, byName);
         ChickensRegistryItem smartChicken = byName.get("smartchicken");
+        registerExistingKeys(byName.values());
 
         List<MaterialCandidate> candidates = discoverMaterials();
         int created = 0;
@@ -65,7 +68,6 @@ final class DynamicMaterialChickens {
             if (REGISTERED_KEYS.contains(key.uniqueKey())) {
                 continue;
             }
-
             ItemStack stack = new ItemStack(candidate.item());
             if (stack.isEmpty() || stack.getItem() == Items.AIR) {
                 continue;
@@ -289,6 +291,29 @@ final class DynamicMaterialChickens {
     }
 
     private record MaterialCandidate(MaterialKey key, Item item) {
+    }
+
+    private static void registerExistingKeys(Collection<ChickensRegistryItem> chickens) {
+        for (ChickensRegistryItem chicken : chickens) {
+            registerStackKeys(chicken.createLayItem());
+            registerStackKeys(chicken.createDropItem());
+        }
+    }
+
+    private static void registerStackKeys(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return;
+        }
+        Item item = stack.getItem();
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+        if (itemId == null) {
+            return;
+        }
+        for (MaterialKey key : collectKeys(item, itemId)) {
+            if (key.isValid()) {
+                REGISTERED_KEYS.add(key.uniqueKey());
+            }
+        }
     }
 
     private static Component buildDisplayName(ItemStack stack, MaterialKey key) {

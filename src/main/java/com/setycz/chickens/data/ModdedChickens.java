@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -95,6 +96,7 @@ final class ModdedChickens {
                 LOGGER.debug("Deferring {} because no lay item was found", def.entityName());
                 continue;
             }
+            ItemStack layStack = layItem.get();
 
             ChickensRegistryItem parent1 = resolveParent(byName, def.parent1());
             if (def.parent1() != null && parent1 == null) {
@@ -109,11 +111,23 @@ final class ModdedChickens {
                 continue;
             }
 
+            Optional<ChickensRegistryItem> existing = findByLayItem(byName.values(), layStack);
+            ChickensRegistryItem dynamicToDisable = null;
+            if (existing.isPresent()) {
+                ChickensRegistryItem current = existing.get();
+                if (current.hasGeneratedTexture()) {
+                    dynamicToDisable = current;
+                } else {
+                    LOGGER.debug("Skipping {} because {} already represents {}", def.entityName(), describeItem(layStack), current.getEntityName());
+                    continue;
+                }
+            }
+
             ChickensRegistryItem chicken = new ChickensRegistryItem(
                     def.id(),
                     def.entityName(),
                     texture(def.texturePath()),
-                    layItem.get(),
+                    layStack,
                     def.bgColor(),
                     def.fgColor(),
                     parent1,
@@ -121,6 +135,14 @@ final class ModdedChickens {
             chicken.setSpawnType(def.spawnType());
             if (def.dropItemSupplier() != null) {
                 def.dropItemSupplier().get().ifPresent(chicken::setDropItem);
+            }
+
+            if (dynamicToDisable != null) {
+                String existingKey = dynamicToDisable.getEntityName().toLowerCase(Locale.ROOT);
+                byName.remove(existingKey);
+                dynamicToDisable.setEnabled(false);
+                dynamicToDisable.setNoParents();
+                LOGGER.info("Replacing dynamic chicken {} with {} for {}", dynamicToDisable.getEntityName(), def.entityName(), describeItem(layStack));
             }
 
             String nameKey = def.entityName().toLowerCase(Locale.ROOT);
@@ -570,5 +592,25 @@ final class ModdedChickens {
                               @Nullable String parent1,
                               @Nullable String parent2,
                               @Nullable Supplier<Optional<ItemStack>> dropItemSupplier) {
+    }
+
+    private static Optional<ChickensRegistryItem> findByLayItem(Collection<ChickensRegistryItem> chickens, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return Optional.empty();
+        }
+        for (ChickensRegistryItem chicken : chickens) {
+            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), stack)) {
+                return Optional.of(chicken);
+            }
+            if (ItemStack.isSameItemSameComponents(chicken.createDropItem(), stack)) {
+                return Optional.of(chicken);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static String describeItem(ItemStack stack) {
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return key != null ? key.toString() : stack.toString();
     }
 }
