@@ -344,3 +344,11 @@
   3. Ran `./gradlew build` to ensure the resource change compiles cleanly.
 - **Rationale**: Keeping the predicates sorted preserves Minecraft's last-match selection rule, so each chicken item renders with its matching PNG instead of inheriting a later override.
 
+## Entry 43
+- **Prompt/Task**: Reproduce the legacy Roost and Chickens crafting recipes for henhouses, breeder, collector, roost, chicken stick, and analyzer.
+- **Steps**:
+  1. Cross-referenced the ModernChickens datapack recipes with the original `OriginalChickens` and `Roost` assets to confirm the expected ingredient patterns.
+  2. Added `data/chickens/recipes/catcher.json` with the vertical egg-stick-feather layout used by the classic Chicken Catcher recipe.
+  3. Corrected `data/chickens/recipes/roost.json` to use the modern `item` result key and ran `./gradlew build` to verify the datapack changes compile.
+- **Rationale**: Mirroring the established crafting layouts preserves the familiar Roost progression while ensuring the updated JSON stays valid for NeoForge 1.21 datapacks.
+

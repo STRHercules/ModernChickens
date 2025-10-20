@@ -27,4 +27,5 @@
 - Replace the vanilla wool/trapdoor stand-ins used by the breeder curtain models with the original Roost curtain textures once binary assets can ship again, so the privacy state fully matches the legacy presentation.
 - Add a Gradle validation step that warns when the legacy Roost texture folder is absent so developers notice missing art before packaging builds.
 - Automate the chicken item model overrides from the registry so future breeds stay sorted without manual JSON edits.
+- Expand the catcher recipe to accept shared egg/feather tags when Forge publishes them, preserving the old ore dictionary flexibility for modpack integrations.
 
