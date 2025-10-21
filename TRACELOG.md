@@ -424,3 +424,11 @@
   3. Rebuilt the project with Gradle to confirm the updated client hooks compile and the dynamic model fallback keeps builds stable.
 - **Rationale**: Wiring the override through the client bootstrap guarantees custom chickens display their configured item art while maintaining graceful degradation when a referenced texture is absent.
 
+## Entry 53
+- **Prompt/Task**: Ensure custom chicken item textures load instead of falling back to the tinted default icon.
+- **Steps**:
+  1. Removed the premature atlas lookup that forced a fallback before NeoForge finished stitching resources, letting valid sprites remain selected during model baking.
+  2. Simplified the dynamic sprite baker to trust the resource manager check and continue falling back only when the PNG is genuinely missing.
+  3. Updated the README to clarify that any resource-pack or bundled textures are honoured automatically, with missing files reverting to the tinted white icon.
+- **Rationale**: Avoiding the early missing-texture check keeps legitimate custom sprites alive through the bake process so player-supplied PNGs render correctly without additional atlas hooks.
+

@@ -7,8 +7,6 @@ import com.setycz.chickens.ChickensRegistryItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -31,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
 
 /**
  * Builds lightweight baked models for chicken items that do not have a static
@@ -81,16 +80,9 @@ public final class ChickenItemSpriteModels {
         }
 
         ResourceLocation spriteLocation = toSpriteLocation(texture);
-        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-        TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
-        if (sprite == atlas.getSprite(MissingTextureAtlasSprite.getLocation())) {
-            // If the sprite was not stitched into the atlas we drop back to the
-            // default item texture so players never see the purple missing
-            // icon when referencing vanilla assets from configuration.
-            texture = DEFAULT_ITEM_TEXTURE;
-            spriteLocation = toSpriteLocation(texture);
-        }
-
+        // The atlas may not have stitched the sprite when models bake, so we rely on
+        // the resource-manager check above and allow the material lookup to resolve
+        // once the atlas is fully prepared.
         Material material = new Material(InventoryMenu.BLOCK_ATLAS, spriteLocation);
         Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance()
                 .getModelManager()

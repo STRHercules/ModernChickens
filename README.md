@@ -54,7 +54,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 >
 > When `generated_texture` is enabled, the renderer tints the referenced texture so in-world chickens match the colours used for the item and spawn egg. If the texture cannot be loaded, the base white chicken sprite is used instead.
 >
-> If `item_texture` is supplied the chicken item and JEI icons prefer that sprite. Missing textures automatically fall back to the tinted white chicken item so players never see a missing-texture placeholder.
+> If `item_texture` is supplied the chicken item and JEI icons prefer that sprite. As long as the referenced resource exists in the mod jar or an active resource pack, the override is used automatically. Missing textures fall back to the tinted white chicken item so players never see a missing-texture placeholder.
 >
 > When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted variant so players never see the purple-and-black placeholder in game.
 

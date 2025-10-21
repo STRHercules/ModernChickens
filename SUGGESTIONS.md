@@ -36,5 +36,5 @@
 - Add a data-driven colour test that iterates over every generated chicken and asserts the dynamic texture matches its configured palette, catching regressions in the tinting pipeline before release builds ship.
 - Introduce a debug/client config flag that escalates missing custom textures to hard errors so pack makers can opt into strict validation once their resource packs are finalised.
 - Generate a lightweight runtime resource pack that mirrors custom chicken item sprites so datapacks can omit JSON model boilerplate while still shipping bespoke art.
-- Provide a texture stitch hook that pre-registers custom chicken item sprites on the block atlas so bespoke icons never miss atlas compilation when packs introduce brand-new PNGs.
+- Add a lightweight `/chickens dumpItemSprites` debug command that lists every stitched chicken item texture so pack makers can confirm their datapack assets were discovered without digging through logs.
 
