@@ -368,3 +368,11 @@
   3. Updated the suggestions log to propose shipping a JSON Schema so editors can validate configs automatically.
 - **Rationale**: Providing an explicit example accelerates adoption of the new custom chicken workflow and reduces confusion when filling out the external config.
 
+## Entry 46
+- **Prompt/Task**: Enumerate every supported `chickens_custom.json` option for pack makers.
+- **Steps**:
+  1. Replaced the README spawn type example with a valid `hell` entry to mirror the enum accepted by the loader.
+  2. Added a tabular field reference detailing accepted types, defaults, and validation rules for each key in the custom chicken schema.
+  3. Logged a follow-up suggestion to let the loader accept friendlier spawn-type aliases when porting legacy data.
+- **Rationale**: Centralising the schema reference eliminates guesswork, prevents invalid spawn types from slipping into configs, and highlights the constraints enforced at load time.
+
