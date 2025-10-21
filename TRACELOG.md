@@ -376,3 +376,11 @@
   3. Logged a follow-up suggestion to let the loader accept friendlier spawn-type aliases when porting legacy data.
 - **Rationale**: Centralising the schema reference eliminates guesswork, prevents invalid spawn types from slipping into configs, and highlights the constraints enforced at load time.
 
+## Entry 47
+- **Prompt/Task**: Ensure custom chickens load when configs use uppercase texture paths from the README example.
+- **Steps**:
+  1. Updated `CustomChickensLoader` to normalise resource locations, fall back to the white chicken base when `generated_texture` is true, and document the behaviour directly in code comments.
+  2. Corrected the README JSON sample and table to show lowercase texture paths and explain the automatic normalisation and fallback rules.
+  3. Ran the Gradle build to confirm the loader and documentation changes compile cleanly.
+- **Rationale**: Normalising texture identifiers honours the published README guidance, prevents false negatives in player configs, and keeps dynamically tinted chickens functional even if the texture string is omitted or malformed.
+

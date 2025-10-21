@@ -31,4 +31,5 @@
 - Add an in-game reload command for `chickens_custom.json` so dedicated servers can iterate on bespoke breeds without restarting between tweaks.
 - Publish a JSON Schema for `chickens_custom.json` so pack makers can validate entries in their editors and avoid typos before launching the game.
 - Teach the custom chicken loader to recognise friendly spawn-type aliases (e.g., `nether`) so legacy configs port cleanly without forcing manual enum renames.
+- Validate that declared texture resources actually exist (or expose a toggle) so mis-typed filenames surface as actionable warnings before players encounter missing textures in-game.
 

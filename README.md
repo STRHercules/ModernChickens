@@ -29,7 +29,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 {
   "name": "SteelChicken",
   "id": 425,
-  "texture": "chickens:textures/entity/SteelChicken.png",
+  "texture": "chickens:textures/entity/steelchicken.png",
   "lay_item": {
     "item": "examplemod:steel_ingot"
   },
@@ -48,13 +48,16 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 }
 ```
 
+> **Note:** Minecraft resource locations are lowercase by convention. The loader automatically normalises uppercase letters or
+> Windows-style backslash (`\`) separators, but shipping textures in lowercase avoids surprises on dedicated servers.
+
 ### `chickens_custom.json` field reference
 
 | Field | Required | Type | Accepted values and behaviour |
 |-------|----------|------|-------------------------------|
 | `name` | Yes | String | Unique registry name for the chicken (matches the entity id fragment used elsewhere in the mod). |
 | `id` | No | Integer | Positive numeric id. Omit to let the loader pick the next free id automatically. |
-| `texture` | Yes | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Custom resources should ship inside a resource pack or datapack. |
+| `texture` | Yes | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Paths are normalised to lowercase automatically; provide the lowercase form used inside resource packs/datapacks. |
 | `lay_item.item` | Yes | Resource location | Namespaced item id that the chicken lays. Must exist in the item registry. |
 | `lay_item.count` | No | Integer | Stack size to lay each cycle. Defaults to `1`; values below `1` are clamped up. |
 | `lay_item.type` | No | Integer | Only used with the liquid egg item to select the chicken variant encoded in the stack. |
@@ -65,7 +68,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 | `spawn_type` | No | String | Case-insensitive values drawn from `normal`, `snow`, `hell`, or `none`. Defaults to `normal`. |
 | `lay_coefficient` | No | Float | Multiplier applied to lay times. Values below `0` are clamped to `0`. Defaults to `1.0`. |
 | `display_name` | No | String | Overrides the in-game display name. Defaults to the translated name derived from `name`. |
-| `generated_texture` | No | Boolean | Set to `true` when the chicken should use the auto-generated spawn egg texture instead of the supplied PNG. Defaults to `false`. |
+| `generated_texture` | No | Boolean | Set to `true` when the chicken should use the auto-generated tintable texture instead of the supplied PNG. When `true`, the loader falls back to the base white chicken texture if `texture` is blank or invalid. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 
 ## Project layout

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
+import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.item.ChickenItemHelper;
@@ -140,7 +141,16 @@ public final class CustomChickensLoader {
 
         ResourceLocation texture = parseResource(definition.texture(), "texture", name);
         if (texture == null) {
-            return Optional.empty();
+            if (Boolean.TRUE.equals(definition.generatedTexture())) {
+                ResourceLocation fallback = ResourceLocation.fromNamespaceAndPath(
+                        ChickensMod.MOD_ID, "textures/entity/whitechicken.png");
+                LOGGER.warn(
+                        "Custom chicken '{}' will use generated texture base {} because the configured texture '{}' was invalid",
+                        name, fallback, definition.texture());
+                texture = fallback;
+            } else {
+                return Optional.empty();
+            }
         }
 
         ItemStack layItem = parseItemStack(definition.layItem(), name, "lay_item");
@@ -281,11 +291,44 @@ public final class CustomChickensLoader {
             return null;
         }
         ResourceLocation resource = ResourceLocation.tryParse(raw);
-        if (resource == null) {
-            LOGGER.warn("Custom chicken '{}' has malformed '{}' value '{}'", chickenName, field, raw);
-            return null;
+        if (resource != null) {
+            return resource;
         }
-        return resource;
+
+        // Normalise common mistakes (uppercase letters, Windows separators)
+        // so that player supplied paths that look like resource pack paths
+        // still resolve to legal Minecraft resource locations.
+        String sanitised = sanitiseResource(raw);
+        if (!sanitised.equals(raw)) {
+            ResourceLocation sanitisedResource = ResourceLocation.tryParse(sanitised);
+            if (sanitisedResource != null) {
+                LOGGER.warn(
+                        "Custom chicken '{}' normalised '{}' value '{}' to '{}' to satisfy resource naming rules",
+                        chickenName, field, raw, sanitisedResource);
+                return sanitisedResource;
+            }
+        }
+
+        LOGGER.warn("Custom chicken '{}' has malformed '{}' value '{}'", chickenName, field, raw);
+        return null;
+    }
+
+    private static String sanitiseResource(String raw) {
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+
+        int separator = trimmed.indexOf(':');
+        if (separator < 0) {
+            return trimmed.toLowerCase(Locale.ROOT);
+        }
+
+        String namespace = trimmed.substring(0, separator).toLowerCase(Locale.ROOT);
+        String path = trimmed.substring(separator + 1)
+                .replace('\\', '/')
+                .toLowerCase(Locale.ROOT);
+        return namespace + ":" + path;
     }
 
     private static void ensureTemplateExists(Path configFile) {
