@@ -29,8 +29,7 @@ public final class DynamicChickenTextures {
     private static final ResourceLocation BASE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             ChickensMod.MOD_ID, "textures/entity/whitechicken.png");
     private static final Map<Integer, ResourceLocation> CACHE = new HashMap<>();
-
-    private static NativeImage baseImage;
+    private static final Map<ResourceLocation, NativeImage> BASE_CACHE = new HashMap<>();
 
     private DynamicChickenTextures() {
     }
@@ -40,7 +39,12 @@ public final class DynamicChickenTextures {
     }
 
     private static ResourceLocation generateTexture(ChickensRegistryItem chicken) {
-        NativeImage base = getBaseImage();
+        ResourceLocation template = chicken.getTexture();
+        NativeImage base = getBaseImage(template);
+        if (base == null && !template.equals(BASE_TEXTURE)) {
+            LOGGER.warn("Falling back to default template for chicken {} because {} was unavailable", chicken.getEntityName(), template);
+            base = getBaseImage(BASE_TEXTURE);
+        }
         if (base == null) {
             return ResourceLocation.fromNamespaceAndPath(
                     ChickensMod.MOD_ID, "textures/entity/unknownchicken.png");
@@ -99,27 +103,30 @@ public final class DynamicChickenTextures {
         return (r << 16) | (g << 8) | b;
     }
 
-    private static NativeImage getBaseImage() {
-        if (baseImage != null) {
-            return baseImage;
+    private static NativeImage getBaseImage(ResourceLocation location) {
+        NativeImage cached = BASE_CACHE.get(location);
+        if (cached != null) {
+            return cached;
         }
-        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(BASE_TEXTURE);
+        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(location);
         if (resource.isEmpty()) {
-            LOGGER.warn("Unable to load base chicken texture {}", BASE_TEXTURE);
+            LOGGER.warn("Unable to load template chicken texture {}", location);
             return null;
         }
         try (InputStream stream = resource.get().open()) {
-            baseImage = NativeImage.read(stream);
+            NativeImage image = NativeImage.read(stream);
+            BASE_CACHE.put(location, image);
+            return image;
         } catch (IOException e) {
-            LOGGER.warn("Failed to read base chicken texture {}", BASE_TEXTURE, e);
-            baseImage = null;
+            LOGGER.warn("Failed to read template chicken texture {}", location, e);
+            return null;
         }
-        return baseImage;
     }
 
     public static void clear() {
         CACHE.clear();
-        baseImage = null;
+        BASE_CACHE.values().forEach(NativeImage::close);
+        BASE_CACHE.clear();
     }
 
     public static SimplePreparableReloadListener<Void> reloadListener() {

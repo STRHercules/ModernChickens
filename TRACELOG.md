@@ -384,3 +384,11 @@
   3. Ran the Gradle build to confirm the loader and documentation changes compile cleanly.
 - **Rationale**: Normalising texture identifiers honours the published README guidance, prevents false negatives in player configs, and keeps dynamically tinted chickens functional even if the texture string is omitted or malformed.
 
+## Entry 48
+- **Prompt/Task**: Fix custom chickens rendering with default colours when `generated_texture` is enabled.
+- **Steps**:
+  1. Updated `DynamicChickenTextures` to read the configured chicken texture as the tint template, caching each base image and falling back to the white chicken sprite when unavailable.
+  2. Cleared cached base images during resource reloads to avoid leaking GPU memory when packs change.
+  3. Documented the tinting behaviour in the README so pack makers know their textures drive both item and entity colours.
+- **Rationale**: Using the supplied texture when generating colours keeps in-world chickens visually aligned with their spawn egg and item variants, eliminating the mismatch players reported.
+
