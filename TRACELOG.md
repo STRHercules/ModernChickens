@@ -352,3 +352,19 @@
   3. Corrected `data/chickens/recipes/roost.json` to use the modern `item` result key and ran `./gradlew build` to verify the datapack changes compile.
 - **Rationale**: Mirroring the established crafting layouts preserves the familiar Roost progression while ensuring the updated JSON stays valid for NeoForge 1.21 datapacks.
 
+## Entry 44
+- **Prompt/Task**: Let players define custom chickens via an external configuration file.
+- **Steps**:
+  1. Introduced `CustomChickensLoader` to parse `config/chickens_custom.json`, validate entries, and append them to the runtime registry alongside the default roster.
+  2. Hooked the loader into `ChickensDataLoader.bootstrap` before property overrides so custom breeds participate in existing enable/disable and drop tuning logic.
+  3. Generated a documented JSON template on first run and updated the README with usage guidance for the new configuration surface.
+- **Rationale**: Exposing a dedicated JSON config empowers modpack authors to add bespoke chickens, drops, and breeding paths without forking the mod or editing Java code.
+
+## Entry 45
+- **Prompt/Task**: Document a ready-to-use `chickens_custom.json` entry for pack makers.
+- **Steps**:
+  1. Expanded the README custom chicken section with a fully-populated JSON example that mirrors the loader's supported fields.
+  2. Reviewed the loader schema to ensure the documented keys (lay/drop items, parents, spawn type, toggles) match the implementation.
+  3. Updated the suggestions log to propose shipping a JSON Schema so editors can validate configs automatically.
+- **Rationale**: Providing an explicit example accelerates adoption of the new custom chicken workflow and reduces confusion when filling out the external config.
+

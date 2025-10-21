@@ -17,6 +17,37 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 
 > Configuration and breeding data live in `config/chickens.properties`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. The `chickens.cfg` is a compatability holdover which is unused. If you wish to make changes to `chickens.properties`, delete the `chickens.cfg` before launching the client.
 
+### Custom chicken definitions
+
+- Drop a `chickens_custom.json` file in the `config` directory to add bespoke chickens without recompiling the mod. The loader creates a starter file with documentation the first time it runs.
+- Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
+- Custom chickens participate in the existing `chickens.properties` flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
+
+Example `chickens_custom.json` entry (place inside the top-level `chickens` array):
+
+```json
+{
+  "name": "SteelChicken",
+  "id": 425,
+  "texture": "chickens:textures/entity/SteelChicken.png",
+  "lay_item": {
+    "item": "examplemod:steel_ingot"
+  },
+  "drop_item": {
+    "item": "examplemod:steel_ingot",
+    "count": 2
+  },
+  "background_color": "#4a4a4a",
+  "foreground_color": "#b7b7b7",
+  "parents": ["IronChicken", "CoalChicken"],
+  "spawn_type": "nether",
+  "lay_coefficient": 1.25,
+  "display_name": "Steel Chicken",
+  "generated_texture": false,
+  "enabled": true
+}
+```
+
 ## Project layout
 
 ```

@@ -48,6 +48,9 @@ public final class ChickensDataLoader {
     public static void bootstrap() {
         registerLiquidEggs();
         List<ChickensRegistryItem> defaults = DefaultChickens.create();
+        // Allow external JSON definitions to extend the in-memory list before
+        // configuration overrides are resolved.
+        CustomChickensLoader.load(defaults);
         Path configFile = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);
         ChickensConfigValues values = applyConfiguration(configFile, defaults);
         ChickensConfigHolder.set(values);
