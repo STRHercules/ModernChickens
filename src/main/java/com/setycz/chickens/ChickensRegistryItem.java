@@ -23,6 +23,8 @@ public class ChickensRegistryItem {
     private final int bgColor;
     private final int fgColor;
     private final ResourceLocation texture;
+    @Nullable
+    private ResourceLocation itemTexture;
     private ChickensRegistryItem parent1;
     private ChickensRegistryItem parent2;
     private SpawnType spawnType;
@@ -47,6 +49,11 @@ public class ChickensRegistryItem {
         this.spawnType = SpawnType.NORMAL;
         this.parent1 = parent1;
         this.parent2 = parent2;
+    }
+
+    public ChickensRegistryItem setItemTexture(ResourceLocation texture) {
+        itemTexture = texture;
+        return this;
     }
 
     public ChickensRegistryItem setDropItem(ItemStack stack) {
@@ -98,6 +105,11 @@ public class ChickensRegistryItem {
 
     public ResourceLocation getTexture() {
         return texture;
+    }
+
+    @Nullable
+    public ResourceLocation getItemTexture() {
+        return itemTexture;
     }
 
     public ItemStack createLayItem() {

@@ -408,3 +408,11 @@
   3. Expanded the README field reference to explain the new fallback behaviour and remind pack makers to ship textures via resource packs when disabling tinting.
 - **Rationale**: Failing gracefully keeps the game playable even if a resource pack is missing, while still empowering creators to ship bespoke textures without forcing everyone to rely on generated colours.
 
+## Entry 51
+- **Prompt/Task**: Let custom chickens declare bespoke item textures with sensible fallbacks.
+- **Steps**:
+  1. Added an optional `item_texture` field to `chickens_custom.json`, normalised the value alongside existing texture parsing, and captured it in each `ChickensRegistryItem`.
+  2. Wrapped the chicken item model with a custom override handler that bakes sprite-based models on demand, validates resource availability, and falls back to the tinted white chicken icon when assets are missing.
+  3. Documented the new field and fallback behaviour in the README so pack makers understand how entity and item textures interact.
+- **Rationale**: Supporting dedicated item sprites gives creators parity with entity visuals while ensuring broken or missing textures degrade gracefully instead of rendering as purple-and-black placeholders.
+

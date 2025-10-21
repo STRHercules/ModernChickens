@@ -163,6 +163,14 @@ public final class CustomChickensLoader {
 
         ChickensRegistryItem chicken = new ChickensRegistryItem(id, name, texture, layItem, background, foreground);
 
+        if (definition.itemTexture() != null && !definition.itemTexture().isEmpty()) {
+            ResourceLocation itemTexture = parseResource(definition.itemTexture(), "item_texture", name);
+            if (itemTexture != null) {
+                // Remember the custom item sprite so the client can build an override model during baking.
+                chicken.setItemTexture(itemTexture);
+            }
+        }
+
         ItemStack dropItem = parseOptionalItemStack(definition.dropItem(), name, "drop_item");
         if (!dropItem.isEmpty()) {
             chicken.setDropItem(dropItem);
@@ -343,6 +351,7 @@ public final class CustomChickensLoader {
                     {
                       "name": "CopperChicken",
                       "texture": "chickens:textures/entity/CopperChicken.png",
+                      "item_texture": "chickens:textures/item/chicken/copperchicken.png",
                       "lay_item": {
                         "item": "minecraft:copper_ingot"
                       },
@@ -423,7 +432,8 @@ public final class CustomChickensLoader {
             @SerializedName("lay_coefficient") @Nullable Float layCoefficient,
             @SerializedName("display_name") @Nullable String displayName,
             @SerializedName("generated_texture") @Nullable Boolean generatedTexture,
-            @SerializedName("enabled") @Nullable Boolean enabled) {
+            @SerializedName("enabled") @Nullable Boolean enabled,
+            @SerializedName("item_texture") @Nullable String itemTexture) {
     }
 
     private record CustomItemStackDefinition(

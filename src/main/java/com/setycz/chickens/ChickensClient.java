@@ -2,6 +2,7 @@ package com.setycz.chickens;
 
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.client.render.ChickenItemSpriteModels;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.client.render.DynamicChickenTextures;
 import com.setycz.chickens.client.render.blockentity.BreederBlockEntityRenderer;
@@ -74,6 +75,7 @@ public final class ChickensClient {
     public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(DynamicChickenTextures.reloadListener());
         event.registerReloadListener(ChickensChickenRenderer.textureAvailabilityReloader());
+        event.registerReloadListener(ChickenItemSpriteModels.reloadListener());
     }
 
     private static int getChickenColor(ItemStack stack, boolean primary) {

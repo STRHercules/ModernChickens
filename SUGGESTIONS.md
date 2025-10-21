@@ -35,4 +35,5 @@
 - Allow `chickens_custom.json` to specify a dedicated tint template (separate from the rendered texture) so pack makers can keep high-contrast masks for generated colours without duplicating assets.
 - Add a data-driven colour test that iterates over every generated chicken and asserts the dynamic texture matches its configured palette, catching regressions in the tinting pipeline before release builds ship.
 - Introduce a debug/client config flag that escalates missing custom textures to hard errors so pack makers can opt into strict validation once their resource packs are finalised.
+- Generate a lightweight runtime resource pack that mirrors custom chicken item sprites so datapacks can omit JSON model boilerplate while still shipping bespoke art.
 
