@@ -416,3 +416,11 @@
   3. Documented the new field and fallback behaviour in the README so pack makers understand how entity and item textures interact.
 - **Rationale**: Supporting dedicated item sprites gives creators parity with entity visuals while ensuring broken or missing textures degrade gracefully instead of rendering as purple-and-black placeholders.
 
+## Entry 52
+- **Prompt/Task**: Ensure custom chicken items respect bespoke textures supplied via `chickens_custom.json`.
+- **Steps**:
+  1. Routed the chicken item model override through `ChickensClient` so the custom override handler always replaces the baked model, letting runtime chickens access their bespoke sprites.
+  2. Hardened the sprite baker to probe the block atlas before constructing models, falling back to the default icon if NeoForge has not stitched a custom sprite so players never see missing-texture quads.
+  3. Rebuilt the project with Gradle to confirm the updated client hooks compile and the dynamic model fallback keeps builds stable.
+- **Rationale**: Wiring the override through the client bootstrap guarantees custom chickens display their configured item art while maintaining graceful degradation when a referenced texture is absent.
+

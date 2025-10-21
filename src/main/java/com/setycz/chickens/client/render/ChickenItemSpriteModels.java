@@ -7,6 +7,8 @@ import com.setycz.chickens.ChickensRegistryItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -79,6 +81,16 @@ public final class ChickenItemSpriteModels {
         }
 
         ResourceLocation spriteLocation = toSpriteLocation(texture);
+        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+        TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
+        if (sprite == atlas.getSprite(MissingTextureAtlasSprite.getLocation())) {
+            // If the sprite was not stitched into the atlas we drop back to the
+            // default item texture so players never see the purple missing
+            // icon when referencing vanilla assets from configuration.
+            texture = DEFAULT_ITEM_TEXTURE;
+            spriteLocation = toSpriteLocation(texture);
+        }
+
         Material material = new Material(InventoryMenu.BLOCK_ATLAS, spriteLocation);
         Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance()
                 .getModelManager()
@@ -114,7 +126,7 @@ public final class ChickenItemSpriteModels {
         };
     }
 
-    private static ResourceLocation selectTexture(ChickensRegistryItem chicken) {
+    static ResourceLocation selectTexture(ChickensRegistryItem chicken) {
         if (chicken.getItemTexture() != null) {
             return chicken.getItemTexture();
         }
@@ -122,7 +134,7 @@ public final class ChickenItemSpriteModels {
         return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/chicken/" + name + ".png");
     }
 
-    private static ResourceLocation toSpriteLocation(ResourceLocation texture) {
+    static ResourceLocation toSpriteLocation(ResourceLocation texture) {
         String path = texture.getPath();
         if (path.startsWith("textures/")) {
             path = path.substring("textures/".length());
@@ -144,4 +156,5 @@ public final class ChickenItemSpriteModels {
         }
         return present;
     }
+
 }

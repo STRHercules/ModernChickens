@@ -2,6 +2,7 @@ package com.setycz.chickens;
 
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.client.render.ChickenItemModels;
 import com.setycz.chickens.client.render.ChickenItemSpriteModels;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.client.render.DynamicChickenTextures;
@@ -26,9 +27,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 /**
@@ -76,6 +78,13 @@ public final class ChickensClient {
         event.registerReloadListener(DynamicChickenTextures.reloadListener());
         event.registerReloadListener(ChickensChickenRenderer.textureAvailabilityReloader());
         event.registerReloadListener(ChickenItemSpriteModels.reloadListener());
+    }
+
+    @SubscribeEvent
+    public static void onModifyModels(ModelEvent.ModifyBakingResult event) {
+        // Wrap the baked chicken model with an override-aware version so JSON
+        // configs can point items at bespoke sprites without bundling assets.
+        ChickenItemModels.injectOverrides(event);
     }
 
     private static int getChickenColor(ItemStack stack, boolean primary) {

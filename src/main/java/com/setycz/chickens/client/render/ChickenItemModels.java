@@ -5,19 +5,14 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ModelEvent;
 
 /**
- * Injects a runtime override into the chicken item model so that custom
- * chickens defined via configuration can point at their own sprite without
- * requiring a bespoke resource pack. The wrapper delegates to the baked
- * vanilla overrides first and only falls back to the dynamic lookup when no
- * JSON override matches the chicken id.
+ * Utility that replaces the baked chicken item model with a version that
+ * understands dynamically defined chickens. The helper stays free of event
+ * annotations so callers can explicitly wire it into the client lifecycle and
+ * avoid surprising class loads on the dedicated server.
  */
-@EventBusSubscriber(modid = ChickensMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class ChickenItemModels {
     private static final ModelResourceLocation CHICKEN_MODEL = new ModelResourceLocation(
             ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chicken"), "inventory");
@@ -25,8 +20,13 @@ public final class ChickenItemModels {
     private ChickenItemModels() {
     }
 
-    @SubscribeEvent
-    public static void onModifyModels(ModelEvent.ModifyBakingResult event) {
+    /**
+     * Installs the {@link CustomChickenItemOverrides} wrapper when the base
+     * chicken model finishes baking. If the vanilla model is missing we skip
+     * the injection so the game keeps using whatever fallback NeoForge
+     * provides.
+     */
+    public static void injectOverrides(ModelEvent.ModifyBakingResult event) {
         BakedModel existing = event.getModels().get(CHICKEN_MODEL);
         if (existing == null) {
             return;
