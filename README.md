@@ -52,6 +52,8 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 > Windows-style backslash (`\`) separators, but shipping textures in lowercase avoids surprises on dedicated servers.
 >
 > When `generated_texture` is enabled, the renderer tints the referenced texture so in-world chickens match the colours used for the item and spawn egg. If the texture cannot be loaded, the base white chicken sprite is used instead.
+>
+> When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted variant so players never see the purple-and-black placeholder in game.
 
 ### `chickens_custom.json` field reference
 
@@ -59,7 +61,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 |-------|----------|------|-------------------------------|
 | `name` | Yes | String | Unique registry name for the chicken (matches the entity id fragment used elsewhere in the mod). |
 | `id` | No | Integer | Positive numeric id. Omit to let the loader pick the next free id automatically. |
-| `texture` | Yes | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Paths are normalised to lowercase automatically; provide the lowercase form used inside resource packs/datapacks. |
+| `texture` | Yes | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Paths are normalised to lowercase automatically; provide the lowercase form used inside resource packs/datapacks. When the texture is missing, a warning is logged and the renderer falls back to the tinted white chicken template. |
 | `lay_item.item` | Yes | Resource location | Namespaced item id that the chicken lays. Must exist in the item registry. |
 | `lay_item.count` | No | Integer | Stack size to lay each cycle. Defaults to `1`; values below `1` are clamped up. |
 | `lay_item.type` | No | Integer | Only used with the liquid egg item to select the chicken variant encoded in the stack. |
@@ -70,7 +72,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 | `spawn_type` | No | String | Case-insensitive values drawn from `normal`, `snow`, `hell`, or `none`. Defaults to `normal`. |
 | `lay_coefficient` | No | Float | Multiplier applied to lay times. Values below `0` are clamped to `0`. Defaults to `1.0`. |
 | `display_name` | No | String | Overrides the in-game display name. Defaults to the translated name derived from `name`. |
-| `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. Defaults to `false`. |
+| `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 
 ## Project layout

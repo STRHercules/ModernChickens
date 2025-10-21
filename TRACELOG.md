@@ -400,3 +400,11 @@
   3. Added a regression test suggestion encouraging automated validation of generated chicken palettes to catch future mistakes.
 - **Rationale**: Respecting Minecraft's channel order stops the tint pipeline from swapping red and blue, allowing custom chickens to display their configured background and accent colours instead of the default yellow hues.
 
+## Entry 50
+- **Prompt/Task**: Prevent custom chickens with disabled `generated_texture` from rendering as missing textures when their art is unavailable.
+- **Steps**:
+  1. Updated `ChickensChickenRenderer` to detect absent custom textures at render time, log a single warning, and fall back to the tinted dynamic pipeline so players still see a coloured chicken.
+  2. Registered a reload listener that clears the renderer's texture availability cache alongside the dynamic texture refresh to keep resource pack swaps accurate.
+  3. Expanded the README field reference to explain the new fallback behaviour and remind pack makers to ship textures via resource packs when disabling tinting.
+- **Rationale**: Failing gracefully keeps the game playable even if a resource pack is missing, while still empowering creators to ship bespoke textures without forcing everyone to rely on generated colours.
+

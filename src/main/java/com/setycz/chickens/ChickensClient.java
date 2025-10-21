@@ -73,6 +73,7 @@ public final class ChickensClient {
     @SubscribeEvent
     public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(DynamicChickenTextures.reloadListener());
+        event.registerReloadListener(ChickensChickenRenderer.textureAvailabilityReloader());
     }
 
     private static int getChickenColor(ItemStack stack, boolean primary) {
