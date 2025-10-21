@@ -392,3 +392,11 @@
   3. Documented the tinting behaviour in the README so pack makers know their textures drive both item and entity colours.
 - **Rationale**: Using the supplied texture when generating colours keeps in-world chickens visually aligned with their spawn egg and item variants, eliminating the mismatch players reported.
 
+## Entry 49
+- **Prompt/Task**: Resolve custom generated textures rendering in the wrong colour palette.
+- **Steps**:
+  1. Corrected the dynamic texture generator to interpret `NativeImage` pixels in Mojang's ABGR layout so tint maths receives the intended red, green, and blue values.
+  2. Converted the final blended colour back to ABGR before writing pixels, ensuring the GPU receives the same palette defined in `chickens_custom.json`.
+  3. Added a regression test suggestion encouraging automated validation of generated chicken palettes to catch future mistakes.
+- **Rationale**: Respecting Minecraft's channel order stops the tint pipeline from swapping red and blue, allowing custom chickens to display their configured background and accent colours instead of the default yellow hues.
+

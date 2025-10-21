@@ -61,9 +61,9 @@ public final class DynamicChickenTextures {
                     image.setPixelRGBA(x, y, 0);
                     continue;
                 }
-                int r = (rgba >> 16) & 0xFF;
+                int r = rgba & 0xFF;
                 int g = (rgba >> 8) & 0xFF;
-                int b = rgba & 0xFF;
+                int b = (rgba >> 16) & 0xFF;
                 float max = Math.max(Math.max(r, g), b) / 255.0f;
                 float min = Math.min(Math.min(r, g), b) / 255.0f;
                 float saturation = max == 0.0f ? 0.0f : (max - min) / max;
@@ -75,7 +75,7 @@ public final class DynamicChickenTextures {
                 } else {
                     resultRgb = (r << 16) | (g << 8) | b;
                 }
-                int finalColor = (alpha << 24) | (resultRgb & 0x00FFFFFF);
+                int finalColor = toAbgr(alpha, resultRgb);
                 image.setPixelRGBA(x, y, finalColor);
             }
         }
@@ -101,6 +101,13 @@ public final class DynamicChickenTextures {
         int g = (int) (sg + (eg - sg) * clamped);
         int b = (int) (sb + (eb - sb) * clamped);
         return (r << 16) | (g << 8) | b;
+    }
+
+    private static int toAbgr(int alpha, int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        return (alpha << 24) | (b << 16) | (g << 8) | r;
     }
 
     private static NativeImage getBaseImage(ResourceLocation location) {
