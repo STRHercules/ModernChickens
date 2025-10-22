@@ -72,12 +72,21 @@ public final class ChickenItemSpriteModels {
         ResourceLocation texture = selectTexture(chicken);
         ResourceLocation requestedTexture = texture;
         boolean hasExplicitTexture = chicken.getItemTexture() != null;
+        boolean customDefinition = chicken.isCustom();
         ResourceLocation spriteLocation = toSpriteLocation(texture);
         TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
         if (isMissing(sprite)) {
             if (LOGGED_MISSING_TEXTURES.add(texture)) {
                 LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
+            }
+            if (customDefinition && hasExplicitTexture) {
+                // Custom chickens expect the sprite supplied in the JSON file.
+                // Abort the dynamic override so the base model can continue to
+                // render with its existing tint logic rather than substituting
+                // an unrelated fallback.
+                chicken.setTintItem(false);
+                return null;
             }
             // Re-enable tinting so the coloured fallback icon still reflects the
             // chicken's palette when a custom sprite cannot be located.

@@ -34,6 +34,7 @@ public class ChickensRegistryItem {
     private Component displayName;
     private boolean generatedTexture;
     private boolean tintItem = true;
+    private boolean custom;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -57,6 +58,17 @@ public class ChickensRegistryItem {
         // Custom item sprites should render exactly as authored rather than
         // being recoloured by the legacy tint pipeline.
         tintItem = false;
+        return this;
+    }
+
+    /**
+     * Marks the registry item as originating from {@code chickens_custom.json}.
+     * The flag lets the client-side rendering pipeline apply stricter texture
+     * handling rules so bespoke resource packs remain untouched by legacy
+     * fallbacks.
+     */
+    public ChickensRegistryItem markCustom() {
+        custom = true;
         return this;
     }
 
@@ -227,5 +239,9 @@ public class ChickensRegistryItem {
 
     public void setTintItem(boolean value) {
         tintItem = value;
+    }
+
+    public boolean isCustom() {
+        return custom;
     }
 }

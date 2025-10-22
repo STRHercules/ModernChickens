@@ -448,3 +448,11 @@
   3. Adjusted the client item colour registration to respect the tint flag and documented the behaviour in the README for pack makers.
 - **Rationale**: Skipping the dye overlay when a bespoke sprite is available ensures custom chickens display their authored textures instead of being recoloured to resemble the default mod icons.
 
+## Entry 56
+- **Prompt/Task**: Force custom chickens to use their configured item textures without falling back to modded icons.
+- **Steps**:
+  1. Flagged registry items originating from `chickens_custom.json` so the renderer can apply stricter rules when loading bespoke sprites.
+  2. Taught the sprite baker to abort whenever a custom sprite is missing instead of silently swapping to the coloured fallback, keeping legacy overrides from overriding datapack art.
+  3. Updated the README/Suggestions to document the stricter behaviour and capture a follow-up idea for debugging missing resources.
+- **Rationale**: Treating datapack-defined chickens as authoritative keeps their item icons consistent with player-authored art while still surfacing actionable warnings when a texture cannot be found.
+

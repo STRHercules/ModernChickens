@@ -161,7 +161,8 @@ public final class CustomChickensLoader {
         int background = parseColour(definition.backgroundColour(), 0xffffff, "background_color", name);
         int foreground = parseColour(definition.foregroundColour(), 0xffff00, "foreground_color", name);
 
-        ChickensRegistryItem chicken = new ChickensRegistryItem(id, name, texture, layItem, background, foreground);
+        ChickensRegistryItem chicken = new ChickensRegistryItem(id, name, texture, layItem, background, foreground)
+                .markCustom();
 
         if (definition.itemTexture() != null && !definition.itemTexture().isEmpty()) {
             ResourceLocation itemTexture = parseResource(definition.itemTexture(), "item_texture", name);
