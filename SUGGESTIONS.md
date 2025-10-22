@@ -46,4 +46,5 @@
 - Expose an in-game tooltip indicator (e.g., "missing sprite" overlay) when a custom chicken item is currently showing the placeholder graphic so pack makers can spot unresolved assets without scanning the logs.
 - Add a generated guard override to `models/item/chicken.json` that routes `custom_model_data` values above the bundled range back to the base model, preventing future regressions if the runtime override ever becomes unavailable.
 - Add a lightweight client assertion (or log) during model bake that verifies the expected chicken texture atlas is registered, catching misconfigured atlas ids before they manifest as missing sprites in gameplay builds.
+- Replace the reflective ModelBakery bridge with a public helper once NeoForge exposes an official baker factory so custom chicken sprites no longer rely on brittle reflection hacks.
 

@@ -504,3 +504,11 @@
   3. Documented the rationale inline so future refactors keep the dynamic baker in sync with the atlas configuration.
 - **Rationale**: Targeting the correct atlas stops the baker from treating every bespoke sprite as missing, letting datapack-defined chickens finally display the textures players specify.
 
+## Entry 63
+- **Prompt/Task**: Fix the `ModelBaker` class cast crash and guarantee custom chicken item sprites only fall back when the PNG is truly missing.
+- **Steps**:
+  1. Guarded the sprite baker with a resource existence check so datapack textures log a warning yet remain authoritative, while non-custom chickens gracefully fall back to the tinted default icon.
+  2. Reflected into NeoForge’s `ModelBakery.ModelBakerImpl` to obtain a legitimate baker instance instead of unsafe casting, preventing the runtime `ClassCastException` and keeping caching logic intact.
+  3. Cached the reflective constructor, reset error flags on reload, and recompiled the mod to confirm custom item textures bake without crashing or losing their bespoke artwork.
+- **Rationale**: Validating texture availability and delegating to the official baker eliminates the crash and ensures JSON-defined sprites render exactly as players author them, with safe fallbacks for absent art.
+

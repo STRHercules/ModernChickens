@@ -7,13 +7,12 @@ import com.setycz.chickens.ChickensRegistryItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +58,9 @@ public final class ChickenItemSpriteModels {
 
     private static final Map<Integer, BakedModel> CACHE = new HashMap<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();
+    private static boolean loggedBakerFailure;
+    @Nullable
+    private static Constructor<?> bakerConstructor;
 
     private ChickenItemSpriteModels() {
     }
@@ -74,22 +77,12 @@ public final class ChickenItemSpriteModels {
         boolean hasExplicitTexture = chicken.getItemTexture() != null;
         boolean customDefinition = chicken.isCustom();
         boolean authoritativeTexture = customDefinition && hasExplicitTexture;
-        ResourceLocation spriteLocation = toSpriteLocation(texture);
-        Material material = materialFor(spriteLocation);
-        TextureAtlasSprite sprite = resolveSprite(material);
-        if (isMissing(sprite)) {
-            TextureLookup alternate = tryAlternateAtlas(material);
-            if (alternate != null) {
-                material = alternate.material();
-                sprite = alternate.sprite();
-            }
-        }
-        if (isMissing(sprite)) {
+        // Confirm the PNG exists before baking so missing datapack sprites fall
+        // back to the default icon while still allowing custom chickens to show
+        // Minecraft's missing-texture indicator when explicitly requested.
+        boolean available = hasTexture(texture);
+        if (!available) {
             if (authoritativeTexture) {
-                // Treat datapack-supplied sprites as authoritative. When the
-                // texture fails to stitch we log a warning but continue to use
-                // the requested material so the game surfaces the missing
-                // texture indicator instead of swapping to an unrelated icon.
                 if (LOGGED_MISSING_TEXTURES.add(requestedTexture)) {
                     LOGGER.warn("Unable to locate custom chicken item texture {}; leaving missing sprite in place", requestedTexture);
                 }
@@ -98,23 +91,15 @@ public final class ChickenItemSpriteModels {
                 if (LOGGED_MISSING_TEXTURES.add(texture)) {
                     LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
                 }
-                // Re-enable tinting so the coloured fallback icon still reflects the
-                // chicken's palette when a custom sprite cannot be located.
                 chicken.setTintItem(true);
                 texture = DEFAULT_ITEM_TEXTURE;
-                spriteLocation = toSpriteLocation(texture);
-                material = materialFor(spriteLocation);
-                sprite = resolveSprite(material);
-                if (isMissing(sprite)) {
-                    return null;
-                }
             }
-        }
-        if (hasExplicitTexture && texture.equals(requestedTexture)) {
-            // The bespoke sprite loaded successfully, so keep tinting disabled
-            // for this chicken item.
+        } else if (hasExplicitTexture) {
             chicken.setTintItem(false);
         }
+
+        ResourceLocation spriteLocation = toSpriteLocation(texture);
+        Material material = materialFor(spriteLocation);
 
         Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance().getModelManager()
                 .getAtlas(key.atlasLocation()).getSprite(key.texture());
@@ -123,14 +108,20 @@ public final class ChickenItemSpriteModels {
         BlockModel model = new BlockModel(null, List.of(), textures, true, null, ItemTransforms.NO_TRANSFORMS,
                 List.of());
 
-        ResourceLocation bakedId = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+        ResourceLocation dynamicId = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
                 "dynamic/item/chicken_" + chicken.getId());
-        return model.bake((ModelBaker) bakery, model, sprites, IDENTITY, false);
+        ModelResourceLocation bakeLocation = new ModelResourceLocation(dynamicId, "inventory");
+        ModelBaker baker = instantiateBaker(bakery, bakeLocation, sprites);
+        if (baker == null) {
+            return null;
+        }
+        return model.bake(baker, model, sprites, IDENTITY, false);
     }
 
     static void clear() {
         CACHE.clear();
         LOGGED_MISSING_TEXTURES.clear();
+        loggedBakerFailure = false;
     }
 
     public static SimplePreparableReloadListener<Void> reloadListener() {
@@ -166,31 +157,9 @@ public final class ChickenItemSpriteModels {
         return ResourceLocation.fromNamespaceAndPath(texture.getNamespace(), path);
     }
 
-    private static boolean isMissing(TextureAtlasSprite sprite) {
-        return sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation());
-    }
-
     private static Material materialFor(ResourceLocation spriteLocation) {
         ResourceLocation atlas = resolveAtlas(spriteLocation);
         return new Material(atlas, spriteLocation);
-    }
-
-    @Nullable
-    private static TextureLookup tryAlternateAtlas(Material original) {
-        ResourceLocation atlas = original.atlasLocation();
-        if (atlas.equals(InventoryMenu.BLOCK_ATLAS)) {
-            return null;
-        }
-
-        // Some datapacks mirror chicken sprites onto the shared item atlas.
-        // If the dedicated chicken atlas comes up empty, try the standard
-        // inventory atlas before giving up so bespoke textures can still load.
-        Material fallback = new Material(InventoryMenu.BLOCK_ATLAS, original.texture());
-        TextureAtlasSprite sprite = resolveSprite(fallback);
-        if (isMissing(sprite)) {
-            return null;
-        }
-        return new TextureLookup(fallback, sprite);
     }
 
     private static ResourceLocation resolveAtlas(ResourceLocation spriteLocation) {
@@ -200,12 +169,33 @@ public final class ChickenItemSpriteModels {
         return InventoryMenu.BLOCK_ATLAS;
     }
 
-    private static TextureAtlasSprite resolveSprite(Material material) {
-        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(material.atlasLocation());
-        return atlas.getSprite(material.texture());
+    private static boolean hasTexture(ResourceLocation texture) {
+        return Minecraft.getInstance().getResourceManager().getResource(texture).isPresent();
     }
 
-    private record TextureLookup(Material material, TextureAtlasSprite sprite) {
+    @Nullable
+    private static ModelBaker instantiateBaker(ModelBakery bakery, ModelResourceLocation modelId,
+            Function<Material, TextureAtlasSprite> sprites) {
+        // Forge exposes the runtime baker as a package-private inner class, so
+        // reflectively bridge to the official implementation rather than
+        // duplicating the caching and missing-model handling logic.
+        try {
+            if (bakerConstructor == null) {
+                Class<?> impl = Class.forName("net.minecraft.client.resources.model.ModelBakery$ModelBakerImpl");
+                Constructor<?> ctor = impl.getDeclaredConstructor(ModelBakery.class, ModelBakery.TextureGetter.class,
+                        ModelResourceLocation.class);
+                ctor.setAccessible(true);
+                bakerConstructor = ctor;
+            }
+            ModelBakery.TextureGetter getter = (location, material) -> sprites.apply(material);
+            return (ModelBaker) bakerConstructor.newInstance(bakery, getter, modelId);
+        } catch (ReflectiveOperationException exception) {
+            if (!loggedBakerFailure) {
+                LOGGER.error("Unable to create ModelBakery baker for {}; custom chicken item sprite will be skipped", modelId,
+                        exception);
+                loggedBakerFailure = true;
+            }
+            return null;
+        }
     }
-
 }
