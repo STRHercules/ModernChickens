@@ -472,3 +472,11 @@
   3. Simplified the client bootstrap by removing the unused pre-stitch registration that no longer applies to the refined atlas lookup.
 - **Rationale**: Querying the same atlas that vanilla chicken items use guarantees datapack sprites are found at bake time, keeping custom chickens aligned with the textures players configure.
 
+## Entry 59
+- **Prompt/Task**: Stop the sprite baker from abandoning valid custom textures when they live on the shared inventory atlas instead of the dedicated chicken sheet.
+- **Steps**:
+  1. Added an alternate atlas probe so the baker retries the global item atlas before assuming a bespoke sprite is missing.
+  2. Preserved the existing warnings and white-icon fallback for genuinely absent textures while keeping tint control intact for successful lookups.
+  3. Rebuilt the project with Gradle to confirm the broadened atlas search compiles cleanly alongside the rest of the client hooks.
+- **Rationale**: Some datapacks reuse chicken sprites from the shared item atlas; checking that sheet prevents unnecessary fallbacks and keeps custom chickens displaying the art players expect.
+

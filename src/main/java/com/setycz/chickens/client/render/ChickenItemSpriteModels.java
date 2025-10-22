@@ -79,6 +79,13 @@ public final class ChickenItemSpriteModels {
         Material material = materialFor(spriteLocation);
         TextureAtlasSprite sprite = resolveSprite(material);
         if (isMissing(sprite)) {
+            TextureLookup alternate = tryAlternateAtlas(material);
+            if (alternate != null) {
+                material = alternate.material();
+                sprite = alternate.sprite();
+            }
+        }
+        if (isMissing(sprite)) {
             if (LOGGED_MISSING_TEXTURES.add(texture)) {
                 LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
             }
@@ -165,6 +172,24 @@ public final class ChickenItemSpriteModels {
         return new Material(atlas, spriteLocation);
     }
 
+    @Nullable
+    private static TextureLookup tryAlternateAtlas(Material original) {
+        ResourceLocation atlas = original.atlasLocation();
+        if (atlas.equals(InventoryMenu.BLOCK_ATLAS)) {
+            return null;
+        }
+
+        // Some datapacks mirror chicken sprites onto the shared item atlas.
+        // If the dedicated chicken atlas comes up empty, try the standard
+        // inventory atlas before giving up so bespoke textures can still load.
+        Material fallback = new Material(InventoryMenu.BLOCK_ATLAS, original.texture());
+        TextureAtlasSprite sprite = resolveSprite(fallback);
+        if (isMissing(sprite)) {
+            return null;
+        }
+        return new TextureLookup(fallback, sprite);
+    }
+
     private static ResourceLocation resolveAtlas(ResourceLocation spriteLocation) {
         if (spriteLocation.getNamespace().equals(ChickensMod.MOD_ID)) {
             String path = spriteLocation.getPath();
@@ -180,6 +205,9 @@ public final class ChickenItemSpriteModels {
     private static TextureAtlasSprite resolveSprite(Material material) {
         TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(material.atlasLocation());
         return atlas.getSprite(material.texture());
+    }
+
+    private record TextureLookup(Material material, TextureAtlasSprite sprite) {
     }
 
 }

@@ -42,4 +42,5 @@
 - Surface a lightweight debug HUD or chat command that lists chickens missing their configured item sprites after a reload so pack makers can correct typos without scanning lengthy logs.
 - Emit a concise startup summary that reports how many bespoke chicken item sprites were stitched so datapack authors can confirm their textures loaded without digging through verbose logs.
 - Add a lightweight regression test or debug assertion that iterates custom chickens after a resource reload and verifies their declared item textures stitched successfully, catching future atlas-hook regressions early.
+- Surface an optional debug toggle that logs which texture atlas each custom chicken item sprite resolves from so datapack authors can spot unintended fallbacks between the dedicated chicken sheet and the shared inventory atlas.
 
