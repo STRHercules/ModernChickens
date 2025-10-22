@@ -512,3 +512,11 @@
   3. Cached the reflective constructor, reset error flags on reload, and recompiled the mod to confirm custom item textures bake without crashing or losing their bespoke artwork.
 - **Rationale**: Validating texture availability and delegating to the official baker eliminates the crash and ensures JSON-defined sprites render exactly as players author them, with safe fallbacks for absent art.
 
+## Entry 64
+- **Prompt/Task**: Stop custom chickens from rendering blank icons by ensuring their configured item textures produce a baked model.
+- **Steps**:
+  1. Taught the sprite baker to reuse any prebaked chicken item models that already exist (such as the bundled glass or gunpowder chickens) before attempting the dynamic generator so reused art shows up immediately.
+  2. Ensured dynamic baking only disables tinting when the custom sprite succeeds and restored the legacy tint pipeline whenever the bespoke bake fails, preventing white or invisible fallbacks.
+  3. Documented the prebaked-model reuse in the README and refreshed the Gradle build to confirm the pipeline compiles after the adjustments.
+- **Rationale**: Reusing existing models keeps retextured chickens visible without relying solely on the reflective baker, while safeguarding the tint flag stops unsuccessful bakes from producing blank icons.
+

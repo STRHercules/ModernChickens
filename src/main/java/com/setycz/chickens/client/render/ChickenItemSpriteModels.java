@@ -77,6 +77,17 @@ public final class ChickenItemSpriteModels {
         boolean hasExplicitTexture = chicken.getItemTexture() != null;
         boolean customDefinition = chicken.isCustom();
         boolean authoritativeTexture = customDefinition && hasExplicitTexture;
+
+        ResourceLocation spriteLocation = toSpriteLocation(texture);
+        if (hasExplicitTexture) {
+            BakedModel prebaked = tryFetchExistingModel(spriteLocation);
+            if (prebaked != null) {
+                chicken.setTintItem(false);
+                return prebaked;
+            }
+        }
+
+        boolean disableTint = false;
         // Confirm the PNG exists before baking so missing datapack sprites fall
         // back to the default icon while still allowing custom chickens to show
         // Minecraft's missing-texture indicator when explicitly requested.
@@ -93,12 +104,12 @@ public final class ChickenItemSpriteModels {
                 }
                 chicken.setTintItem(true);
                 texture = DEFAULT_ITEM_TEXTURE;
+                spriteLocation = toSpriteLocation(texture);
             }
         } else if (hasExplicitTexture) {
-            chicken.setTintItem(false);
+            disableTint = true;
         }
 
-        ResourceLocation spriteLocation = toSpriteLocation(texture);
         Material material = materialFor(spriteLocation);
 
         Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance().getModelManager()
@@ -113,9 +124,20 @@ public final class ChickenItemSpriteModels {
         ModelResourceLocation bakeLocation = new ModelResourceLocation(dynamicId, "inventory");
         ModelBaker baker = instantiateBaker(bakery, bakeLocation, sprites);
         if (baker == null) {
+            // Allow the vanilla override pipeline to continue colouring the
+            // fallback sprite when we cannot dynamically bake the bespoke
+            // model. This keeps the item visible instead of showing a blank
+            // icon.
+            if (disableTint) {
+                chicken.setTintItem(true);
+            }
             return null;
         }
-        return model.bake(baker, model, sprites, IDENTITY, false);
+        BakedModel baked = model.bake(baker, model, sprites, IDENTITY, false);
+        if (disableTint) {
+            chicken.setTintItem(false);
+        }
+        return baked;
     }
 
     static void clear() {
@@ -171,6 +193,16 @@ public final class ChickenItemSpriteModels {
 
     private static boolean hasTexture(ResourceLocation texture) {
         return Minecraft.getInstance().getResourceManager().getResource(texture).isPresent();
+    }
+
+    @Nullable
+    private static BakedModel tryFetchExistingModel(ResourceLocation spriteLocation) {
+        ModelResourceLocation modelLocation = new ModelResourceLocation(spriteLocation, "inventory");
+        BakedModel model = Minecraft.getInstance().getModelManager().getModel(modelLocation);
+        if (model != null && model != Minecraft.getInstance().getModelManager().getMissingModel()) {
+            return model;
+        }
+        return null;
     }
 
     @Nullable

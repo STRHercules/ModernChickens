@@ -60,6 +60,7 @@ final class CustomChickenItemOverrides extends ItemOverrides {
 
         BakedModel baked = ChickenItemSpriteModels.bake(chicken, bakery);
         if (baked == null) {
+            chicken.setTintItem(true);
             LOGGER.warn("Falling back to default chicken item model for {} due to missing sprite", chicken.getEntityName());
             return originalModel;
         }
