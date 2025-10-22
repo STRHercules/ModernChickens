@@ -44,8 +44,6 @@ public final class ChickenItemSpriteModels {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensCustomItemSprites");
     private static final ResourceLocation DEFAULT_ITEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             ChickensMod.MOD_ID, "textures/item/chicken/whitechicken.png");
-    private static final ResourceLocation CHICKEN_ITEM_ATLAS = ResourceLocation.fromNamespaceAndPath(
-            ChickensMod.MOD_ID, "item");
     private static final ModelState IDENTITY = new ModelState() {
         @Override
         public Transformation getRotation() {
@@ -196,14 +194,9 @@ public final class ChickenItemSpriteModels {
     }
 
     private static ResourceLocation resolveAtlas(ResourceLocation spriteLocation) {
-        if (spriteLocation.getNamespace().equals(ChickensMod.MOD_ID)) {
-            String path = spriteLocation.getPath();
-            if (path.startsWith("item/chicken/")) {
-                // Custom chicken icons live on the mod’s dedicated item atlas,
-                // so direct lookups need to mirror the paths the JSON models use.
-                return CHICKEN_ITEM_ATLAS;
-            }
-        }
+        // All chicken item sprites are stitched into the shared inventory
+        // atlas via assets/chickens/atlases/blocks.json, so dynamic lookups
+        // must target the same sheet to match the baked JSON models.
         return InventoryMenu.BLOCK_ATLAS;
     }
 

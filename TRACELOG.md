@@ -496,3 +496,11 @@
   3. Verified the build so datapack-defined chickens always honour their configured item textures during rendering.
 - **Rationale**: Custom chickens should never inherit unrelated mod textures; bypassing vanilla’s lower-bound predicate guarantees the JSON-defined item art remains authoritative.
 
+## Entry 62
+- **Prompt/Task**: Investigate why datapack chicken items still render the fallback icon even after bypassing vanilla overrides.
+- **Steps**:
+  1. Reproduced the reported crash and confirmed the sprite baker was requesting a non-existent `chickens:item` atlas when resolving custom materials.
+  2. Aligned the atlas lookup with the shared inventory sheet (`InventoryMenu.BLOCK_ATLAS`) that stitches the chicken icons via `assets/chickens/atlases/blocks.json`, ensuring runtime models pull sprites from the same location as the baked JSON overrides.
+  3. Documented the rationale inline so future refactors keep the dynamic baker in sync with the atlas configuration.
+- **Rationale**: Targeting the correct atlas stops the baker from treating every bespoke sprite as missing, letting datapack-defined chickens finally display the textures players specify.
+
