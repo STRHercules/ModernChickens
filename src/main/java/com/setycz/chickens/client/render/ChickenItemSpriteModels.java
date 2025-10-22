@@ -7,6 +7,8 @@ import com.setycz.chickens.ChickensRegistryItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -55,7 +57,6 @@ public final class ChickenItemSpriteModels {
     };
 
     private static final Map<Integer, BakedModel> CACHE = new HashMap<>();
-    private static final Set<ResourceLocation> VERIFIED_TEXTURES = new HashSet<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();
 
     private ChickenItemSpriteModels() {
@@ -69,25 +70,23 @@ public final class ChickenItemSpriteModels {
     @Nullable
     private static BakedModel bakeInternal(ChickensRegistryItem chicken, ModelBakery bakery) {
         ResourceLocation texture = selectTexture(chicken);
-        if (!hasTexture(texture)) {
+        ResourceLocation spriteLocation = toSpriteLocation(texture);
+        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+        TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
+        if (isMissing(sprite)) {
             if (LOGGED_MISSING_TEXTURES.add(texture)) {
                 LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
             }
             texture = DEFAULT_ITEM_TEXTURE;
-            if (!hasTexture(texture)) {
+            spriteLocation = toSpriteLocation(texture);
+            sprite = atlas.getSprite(spriteLocation);
+            if (isMissing(sprite)) {
                 return null;
             }
         }
 
-        ResourceLocation spriteLocation = toSpriteLocation(texture);
-        // The atlas may not have stitched the sprite when models bake, so we rely on
-        // the resource-manager check above and allow the material lookup to resolve
-        // once the atlas is fully prepared.
         Material material = new Material(InventoryMenu.BLOCK_ATLAS, spriteLocation);
-        Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance()
-                .getModelManager()
-                .getAtlas(key.atlasLocation())
-                .getSprite(key.texture());
+        Function<Material, TextureAtlasSprite> sprites = key -> atlas.getSprite(key.texture());
 
         Map<String, Either<Material, String>> textures = Map.of("layer0", Either.left(material));
         BlockModel model = new BlockModel(null, List.of(), textures, true, null, ItemTransforms.NO_TRANSFORMS,
@@ -100,7 +99,6 @@ public final class ChickenItemSpriteModels {
 
     static void clear() {
         CACHE.clear();
-        VERIFIED_TEXTURES.clear();
         LOGGED_MISSING_TEXTURES.clear();
     }
 
@@ -137,16 +135,8 @@ public final class ChickenItemSpriteModels {
         return ResourceLocation.fromNamespaceAndPath(texture.getNamespace(), path);
     }
 
-    private static boolean hasTexture(ResourceLocation texture) {
-        if (VERIFIED_TEXTURES.contains(texture)) {
-            return true;
-        }
-        ResourceManager manager = Minecraft.getInstance().getResourceManager();
-        boolean present = manager.getResource(texture).isPresent();
-        if (present) {
-            VERIFIED_TEXTURES.add(texture);
-        }
-        return present;
+    private static boolean isMissing(TextureAtlasSprite sprite) {
+        return sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation());
     }
 
 }

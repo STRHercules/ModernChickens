@@ -432,3 +432,11 @@
   3. Updated the README to clarify that any resource-pack or bundled textures are honoured automatically, with missing files reverting to the tinted white icon.
 - **Rationale**: Avoiding the early missing-texture check keeps legitimate custom sprites alive through the bake process so player-supplied PNGs render correctly without additional atlas hooks.
 
+## Entry 54
+- **Prompt/Task**: Stop custom chickens from reverting to the tinted fallback icon when their configured item sprite exists.
+- **Steps**:
+  1. Swapped the sprite availability check to query the stitched block atlas so valid textures stay selected once NeoForge has finished baking models.
+  2. Kept the white icon fallback as a safety net for genuinely missing sprites, logging the downgrade only once per resource to avoid noisy logs.
+  3. Ran the Gradle build to confirm the refined sprite selection compiles cleanly alongside the existing client hooks.
+- **Rationale**: Consulting the finished atlas respects bespoke item textures delivered via `chickens_custom.json`, while preserving the tinted fallback for misconfigured entries so players never see missing-texture quads.
+
