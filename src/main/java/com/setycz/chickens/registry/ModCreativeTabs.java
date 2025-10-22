@@ -43,6 +43,7 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.ROOST_ITEM.get());
                         output.accept(ModRegistry.BREEDER_ITEM.get());
                         output.accept(ModRegistry.COLLECTOR_ITEM.get());
+                        output.accept(ModRegistry.AVIAN_FLUX_CONVERTER_ITEM.get());
                         for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {
                             output.accept(item.get());
                         }
@@ -52,6 +53,7 @@ public final class ModCreativeTabs {
                                 output.accept(ColoredEggItem.createFor(chicken));
                             }
                         }
+                        output.accept(ModRegistry.FLUX_EGG.get());
                         for (LiquidEggRegistryItem liquid : LiquidEggRegistry.getAll()) {
                             output.accept(LiquidEggItem.createFor(liquid));
                         }

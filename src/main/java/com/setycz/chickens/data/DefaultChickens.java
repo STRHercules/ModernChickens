@@ -5,6 +5,7 @@ import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.SpawnType;
+import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.resources.ResourceLocation;

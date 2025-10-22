@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "chickens:block/avian_flux_converter" },
+    "facing=south": { "model": "chickens:block/avian_flux_converter", "y": 180 },
+    "facing=west": { "model": "chickens:block/avian_flux_converter", "y": 270 },
+    "facing=east": { "model": "chickens:block/avian_flux_converter", "y": 90 }
+  }
+}

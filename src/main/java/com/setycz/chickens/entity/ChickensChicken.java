@@ -4,6 +4,8 @@ import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
+import com.setycz.chickens.item.ChickenStats;
+import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.registry.ModEntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;

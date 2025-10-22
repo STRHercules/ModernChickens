@@ -50,4 +50,5 @@
 - Emit a lightweight debug summary that reports whether each custom chicken reused a bundled model or required the generated fallback so pack makers can confirm their assets behaved as intended after reloads.
 - Cache the generated `minecraft:item/generated` parent (or transition to a runtime resource pack) so repeated custom chickens avoid resolving the same model every render, keeping the override pipeline efficient as datapack counts grow.
 - Add a lightweight client regression test or debug assertion that verifies chicken item stacks resolve their per-breed display names so future refactors don't revert tooltips and inventory labels back to the generic "Chicken" title.
+- Expose configuration knobs for Flux Egg capacity scaling and the Avian Flux Converter's transfer rates so modpacks can balance energy progression without code changes.
 

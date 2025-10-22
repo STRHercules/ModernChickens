@@ -536,3 +536,12 @@
   3. Rebuilt the project to ensure the updated item naming compiles cleanly alongside the existing tooltip logic.
 - **Rationale**: Surfacing each breed's configured display name preserves parity with legacy behaviour and helps players identify custom chickens at a glance.
 
+## Entry 67
+- **Prompt/Task**: Add Redstone Flux chickens, Flux Eggs, and an Avian Flux Converter block that charges the new eggs.
+- **Steps**:
+  1. Implemented `FluxEggItem` to store per-stack RF with capacity derived from chicken stats, rendered a charge bar, and wired creative/vanilla tab visibility.
+  2. Registered the flux egg item and `RedstoneFluxChicken`, updating `ChickensChicken` to imprint energy on drops and extending the default registry data and client menus.
+  3. Created the Avian Flux Converter block, block entity, menu, and screen, exposing energy/item capabilities, assets, loot, recipes, translations, and creative tab entries.
+  4. Ran `./gradlew build` to confirm the new content compiles and existing code remains intact.
+- **Rationale**: Introducing energy-aware eggs and a dedicated converter block modernises automation workflows while maintaining Chickens' breeding progression.
+

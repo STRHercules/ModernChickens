@@ -5,6 +5,7 @@ import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.block.AvianFluxConverterBlock;
 import com.setycz.chickens.block.BreederBlock;
 import com.setycz.chickens.block.CollectorBlock;
 import com.setycz.chickens.block.HenhouseBlock;
@@ -12,6 +13,7 @@ import com.setycz.chickens.block.RoostBlock;
 import com.setycz.chickens.item.AnalyzerItem;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
 import com.setycz.chickens.item.ColoredEggItem;
+import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenCatcherItem;
 import com.setycz.chickens.item.LiquidEggItem;
@@ -61,11 +63,14 @@ public final class ModRegistry {
             () -> new ColoredEggItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<LiquidEggItem> LIQUID_EGG = ITEMS.register("liquid_egg",
             () -> new LiquidEggItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<FluxEggItem> FLUX_EGG = ITEMS.register("flux_egg",
+            () -> new FluxEggItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
     public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());
     public static final DeferredBlock<BreederBlock> BREEDER = BLOCKS.register("breeder", () -> new BreederBlock());
     public static final DeferredBlock<CollectorBlock> COLLECTOR = BLOCKS.register("collector", () -> new CollectorBlock());
+    public static final DeferredBlock<AvianFluxConverterBlock> AVIAN_FLUX_CONVERTER = BLOCKS.register("avian_flux_converter", () -> new AvianFluxConverterBlock());
     // Register the henhouse block and its item form so players can place the storage structure.
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
@@ -89,6 +94,8 @@ public final class ModRegistry {
             () -> new BlockItem(BREEDER.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> COLLECTOR_ITEM = ITEMS.register("collector",
             () -> new BlockItem(COLLECTOR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> AVIAN_FLUX_CONVERTER_ITEM = ITEMS.register("avian_flux_converter",
+            () -> new BlockItem(AVIAN_FLUX_CONVERTER.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
@@ -124,6 +131,9 @@ public final class ModRegistry {
             event.accept(ROOST_ITEM.get());
             event.accept(BREEDER_ITEM.get());
             event.accept(COLLECTOR_ITEM.get());
+            event.accept(AVIAN_FLUX_CONVERTER_ITEM.get());
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(FLUX_EGG.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ANALYZER.get());
             event.accept(CHICKEN_ITEM.get());

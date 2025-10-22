@@ -14,6 +14,7 @@ import com.setycz.chickens.registry.ModBlockEntities;
 import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.registry.ModMenuTypes;
 import com.setycz.chickens.registry.ModRegistry;
+import com.setycz.chickens.screen.AvianFluxConverterScreen;
 import com.setycz.chickens.screen.BreederScreen;
 import com.setycz.chickens.screen.CollectorScreen;
 import com.setycz.chickens.screen.HenhouseScreen;
@@ -71,6 +72,7 @@ public final class ChickensClient {
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
+        event.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
     }
 
     @SubscribeEvent

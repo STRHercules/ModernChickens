@@ -1,6 +1,7 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.menu.AvianFluxConverterMenu;
 import com.setycz.chickens.menu.BreederMenu;
 import com.setycz.chickens.menu.CollectorMenu;
 import com.setycz.chickens.menu.HenhouseMenu;
@@ -28,6 +29,8 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(BreederMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<CollectorMenu>> COLLECTOR = MENU_TYPES.register("collector",
             () -> IMenuTypeExtension.create(CollectorMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<AvianFluxConverterMenu>> AVIAN_FLUX_CONVERTER = MENU_TYPES.register("avian_flux_converter",
+            () -> IMenuTypeExtension.create(AvianFluxConverterMenu::new));
 
     private ModMenuTypes() {
     }

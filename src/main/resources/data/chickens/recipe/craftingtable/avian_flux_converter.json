@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RGR",
+    "GEG",
+    "RIR"
+  ],
+  "key": {
+    "R": { "item": "minecraft:redstone" },
+    "G": { "item": "minecraft:glowstone_dust" },
+    "E": { "item": "chickens:collector" },
+    "I": { "item": "minecraft:iron_block" }
+  },
+  "result": {
+    "item": "chickens:avian_flux_converter"
+  }
+}
