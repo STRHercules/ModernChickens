@@ -488,3 +488,11 @@
   3. Updated the README to document that missing custom item textures now surface Minecraft’s placeholder graphic instead of reverting to the tinted fallback.
 - **Rationale**: Respecting datapack-defined sprites stops the renderer from overwriting custom chickens with the bundled fallback art, making user-authored item textures display consistently once stitched.
 
+## Entry 61
+- **Prompt/Task**: Stop vanilla model overrides from stealing the item sprites assigned in `chickens_custom.json`.
+- **Steps**:
+  1. Audited the chicken item override pipeline and confirmed NeoForge keeps returning the last baked override when the `custom_model_data` predicate exceeds the bundled range.
+  2. Updated `CustomChickenItemOverrides` to ignore that fallback whenever the stack comes from `chickens_custom.json`, forcing the bespoke sprite through the dynamic baker instead.
+  3. Verified the build so datapack-defined chickens always honour their configured item textures during rendering.
+- **Rationale**: Custom chickens should never inherit unrelated mod textures; bypassing vanilla’s lower-bound predicate guarantees the JSON-defined item art remains authoritative.
+

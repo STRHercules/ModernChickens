@@ -38,14 +38,19 @@ final class CustomChickenItemOverrides extends ItemOverrides {
     @Override
     public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level,
             @Nullable LivingEntity entity, int seed) {
+        ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
+        boolean forceCustomSprite = chicken != null && chicken.isCustom() && chicken.getItemTexture() != null;
+        // Vanilla custom model overrides treat the predicate value as a lower bound, so unknown ids
+        // inherit the last baked model. Datapack chickens must bypass that behaviour so the bespoke
+        // sprite defined in chickens_custom.json always renders instead of reusing the final override.
+
         BakedModel resolved = delegate != null ? delegate.resolve(originalModel, stack, level, entity, seed) : null;
-        if (resolved != null && resolved != originalModel) {
+        if (!forceCustomSprite && resolved != null && resolved != originalModel) {
             return resolved;
         }
 
-        ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken == null) {
-            return originalModel;
+            return resolved != null ? resolved : originalModel;
         }
 
         BakedModel cached = cache.get(chicken.getId());

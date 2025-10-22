@@ -44,4 +44,5 @@
 - Add a lightweight regression test or debug assertion that iterates custom chickens after a resource reload and verifies their declared item textures stitched successfully, catching future atlas-hook regressions early.
 - Surface an optional debug toggle that logs which texture atlas each custom chicken item sprite resolves from so datapack authors can spot unintended fallbacks between the dedicated chicken sheet and the shared inventory atlas.
 - Expose an in-game tooltip indicator (e.g., "missing sprite" overlay) when a custom chicken item is currently showing the placeholder graphic so pack makers can spot unresolved assets without scanning the logs.
+- Add a generated guard override to `models/item/chicken.json` that routes `custom_model_data` values above the bundled range back to the base model, preventing future regressions if the runtime override ever becomes unavailable.
 
