@@ -7,6 +7,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 
 ## Golden Rules
 
+* You MUST consult `TASK.md` for detailed outline of overall goal.
 * You must confirm the project builds successfully **before committing any changes**.
 * Never create or commit binary files (.dll, .exe, .pdb, .zip, .png, etc.). Text-only changes.
 * Edit only where allowed (see Directory Policy). Treat game/framework sources as read-only.
@@ -34,6 +35,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 - Anything under the other top-level folders listed as read-only
 - Binary artifacts anywhere
 - READ-ONLY Directories
+- `TASK.md`
 
 ## What To Do If Build Fails
 * Suggest a text-only fix (e.g., add HintPath using a relative path) but don’t break the read-only policy.

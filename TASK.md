@@ -1,0 +1,16 @@
+Steps to add RF Chickens and Flux Eggs;
+    1. Create `src/main/java/com/setycz/chickens/item/FluxEggItem.java` that stores per-stack energy (base 1,000 RF plus e.g. +100 RF per growth/gain/strength point above 1), exposes helpers to read/write the value via `DataComponents.CUSTOM_DATA`, formats the hover text, and optionally shows a durability-style bar.
+    2. Register the item in `ModRegistry` alongside existing eggs, add it to `ModCreativeTabs.MAIN` and `ModRegistry.onBuildCreativeTabs`, and surface it in any appropriate vanilla tab.
+    3. Extend `DefaultChickens#create()` with a new `ChickensRegistryItem` (e.g., id 404) named `RedstoneFluxChicken` that uses `FluxEggItem.create(FluxEggItem.BASE_CAPACITY)`, assigns sensible parents (such as Redstone + Glowstone), and sets its drop to the same Flux Egg.
+    4. Update `ChickensChicken.depositOrDrop` to detect `FluxEggItem` stacks, compute energy from the current bird’s growth/gain/strength values, and stamp that energy onto every egg (including extra gain-based duplicates) before routing them to henhouses or the world.
+    5. Add `assets/chickens/models/item/flux_egg.json` pointing at `minecraft:item/egg`, supply new localisation strings for `item.chickens.flux_egg`, `item.chickens.flux_egg.tooltip`, and `entity.RedstoneFluxChicken.name`, and (if you add tinting) register an item colour handler in `ChickensClient`.
+    6. Document the feature in `TRACELOG.md` and `SUGGESTIONS.md`, then run `./gradlew build` to confirm nothing regresses.
+
+
+Steps to add Avian Flux Converter Block to handle Flux Eggs; 
+    1. Implement `AvianFluxConverterBlock` in `com.setycz.chickens.block`, mirroring other horizontal machine blocks (facing property, `useWithoutItem` to open the menu, inventory drops, custom names, and a server-side ticker).
+    2. Add `AvianFluxConverterBlockEntity` with a single-slot `WorldlyContainer` inventory, an `EnergyStorage` (e.g., 500 kRF capacity, configurable receive/extract rates), logic to drain `FluxEggItem` stacks each tick (leaving leftover energy on the stack if the battery is nearly full), NBT persistence for items/energy, and a `ContainerData` view for the menu.
+    3. Create `AvianFluxConverterMenu` and `AvianFluxConverterScreen` (using a vanilla furnace-style background plus a custom-rendered energy bar) that expose the input slot, sync energy/capacity, and enforce that only Flux Eggs enter the machine.
+    4. Register the block, block item, block entity, and menu in `ModRegistry`, `ModBlockEntities`, and `ModMenuTypes`; hook up the client screen in `ChickensClient`; expose both the item handler and `Capabilities.EnergyStorage.BLOCK` in `ModCapabilities`; and list the block/item in `ModCreativeTabs` and the functional-block creative tab.
+    5. Supply data assets: blockstate/model/item-model JSONs (re-using existing collector textures or vanilla ones), a loot table returning the block, a shaped crafting recipe under `data/chickens/recipe/craftingtable`, an updated `data/minecraft/tags/blocks/mineable/axe.json`, and localisation keys for the block name, item name, menu title, tooltip, and energy readout.
+    6. Verify server tick syncing and comparator behaviour as needed, document the addition in `TRACELOG.md` and `SUGGESTIONS.md`, and finish with `./gradlew build`.
