@@ -440,3 +440,11 @@
   3. Ran the Gradle build to confirm the refined sprite selection compiles cleanly alongside the existing client hooks.
 - **Rationale**: Consulting the finished atlas respects bespoke item textures delivered via `chickens_custom.json`, while preserving the tinted fallback for misconfigured entries so players never see missing-texture quads.
 
+## Entry 55
+- **Prompt/Task**: Prevent the chicken item colour handler from overriding bespoke `item_texture` sprites supplied via `chickens_custom.json`.
+- **Steps**:
+  1. Added a tint flag to `ChickensRegistryItem` so custom sprites can opt out of the legacy colour overlay while still falling back to tinting if the texture is missing.
+  2. Updated the dynamic sprite baker to toggle the tint flag based on whether the requested sprite loaded or if the white fallback was required.
+  3. Adjusted the client item colour registration to respect the tint flag and documented the behaviour in the README for pack makers.
+- **Rationale**: Skipping the dye overlay when a bespoke sprite is available ensures custom chickens display their authored textures instead of being recoloured to resemble the default mod icons.
+

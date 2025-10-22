@@ -54,7 +54,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 >
 > When `generated_texture` is enabled, the renderer tints the referenced texture so in-world chickens match the colours used for the item and spawn egg. If the texture cannot be loaded, the base white chicken sprite is used instead.
 >
-> If `item_texture` is supplied the chicken item and JEI icons prefer that sprite. As long as the referenced resource exists in the mod jar or an active resource pack, the override is used automatically. Missing textures fall back to the tinted white chicken item so players never see a missing-texture placeholder.
+> If `item_texture` is supplied the chicken item and JEI icons prefer that sprite. As long as the referenced resource exists in the mod jar or an active resource pack, the override is used automatically. Missing textures fall back to the tinted white chicken item so players never see a missing-texture placeholder. When the sprite loads successfully the item skips tinting so the art is rendered exactly as authored.
 >
 > When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted variant so players never see the purple-and-black placeholder in game.
 
@@ -77,7 +77,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 | `display_name` | No | String | Overrides the in-game display name. Defaults to the translated name derived from `name`. |
 | `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
-| `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Missing textures fall back to the tinted white chicken item icon. |
+| `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Missing textures fall back to the tinted white chicken item icon, otherwise the tint layer is disabled so the sprite's original colours show through. |
 
 ## Project layout
 

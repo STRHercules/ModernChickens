@@ -70,6 +70,8 @@ public final class ChickenItemSpriteModels {
     @Nullable
     private static BakedModel bakeInternal(ChickensRegistryItem chicken, ModelBakery bakery) {
         ResourceLocation texture = selectTexture(chicken);
+        ResourceLocation requestedTexture = texture;
+        boolean hasExplicitTexture = chicken.getItemTexture() != null;
         ResourceLocation spriteLocation = toSpriteLocation(texture);
         TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
@@ -77,12 +79,19 @@ public final class ChickenItemSpriteModels {
             if (LOGGED_MISSING_TEXTURES.add(texture)) {
                 LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
             }
+            // Re-enable tinting so the coloured fallback icon still reflects the
+            // chicken's palette when a custom sprite cannot be located.
+            chicken.setTintItem(true);
             texture = DEFAULT_ITEM_TEXTURE;
             spriteLocation = toSpriteLocation(texture);
             sprite = atlas.getSprite(spriteLocation);
             if (isMissing(sprite)) {
                 return null;
             }
+        } else if (hasExplicitTexture && texture.equals(requestedTexture)) {
+            // The bespoke sprite loaded successfully, so keep tinting disabled
+            // for this chicken item.
+            chicken.setTintItem(false);
         }
 
         Material material = new Material(InventoryMenu.BLOCK_ATLAS, spriteLocation);

@@ -33,6 +33,7 @@ public class ChickensRegistryItem {
     @Nullable
     private Component displayName;
     private boolean generatedTexture;
+    private boolean tintItem = true;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -53,6 +54,9 @@ public class ChickensRegistryItem {
 
     public ChickensRegistryItem setItemTexture(ResourceLocation texture) {
         itemTexture = texture;
+        // Custom item sprites should render exactly as authored rather than
+        // being recoloured by the legacy tint pipeline.
+        tintItem = false;
         return this;
     }
 
@@ -215,5 +219,13 @@ public class ChickensRegistryItem {
 
     public boolean hasGeneratedTexture() {
         return generatedTexture;
+    }
+
+    public boolean shouldTintItem() {
+        return tintItem;
+    }
+
+    public void setTintItem(boolean value) {
+        tintItem = value;
     }
 }

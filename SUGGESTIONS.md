@@ -38,4 +38,5 @@
 - Generate a lightweight runtime resource pack that mirrors custom chicken item sprites so datapacks can omit JSON model boilerplate while still shipping bespoke art.
 - Add a lightweight `/chickens dumpItemSprites` debug command that lists every stitched chicken item texture so pack makers can confirm their datapack assets were discovered without digging through logs.
 - Register custom chicken item textures with the atlas during `TextureStitchEvent.Pre` so resource packs that add brand-new sprites (not reused from the base mod) appear without relying on fallback tinting.
+- Expose an explicit `tint_item` flag in `chickens_custom.json` so datapacks can opt certain chickens back into the colour overlay even when a bespoke sprite is supplied.
 

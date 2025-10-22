@@ -61,7 +61,7 @@ public final class ChickensClient {
         event.register((stack, tint) -> tint <= 0 ? getChickenColor(stack, true) : getChickenColor(stack, false), ModRegistry.SPAWN_EGG.get());
         event.register((stack, tint) -> getColoredEggColor(stack), ModRegistry.COLORED_EGG.get());
         event.register((stack, tint) -> getLiquidEggColor(stack), ModRegistry.LIQUID_EGG.get());
-        event.register((stack, tint) -> getChickenColor(stack, tint == 0), ModRegistry.CHICKEN_ITEM.get());
+        event.register((stack, tint) -> getChickenItemColor(stack, tint == 0), ModRegistry.CHICKEN_ITEM.get());
     }
 
     @SubscribeEvent
@@ -92,7 +92,24 @@ public final class ChickensClient {
         if (chicken == null) {
             return 0xFFFFFFFF;
         }
-        int color = primary ? chicken.getBgColor() : chicken.getFgColor();
+        return encodeChickenColor(chicken, primary);
+    }
+
+    private static int getChickenItemColor(ItemStack stack, boolean primaryLayer) {
+        ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
+        if (chicken == null) {
+            return 0xFFFFFFFF;
+        }
+        if (!chicken.shouldTintItem()) {
+            // Preserve the custom sprite exactly as drawn when the config provides
+            // a bespoke item texture.
+            return 0xFFFFFFFF;
+        }
+        return encodeChickenColor(chicken, primaryLayer);
+    }
+
+    private static int encodeChickenColor(ChickensRegistryItem chicken, boolean primaryLayer) {
+        int color = primaryLayer ? chicken.getBgColor() : chicken.getFgColor();
         return 0xFF000000 | color;
     }
 
