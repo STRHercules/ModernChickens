@@ -520,3 +520,11 @@
   3. Documented the prebaked-model reuse in the README and refreshed the Gradle build to confirm the pipeline compiles after the adjustments.
 - **Rationale**: Reusing existing models keeps retextured chickens visible without relying solely on the reflective baker, while safeguarding the tint flag stops unsuccessful bakes from producing blank icons.
 
+## Entry 65
+- **Prompt/Task**: Resolve the lingering blank custom chicken items by generating full `minecraft:item/generated` quads around datapack sprites.
+- **Steps**:
+  1. Hooked the sprite baker up to the vanilla generated-item parent so bespoke textures without prebuilt models still render their quads.
+  2. Resolved the parent through the model bakery and gracefully fell back to the default pipeline if the base model cannot be located, keeping tinting intact on failures.
+  3. Updated the README to note the generated-model fallback and recorded a follow-up suggestion about caching the parent lookup for future optimisation.
+- **Rationale**: Baking against the vanilla generated template guarantees every datapack sprite produces visible geometry, eliminating the blank icons reported by players while retaining safe fallbacks and documentation clarity.
+

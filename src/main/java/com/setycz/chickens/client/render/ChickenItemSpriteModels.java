@@ -14,6 +14,7 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,12 +57,16 @@ public final class ChickenItemSpriteModels {
             return false;
         }
     };
+    private static final ResourceLocation GENERATED_PARENT = ResourceLocation.withDefaultNamespace("item/generated");
 
     private static final Map<Integer, BakedModel> CACHE = new HashMap<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();
     private static boolean loggedBakerFailure;
+    private static boolean loggedParentFailure;
     @Nullable
     private static Constructor<?> bakerConstructor;
+    @Nullable
+    private static Method bakeryModelGetter;
 
     private ChickenItemSpriteModels() {
     }
@@ -116,8 +122,17 @@ public final class ChickenItemSpriteModels {
                 .getAtlas(key.atlasLocation()).getSprite(key.texture());
 
         Map<String, Either<Material, String>> textures = Map.of("layer0", Either.left(material));
-        BlockModel model = new BlockModel(null, List.of(), textures, true, null, ItemTransforms.NO_TRANSFORMS,
+        BlockModel model = new BlockModel(GENERATED_PARENT, List.of(), textures, true, null, ItemTransforms.NO_TRANSFORMS,
                 List.of());
+        try {
+            model.resolveParents(id -> fetchUnbakedModel(bakery, id));
+        } catch (RuntimeException exception) {
+            logParentFailure(exception);
+            if (disableTint) {
+                chicken.setTintItem(true);
+            }
+            return null;
+        }
 
         ResourceLocation dynamicId = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
                 "dynamic/item/chicken_" + chicken.getId());
@@ -144,6 +159,8 @@ public final class ChickenItemSpriteModels {
         CACHE.clear();
         LOGGED_MISSING_TEXTURES.clear();
         loggedBakerFailure = false;
+        loggedParentFailure = false;
+        bakeryModelGetter = null;
     }
 
     public static SimplePreparableReloadListener<Void> reloadListener() {
@@ -228,6 +245,26 @@ public final class ChickenItemSpriteModels {
                 loggedBakerFailure = true;
             }
             return null;
+        }
+    }
+
+    private static void logParentFailure(RuntimeException exception) {
+        if (!loggedParentFailure) {
+            LOGGER.error("Failed to resolve minecraft:item/generated while baking a custom chicken item sprite", exception);
+            loggedParentFailure = true;
+        }
+    }
+
+    private static UnbakedModel fetchUnbakedModel(ModelBakery bakery, ResourceLocation id) {
+        try {
+            if (bakeryModelGetter == null) {
+                Method method = ModelBakery.class.getDeclaredMethod("getModel", ResourceLocation.class);
+                method.setAccessible(true);
+                bakeryModelGetter = method;
+            }
+            return (UnbakedModel) bakeryModelGetter.invoke(bakery, id);
+        } catch (ReflectiveOperationException exception) {
+            throw new RuntimeException("Unable to access model '" + id + "' for custom chicken item sprite baking", exception);
         }
     }
 }

@@ -48,4 +48,5 @@
 - Add a lightweight client assertion (or log) during model bake that verifies the expected chicken texture atlas is registered, catching misconfigured atlas ids before they manifest as missing sprites in gameplay builds.
 - Replace the reflective ModelBakery bridge with a public helper once NeoForge exposes an official baker factory so custom chicken sprites no longer rely on brittle reflection hacks.
 - Emit a lightweight debug summary that reports whether each custom chicken reused a bundled model or required the generated fallback so pack makers can confirm their assets behaved as intended after reloads.
+- Cache the generated `minecraft:item/generated` parent (or transition to a runtime resource pack) so repeated custom chickens avoid resolving the same model every render, keeping the override pipeline efficient as datapack counts grow.
 
