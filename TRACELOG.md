@@ -528,3 +528,11 @@
   3. Updated the README to note the generated-model fallback and recorded a follow-up suggestion about caching the parent lookup for future optimisation.
 - **Rationale**: Baking against the vanilla generated template guarantees every datapack sprite produces visible geometry, eliminating the blank icons reported by players while retaining safe fallbacks and documentation clarity.
 
+## Entry 66
+- **Prompt/Task**: Restore custom chicken item names after the sprite override refactor replaced every stack label with the generic "Chicken" title.
+- **Steps**:
+  1. Reproduced the issue in-game and confirmed `ChickenItem` now relied solely on the base translation rather than the registry entry's configured name.
+  2. Overrode `ChickenItem#getName` to resolve the stack's chicken description and return its display component, keeping the fallback translation when metadata is missing.
+  3. Rebuilt the project to ensure the updated item naming compiles cleanly alongside the existing tooltip logic.
+- **Rationale**: Surfacing each breed's configured display name preserves parity with legacy behaviour and helps players identify custom chickens at a glance.
+

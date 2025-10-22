@@ -40,6 +40,18 @@ public class ChickenItem extends Item {
     }
 
     @Override
+    public Component getName(ItemStack stack) {
+        ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
+        if (chicken != null) {
+            // Custom chicken stacks should display their configured breed name
+            // instead of the generic "Chicken" item label used by the base
+            // translation.
+            return chicken.getDisplayName();
+        }
+        return super.getName(stack);
+    }
+
+    @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         ItemStack stack = context.getItemInHand();
