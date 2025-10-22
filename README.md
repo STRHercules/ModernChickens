@@ -19,11 +19,12 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 
 ### Custom chicken definitions
 
-- Drop a `chickens_custom.json` file in the `config` directory to add bespoke chickens without recompiling the mod. The loader creates a starter file with documentation the first time it runs.
+- After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
 - Custom chickens participate in the existing `chickens.properties` flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
 
-Example `chickens_custom.json` entry (place inside the top-level `chickens` array):
+Example `chickens_custom.json` entries (place inside the top-level `chickens` array):
+
 
 ```json
 {
@@ -49,14 +50,39 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 }
 ```
 
+```json
+{
+  "name": "WhippedCreamChicken",
+  "id": 425,
+  "item_texture": "chickens:textures/item/chicken/steelchicken.png",
+  "lay_item": {
+    "item": "minecraft:cake"
+  },
+  "drop_item": {
+    "item": "minecraft:cake",
+    "count": 1
+  },
+  "background_color": "#ef30f2",
+  "foreground_color": "#472447",
+  "parents": ["SlimeChicken", "SnowballChicken"],
+  "spawn_type": "none",
+  "lay_coefficient": 0.25,
+  "display_name": "Whipped Cream Chicken",
+  "generated_texture": true,
+  "enabled": true
+}
+```
+
 > **Note:** Minecraft resource locations are lowercase by convention. The loader automatically normalises uppercase letters or
 > Windows-style backslash (`\`) separators, but shipping textures in lowercase avoids surprises on dedicated servers.
 >
-> When `generated_texture` is enabled, the renderer tints the referenced texture so in-world chickens match the colours used for the item and spawn egg. If the texture cannot be loaded, the base white chicken sprite is used instead.
+> Omitting the `texture` field will force the chicken to default to bone chicken sprite.
+>
+> When `generated_texture` is enabled, the renderer tints the referenced texture so in-world chickens match the colours used for the item and spawn egg. If the texture cannot be loaded, the base bone chicken sprite is used instead, and tinted.
 >
 > If `item_texture` is supplied the chicken item and JEI icons prefer that sprite. When the referenced texture cannot be loaded a warning is logged and Minecraft’s missing-texture placeholder is shown until the asset becomes available; otherwise tinting stays disabled so the art is rendered exactly as authored. The runtime now bakes a vanilla `minecraft:item/generated` model around the sprite so even textures that only exist in your datapack (and therefore lack a prebuilt model) display correctly.
 >
-> When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted variant so players never see the purple-and-black placeholder in game.
+> When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted bone chicken variant so players never see the purple-and-black placeholder in game.
 
 ### `chickens_custom.json` field reference
 
@@ -64,7 +90,7 @@ Example `chickens_custom.json` entry (place inside the top-level `chickens` arra
 |-------|----------|------|-------------------------------|
 | `name` | Yes | String | Unique registry name for the chicken (matches the entity id fragment used elsewhere in the mod). |
 | `id` | No | Integer | Positive numeric id. Omit to let the loader pick the next free id automatically. |
-| `texture` | Yes | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Paths are normalised to lowercase automatically; provide the lowercase form used inside resource packs/datapacks. When the texture is missing, a warning is logged and the renderer falls back to the tinted white chicken template. |
+| `texture` | No | Resource location | Namespaced path (`namespace:path/to.png`) to the chicken texture. Paths are normalised to lowercase automatically; provide the lowercase form used inside resource packs/datapacks. When the texture is missing, a warning is logged and the renderer falls back to the tinted bone chicken template. |
 | `lay_item.item` | Yes | Resource location | Namespaced item id that the chicken lays. Must exist in the item registry. |
 | `lay_item.count` | No | Integer | Stack size to lay each cycle. Defaults to `1`; values below `1` are clamped up. |
 | `lay_item.type` | No | Integer | Only used with the liquid egg item to select the chicken variant encoded in the stack. |
