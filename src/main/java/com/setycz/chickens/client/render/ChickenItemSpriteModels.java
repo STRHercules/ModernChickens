@@ -75,6 +75,7 @@ public final class ChickenItemSpriteModels {
         ResourceLocation requestedTexture = texture;
         boolean hasExplicitTexture = chicken.getItemTexture() != null;
         boolean customDefinition = chicken.isCustom();
+        boolean authoritativeTexture = customDefinition && hasExplicitTexture;
         ResourceLocation spriteLocation = toSpriteLocation(texture);
         Material material = materialFor(spriteLocation);
         TextureAtlasSprite sprite = resolveSprite(material);
@@ -86,28 +87,32 @@ public final class ChickenItemSpriteModels {
             }
         }
         if (isMissing(sprite)) {
-            if (LOGGED_MISSING_TEXTURES.add(texture)) {
-                LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
-            }
-            if (customDefinition && hasExplicitTexture) {
-                // Custom chickens expect the sprite supplied in the JSON file.
-                // Abort the dynamic override so the base model can continue to
-                // render with its existing tint logic rather than substituting
-                // an unrelated fallback.
+            if (authoritativeTexture) {
+                // Treat datapack-supplied sprites as authoritative. When the
+                // texture fails to stitch we log a warning but continue to use
+                // the requested material so the game surfaces the missing
+                // texture indicator instead of swapping to an unrelated icon.
+                if (LOGGED_MISSING_TEXTURES.add(requestedTexture)) {
+                    LOGGER.warn("Unable to locate custom chicken item texture {}; leaving missing sprite in place", requestedTexture);
+                }
                 chicken.setTintItem(false);
-                return null;
+            } else {
+                if (LOGGED_MISSING_TEXTURES.add(texture)) {
+                    LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
+                }
+                // Re-enable tinting so the coloured fallback icon still reflects the
+                // chicken's palette when a custom sprite cannot be located.
+                chicken.setTintItem(true);
+                texture = DEFAULT_ITEM_TEXTURE;
+                spriteLocation = toSpriteLocation(texture);
+                material = materialFor(spriteLocation);
+                sprite = resolveSprite(material);
+                if (isMissing(sprite)) {
+                    return null;
+                }
             }
-            // Re-enable tinting so the coloured fallback icon still reflects the
-            // chicken's palette when a custom sprite cannot be located.
-            chicken.setTintItem(true);
-            texture = DEFAULT_ITEM_TEXTURE;
-            spriteLocation = toSpriteLocation(texture);
-            material = materialFor(spriteLocation);
-            sprite = resolveSprite(material);
-            if (isMissing(sprite)) {
-                return null;
-            }
-        } else if (hasExplicitTexture && texture.equals(requestedTexture)) {
+        }
+        if (hasExplicitTexture && texture.equals(requestedTexture)) {
             // The bespoke sprite loaded successfully, so keep tinting disabled
             // for this chicken item.
             chicken.setTintItem(false);

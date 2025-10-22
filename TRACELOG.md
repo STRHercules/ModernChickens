@@ -480,3 +480,11 @@
   3. Rebuilt the project with Gradle to confirm the broadened atlas search compiles cleanly alongside the rest of the client hooks.
 - **Rationale**: Some datapacks reuse chicken sprites from the shared item atlas; checking that sheet prevents unnecessary fallbacks and keeps custom chickens displaying the art players expect.
 
+## Entry 60
+- **Prompt/Task**: Ensure custom chickens always render their configured item textures instead of falling back to the white icon when the sprite lookup happens before stitching completes.
+- **Steps**:
+  1. Treated `chickens_custom.json` item textures as authoritative so the sprite baker logs missing assets but continues using the requested material rather than substituting the fallback icon.
+  2. Preserved the alternate-atlas retry to recover sprites that stitch onto the shared inventory sheet while keeping tinting disabled for bespoke art.
+  3. Updated the README to document that missing custom item textures now surface Minecraft’s placeholder graphic instead of reverting to the tinted fallback.
+- **Rationale**: Respecting datapack-defined sprites stops the renderer from overwriting custom chickens with the bundled fallback art, making user-authored item textures display consistently once stitched.
+
