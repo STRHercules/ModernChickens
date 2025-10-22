@@ -464,3 +464,11 @@
   3. Clarified the README to emphasise that `item_texture` disables tinting but otherwise behaves like any other chicken sprite.
 - **Rationale**: Avoiding a cached fallback ensures datapack-defined chickens adopt their configured item textures as soon as they become available, while still degrading gracefully when a sprite is genuinely absent.
 
+## Entry 58
+- **Prompt/Task**: Ensure `chickens_custom.json` item textures render by loading sprites from the correct atlas instead of the white fallback icon.
+- **Steps**:
+  1. Updated the dynamic sprite baker to resolve materials against the chicken item atlas so bespoke textures load from the same sheet as the bundled models.
+  2. Honoured each material’s atlas when baking generated models, letting datapack textures on other namespaces resolve without additional hooks.
+  3. Simplified the client bootstrap by removing the unused pre-stitch registration that no longer applies to the refined atlas lookup.
+- **Rationale**: Querying the same atlas that vanilla chicken items use guarantees datapack sprites are found at bake time, keeping custom chickens aligned with the textures players configure.
+

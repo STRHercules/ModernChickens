@@ -44,6 +44,8 @@ public final class ChickenItemSpriteModels {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensCustomItemSprites");
     private static final ResourceLocation DEFAULT_ITEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             ChickensMod.MOD_ID, "textures/item/chicken/whitechicken.png");
+    private static final ResourceLocation CHICKEN_ITEM_ATLAS = ResourceLocation.fromNamespaceAndPath(
+            ChickensMod.MOD_ID, "item");
     private static final ModelState IDENTITY = new ModelState() {
         @Override
         public Transformation getRotation() {
@@ -74,8 +76,8 @@ public final class ChickenItemSpriteModels {
         boolean hasExplicitTexture = chicken.getItemTexture() != null;
         boolean customDefinition = chicken.isCustom();
         ResourceLocation spriteLocation = toSpriteLocation(texture);
-        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-        TextureAtlasSprite sprite = atlas.getSprite(spriteLocation);
+        Material material = materialFor(spriteLocation);
+        TextureAtlasSprite sprite = resolveSprite(material);
         if (isMissing(sprite)) {
             if (LOGGED_MISSING_TEXTURES.add(texture)) {
                 LOGGER.warn("Unable to locate chicken item texture {}; falling back to {}", texture, DEFAULT_ITEM_TEXTURE);
@@ -93,7 +95,8 @@ public final class ChickenItemSpriteModels {
             chicken.setTintItem(true);
             texture = DEFAULT_ITEM_TEXTURE;
             spriteLocation = toSpriteLocation(texture);
-            sprite = atlas.getSprite(spriteLocation);
+            material = materialFor(spriteLocation);
+            sprite = resolveSprite(material);
             if (isMissing(sprite)) {
                 return null;
             }
@@ -103,8 +106,8 @@ public final class ChickenItemSpriteModels {
             chicken.setTintItem(false);
         }
 
-        Material material = new Material(InventoryMenu.BLOCK_ATLAS, spriteLocation);
-        Function<Material, TextureAtlasSprite> sprites = key -> atlas.getSprite(key.texture());
+        Function<Material, TextureAtlasSprite> sprites = key -> Minecraft.getInstance().getModelManager()
+                .getAtlas(key.atlasLocation()).getSprite(key.texture());
 
         Map<String, Either<Material, String>> textures = Map.of("layer0", Either.left(material));
         BlockModel model = new BlockModel(null, List.of(), textures, true, null, ItemTransforms.NO_TRANSFORMS,
@@ -155,6 +158,28 @@ public final class ChickenItemSpriteModels {
 
     private static boolean isMissing(TextureAtlasSprite sprite) {
         return sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation());
+    }
+
+    private static Material materialFor(ResourceLocation spriteLocation) {
+        ResourceLocation atlas = resolveAtlas(spriteLocation);
+        return new Material(atlas, spriteLocation);
+    }
+
+    private static ResourceLocation resolveAtlas(ResourceLocation spriteLocation) {
+        if (spriteLocation.getNamespace().equals(ChickensMod.MOD_ID)) {
+            String path = spriteLocation.getPath();
+            if (path.startsWith("item/chicken/")) {
+                // Custom chicken icons live on the mod’s dedicated item atlas,
+                // so direct lookups need to mirror the paths the JSON models use.
+                return CHICKEN_ITEM_ATLAS;
+            }
+        }
+        return InventoryMenu.BLOCK_ATLAS;
+    }
+
+    private static TextureAtlasSprite resolveSprite(Material material) {
+        TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(material.atlasLocation());
+        return atlas.getSprite(material.texture());
     }
 
 }

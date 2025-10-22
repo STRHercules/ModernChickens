@@ -41,4 +41,5 @@
 - Expose an explicit `tint_item` flag in `chickens_custom.json` so datapacks can opt certain chickens back into the colour overlay even when a bespoke sprite is supplied.
 - Surface a lightweight debug HUD or chat command that lists chickens missing their configured item sprites after a reload so pack makers can correct typos without scanning lengthy logs.
 - Emit a concise startup summary that reports how many bespoke chicken item sprites were stitched so datapack authors can confirm their textures loaded without digging through verbose logs.
+- Add a lightweight regression test or debug assertion that iterates custom chickens after a resource reload and verifies their declared item textures stitched successfully, catching future atlas-hook regressions early.
 
