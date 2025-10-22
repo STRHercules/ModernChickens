@@ -456,3 +456,11 @@
   3. Updated the README/Suggestions to document the stricter behaviour and capture a follow-up idea for debugging missing resources.
 - **Rationale**: Treating datapack-defined chickens as authoritative keeps their item icons consistent with player-authored art while still surfacing actionable warnings when a texture cannot be found.
 
+## Entry 57
+- **Prompt/Task**: Make custom chicken items keep retrying their bespoke textures instead of permanently falling back to mod icons.
+- **Steps**:
+  1. Reworked the custom item override cache so failed bake attempts no longer store the default model, letting the renderer retry once the atlas finishes stitching bespoke sprites.
+  2. Left the sprite baker’s logging in place so missing textures still surface clearly without locking chickens into the fallback icon.
+  3. Clarified the README to emphasise that `item_texture` disables tinting but otherwise behaves like any other chicken sprite.
+- **Rationale**: Avoiding a cached fallback ensures datapack-defined chickens adopt their configured item textures as soon as they become available, while still degrading gracefully when a sprite is genuinely absent.
+

@@ -48,13 +48,18 @@ final class CustomChickenItemOverrides extends ItemOverrides {
             return originalModel;
         }
 
-        return cache.computeIfAbsent(chicken.getId(), id -> {
-            BakedModel baked = ChickenItemSpriteModels.bake(chicken, bakery);
-            if (baked == null) {
-                LOGGER.warn("Falling back to default chicken item model for {} due to missing sprite", chicken.getEntityName());
-                return originalModel;
-            }
-            return baked;
-        });
+        BakedModel cached = cache.get(chicken.getId());
+        if (cached != null) {
+            return cached;
+        }
+
+        BakedModel baked = ChickenItemSpriteModels.bake(chicken, bakery);
+        if (baked == null) {
+            LOGGER.warn("Falling back to default chicken item model for {} due to missing sprite", chicken.getEntityName());
+            return originalModel;
+        }
+
+        cache.put(chicken.getId(), baked);
+        return baked;
     }
 }
