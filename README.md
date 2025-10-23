@@ -8,14 +8,14 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 
 - [Modrinth](https://modrinth.com/mod/modern-chickens)
 
-## Gameplay overview
+## Gameplay Overview
 
 1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
 2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
 3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
 4. **Scale production.** Tune `chickens.properties` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
 
-## Feature highlights
+## Feature Highlights
 
 - **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.properties` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
@@ -35,7 +35,7 @@ _Chickens available in ATM10!_
 
 > Configuration and breeding data live in `config/chickens.properties`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. The `chickens.cfg` is a compatability holdover which is unused. If you wish to make changes to `chickens.properties`, delete the `chickens.cfg` before launching the client.
 
-### Custom chicken definitions
+### Custom Chicken Definitions
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
@@ -102,7 +102,7 @@ Example `chickens_custom.json` entries (place inside the top-level `chickens` ar
 >
 > When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted bone chicken variant so players never see the purple-and-black placeholder in game.
 
-### `chickens_custom.json` field reference
+### `chickens_custom.json` Field Reference:
 
 | Field | Required | Type | Accepted values and behaviour |
 |-------|----------|------|-------------------------------|
@@ -180,7 +180,7 @@ ModernChickens/
 
 Only files under `ModernChickens/src` and root documentation (like this README) should be edited; the legacy projects remain read-only snapshots.
 
-## Build prerequisites
+## Build Prerequisites
 
 - Java Development Kit 21 (the build uses Gradle toolchains to target Java 21 automatically)
 - Git and a 64-bit operating system capable of running Minecraft 1.21.1
@@ -204,7 +204,7 @@ The build copies legacy resources from `OriginalChickens`, optionally mirrors Ro
 > **Tip:** On first launch the build may download NeoForge dependencies; subsequent runs complete much faster. Use `./gradlew --info build` if you need detailed logging while debugging build issues.
 
 
-## Support and contributions
+## Support and Contributions
 
 - File gameplay bugs or crash reports through the project issue tracker (link in `neoforge.mods.toml`).
 - Keep pull requests focused and ensure `./gradlew build` succeeds before submitting.
