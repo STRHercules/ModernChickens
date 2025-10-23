@@ -603,3 +603,11 @@
   2. Replaced the mirrored `ContainerData` hack with four vanilla `DataSlot`s that split the 32-bit values, caching the client copy so the GUI always sees the latest totals.
   3. Rebuilt the project via `./gradlew build --console=plain` to verify the refreshed syncing compiles cleanly alongside the existing flux features.
 - **Rationale**: Using first-class `DataSlot`s keeps the GUI and tooltip aligned with the server buffer, finally letting the fluxconverter gauge rise as charge accumulates.
+
+## Entry 75
+- **Prompt/Task**: Keep the Avian Flux Converter GUI in sync with its internal battery and persist stored RF when the block is harvested.
+- **Steps**:
+  1. Pointed the converter's energy storage capability at the block entity fields so egg draining, neighbour transfer, and GUI sync all reference the same RF counter.
+  2. Updated the block's harvest routine to serialize the block entity data onto the dropped item, ensuring stored RF and custom capacity survive being picked up and replaced.
+  3. Ran `./gradlew build --console=plain` to confirm the unified energy tracking and persistence changes compile cleanly.
+- **Rationale**: Sharing one energy source of truth fixes the stuck 0 RF gauge while copying the block entity data into the drop preserves both energy and capacity between placements, matching the requested behaviour.

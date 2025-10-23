@@ -46,7 +46,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     private final EnergyStorage energyStorage = new EnergyStorage(CAPACITY, MAX_TRANSFER, MAX_TRANSFER) {
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            int space = capacity - energy;
+            int space = capacity - AvianFluxConverterBlockEntity.this.energy;
             if (space <= 0) {
                 return 0;
             }
@@ -55,7 +55,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
                 return 0;
             }
             if (!simulate) {
-                energy += accepted;
+                AvianFluxConverterBlockEntity.this.energy += accepted;
                 markEnergyDirty();
             }
             return accepted;
@@ -63,12 +63,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
-            int available = Math.min(MAX_TRANSFER, Math.min(energy, maxExtract));
+            int available = Math.min(MAX_TRANSFER,
+                    Math.min(AvianFluxConverterBlockEntity.this.energy, maxExtract));
             if (available <= 0) {
                 return 0;
             }
             if (!simulate) {
-                energy -= available;
+                AvianFluxConverterBlockEntity.this.energy -= available;
                 markEnergyDirty();
             }
             return available;
@@ -76,12 +77,12 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
         @Override
         public int getEnergyStored() {
-            return energy;
+            return AvianFluxConverterBlockEntity.this.energy;
         }
 
         @Override
         public int getMaxEnergyStored() {
-            return capacity;
+            return AvianFluxConverterBlockEntity.this.capacity;
         }
     };
 

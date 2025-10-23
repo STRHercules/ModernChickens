@@ -137,7 +137,21 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
         player.awardStat(Stats.BLOCK_MINED.get(this));
         player.causeFoodExhaustion(0.005F);
         if (MachineBlockHelper.canHarvestWith(tool)) {
-            MachineBlockHelper.dropMachine(level, pos, this, blockEntity, player);
+            // Preserve the converter's stored RF by copying the block entity data into the
+            // dropped item so the machine resumes with the same buffer when replaced.
+            if (!level.isClientSide && !player.isCreative()) {
+                ItemStack drop = new ItemStack(this);
+                if (blockEntity instanceof AvianFluxConverterBlockEntity converter) {
+                    converter.saveToItem(drop, level.registryAccess());
+                    var customName = converter.getCustomName();
+                    if (customName != null) {
+                        drop.set(DataComponents.CUSTOM_NAME, customName);
+                    }
+                }
+                if (!drop.isEmpty()) {
+                    Block.popResource(level, pos, drop);
+                }
+            }
         }
     }
 

@@ -58,3 +58,4 @@
 - Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.
 - Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
 - Factor the new 32-bit DataSlot splitter into a shared menu helper so upcoming machines can mirror large counters without duplicating the bit-packaging logic.
+- Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
