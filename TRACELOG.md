@@ -595,3 +595,11 @@
   2. Realigned the flux converter gauge rendering to precisely follow the Henhouse upward-fill formula using the provided texture coordinates.
   3. Executed `./gradlew build --console=plain` to confirm the refreshed syncing and rendering compile without regressions.
 - **Rationale**: Copying the server data into a menu-owned mirror prevents stale values from reaching the client, letting the Henhouse-style gauge and tooltip finally report the converter's stored RF accurately.
+
+## Entry 74
+- **Prompt/Task**: Make the Avian Flux Converter screen reflect its stored RF after prior fixes failed to populate the gauge.
+- **Steps**:
+  1. Added explicit energy/capacity getters on the converter block entity so menus can read the live buffer without poking at internal fields.
+  2. Replaced the mirrored `ContainerData` hack with four vanilla `DataSlot`s that split the 32-bit values, caching the client copy so the GUI always sees the latest totals.
+  3. Rebuilt the project via `./gradlew build --console=plain` to verify the refreshed syncing compiles cleanly alongside the existing flux features.
+- **Rationale**: Using first-class `DataSlot`s keeps the GUI and tooltip aligned with the server buffer, finally letting the fluxconverter gauge rise as charge accumulates.

@@ -8,7 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -27,24 +27,20 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
 
     private final AvianFluxConverterBlockEntity converter;
     private final ContainerLevelAccess access;
-    private final ContainerData sourceData;
-    private final ContainerData syncedData;
+    private int clientEnergy;
+    private int clientCapacity;
 
     public AvianFluxConverterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
     public AvianFluxConverterMenu(int id, Inventory playerInventory, AvianFluxConverterBlockEntity converter) {
-        this(id, playerInventory, converter, converter.getDataAccess());
-    }
-
-    public AvianFluxConverterMenu(int id, Inventory playerInventory, AvianFluxConverterBlockEntity converter, ContainerData data) {
         super(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), id);
         this.converter = converter;
-        this.sourceData = data;
-        this.syncedData = createClientMirror(data.getCount());
         Level level = converter.getLevel();
         this.access = level != null ? ContainerLevelAccess.create(level, converter.getBlockPos()) : ContainerLevelAccess.NULL;
+        this.clientEnergy = converter != null ? converter.getEnergyStored() : 0;
+        this.clientCapacity = converter != null ? converter.getEnergyCapacity() : 0;
 
         // Align the slot with the dedicated socket in fluxconverter.png (49,31 to 73,55).
         this.addSlot(new FluxEggSlot(converter, 0, 52, 34));
@@ -58,13 +54,52 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
             this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 142));
         }
 
-        if (playerInventory.player != null && !playerInventory.player.level().isClientSide) {
-            // Prime the mirrored data slots on the server so the initial GUI frame already
-            // reflects the converter's stored RF before vanilla begins diffing the values.
-            refreshSyncedData();
-        }
+        // Split the 32-bit energy and capacity values across vanilla DataSlots so they
+        // synchronise to the client without truncation.
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return getServerEnergy() & 0xFFFF;
+            }
 
-        this.addDataSlots(syncedData);
+            @Override
+            public void set(int value) {
+                clientEnergy = (clientEnergy & 0xFFFF0000) | (value & 0xFFFF);
+            }
+        });
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return (getServerEnergy() >>> 16) & 0xFFFF;
+            }
+
+            @Override
+            public void set(int value) {
+                clientEnergy = (clientEnergy & 0x0000FFFF) | ((value & 0xFFFF) << 16);
+            }
+        });
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return getServerCapacity() & 0xFFFF;
+            }
+
+            @Override
+            public void set(int value) {
+                clientCapacity = (clientCapacity & 0xFFFF0000) | (value & 0xFFFF);
+            }
+        });
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return (getServerCapacity() >>> 16) & 0xFFFF;
+            }
+
+            @Override
+            public void set(int value) {
+                clientCapacity = (clientCapacity & 0x0000FFFF) | ((value & 0xFFFF) << 16);
+            }
+        });
     }
 
     private static AvianFluxConverterBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
@@ -114,62 +149,25 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
     }
 
     public int getEnergy() {
-        // Combine the low/high shorts mirrored by the block entity so the GUI
-        // reads the full 32-bit RF total rather than the truncated container data.
-        return combineData(0, 1);
+        // Server reads straight from the block entity while the client consumes the
+        // values hydrated through the DataSlot callbacks above.
+        return isServerSide() ? getServerEnergy() : clientEnergy;
     }
 
     public int getCapacity() {
-        return combineData(2, 3);
+        return isServerSide() ? getServerCapacity() : clientCapacity;
     }
 
-    private int combineData(int lowIndex, int highIndex) {
-        int low = syncedData.get(lowIndex) & 0xFFFF;
-        int high = syncedData.get(highIndex) & 0xFFFF;
-        return (high << 16) | low;
+    private boolean isServerSide() {
+        return converter != null && converter.getLevel() != null && !converter.getLevel().isClientSide;
     }
 
-    @Override
-    public void broadcastChanges() {
-        if (converter != null && converter.getLevel() != null && !converter.getLevel().isClientSide) {
-            // Copy the latest energy/capacity shorts from the block entity into the
-            // mirrored ContainerData before vanilla compares values for syncing.
-            refreshSyncedData();
-        }
-        super.broadcastChanges();
+    private int getServerEnergy() {
+        return converter != null ? converter.getEnergyStored() : 0;
     }
 
-    private void refreshSyncedData() {
-        int count = Math.min(sourceData.getCount(), syncedData.getCount());
-        for (int index = 0; index < count; index++) {
-            int value = sourceData.get(index) & 0xFFFF;
-            if (syncedData.get(index) != value) {
-                syncedData.set(index, value);
-            }
-        }
-    }
-
-    private static ContainerData createClientMirror(int size) {
-        return new ContainerData() {
-            private final int[] values = new int[size];
-
-            @Override
-            public int get(int index) {
-                return index >= 0 && index < values.length ? values[index] : 0;
-            }
-
-            @Override
-            public void set(int index, int value) {
-                if (index >= 0 && index < values.length) {
-                    values[index] = value & 0xFFFF;
-                }
-            }
-
-            @Override
-            public int getCount() {
-                return values.length;
-            }
-        };
+    private int getServerCapacity() {
+        return converter != null ? converter.getEnergyCapacity() : 0;
     }
 
     private static class FluxEggSlot extends Slot {

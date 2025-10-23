@@ -19,7 +19,6 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -44,46 +43,6 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     private static final int MAX_TRANSFER = 4_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
-    private final ContainerData dataAccess = new ContainerData() {
-        @Override
-        public int get(int index) {
-            // Split the 32-bit energy/capacity pair across four shorts so vanilla's
-            // container sync (which writes values as unsigned shorts) can ship the
-            // full Redstone Flux totals to clients without truncating high bits.
-            return switch (index) {
-            case 0 -> energy & 0xFFFF;
-            case 1 -> (energy >>> 16) & 0xFFFF;
-            case 2 -> capacity & 0xFFFF;
-            case 3 -> (capacity >>> 16) & 0xFFFF;
-            default -> 0;
-            };
-        }
-
-        @Override
-        public void set(int index, int value) {
-            int masked = value & 0xFFFF;
-            switch (index) {
-            case 0 -> energy = clampEnergy((energy & 0xFFFF0000) | masked);
-            case 1 -> energy = clampEnergy((energy & 0x0000FFFF) | (masked << 16));
-            case 2 -> {
-                capacity = Math.max(1, (capacity & 0xFFFF0000) | masked);
-                energy = Math.min(energy, capacity);
-            }
-            case 3 -> {
-                capacity = Math.max(1, (capacity & 0x0000FFFF) | (masked << 16));
-                energy = Math.min(energy, capacity);
-            }
-            default -> {
-            }
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 4;
-        }
-    };
-
     private final EnergyStorage energyStorage = new EnergyStorage(CAPACITY, MAX_TRANSFER, MAX_TRANSFER) {
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
@@ -161,10 +120,6 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
     }
 
-    private int clampEnergy(int value) {
-        return Mth.clamp(value, 0, capacity);
-    }
-
     // Pulls Redstone Flux out of the inserted egg, returning whether the stack was
     // mutated so the caller can refresh container state when needed.
     private boolean drainFluxEgg() {
@@ -220,10 +175,6 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         return items;
     }
 
-    public ContainerData getDataAccess() {
-        return dataAccess;
-    }
-
     public int getComparatorOutput() {
         if (capacity <= 0) {
             return 0;
@@ -233,6 +184,22 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
     public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
         return energyStorage;
+    }
+
+    /**
+     * Exposes the current RF stored so menus can mirror the exact value over the
+     * vanilla {@link net.minecraft.world.inventory.DataSlot} syncing system.
+     */
+    public int getEnergyStored() {
+        return energy;
+    }
+
+    /**
+     * Reports the converter's configured RF ceiling for GUI widgets and other
+     * client-side displays that need to scale values against the full buffer.
+     */
+    public int getEnergyCapacity() {
+        return capacity;
     }
 
     @Override
@@ -341,7 +308,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new AvianFluxConverterMenu(id, playerInventory, this, dataAccess);
+        return new AvianFluxConverterMenu(id, playerInventory, this);
     }
 
     @Override
