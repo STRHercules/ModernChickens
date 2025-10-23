@@ -292,6 +292,25 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         return progress / 1000.0D;
     }
 
+    /**
+     * Exposes the configured lay timer so integrations can forecast when the
+     * next operation will complete. The raw value represents the total ticks
+     * required for the current batch once all modifiers have been applied on
+     * the server.
+     */
+    public int getTotalLayTimeTicks() {
+        return Math.max(timeUntilNextDrop, 0);
+    }
+
+    /**
+     * Returns the number of ticks remaining before the current production
+     * cycle finishes. When the container is idle the counter resolves to zero
+     * so callers can short-circuit any ETA display logic.
+     */
+    public int getRemainingLayTimeTicks() {
+        return Math.max(timeUntilNextDrop - timeElapsed, 0);
+    }
+
     private boolean isFullOfChickens() {
         for (int slot = 0; slot < chickenData.length; slot++) {
             updateChickenInfoForSlot(slot);

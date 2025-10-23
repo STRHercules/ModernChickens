@@ -44,6 +44,13 @@ repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases' }
     maven { url = 'https://maven.blamejared.com' }
+    maven {
+        url = 'https://maven2.bai.lol'
+        content {
+            includeGroup 'lol.bai'
+            includeGroup 'mcp.mobius.waila'
+        }
+    }
 }
 
 tasks.named('processResources') {
@@ -124,6 +131,8 @@ tasks.named('processResources') {
 dependencies {
     // Hook into JEI so the modernised recipe categories can render in-game guidance.
     implementation "mezz.jei:jei-${project.minecraft_version}-neoforge:${project.jei_version}"
+    // Compile against the WTHIT API without bundling the overlay implementation.
+    compileOnly "mcp.mobius.waila:wthit-api:neo-${project.wthit_version}"
 }
 
 neoForge {

@@ -611,3 +611,11 @@
   2. Updated the block's harvest routine to serialize the block entity data onto the dropped item, ensuring stored RF and custom capacity survive being picked up and replaced.
   3. Ran `./gradlew build --console=plain` to confirm the unified energy tracking and persistence changes compile cleanly.
 - **Rationale**: Sharing one energy source of truth fixes the stuck 0 RF gauge while copying the block entity data into the drop preserves both energy and capacity between placements, matching the requested behaviour.
+
+## Entry 76
+- **Prompt/Task**: Add WTHIT overlays for the Avian Flux Converter, Roost, Chicken Breeder, and Henhouse.
+- **Steps**:
+  1. Registered dedicated WTHIT providers that mirror the existing Jade tooltips so energy, production progress, ETA, and hay reserves appear in the HUD.
+  2. Exposed safe accessors for the server-side lay timers to let integrations compute accurate countdowns without poking internal fields.
+  3. Declared the plugin metadata and localisation strings required to render the new overlay lines with consistent formatting.
+- **Rationale**: Aligning the WTHIT overlay with our Jade integration keeps the in-world readouts consistent regardless of which tooltip mod players prefer, improving usability for popular HUD setups.
