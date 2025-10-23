@@ -2,6 +2,19 @@
 
 Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods. It reintroduces the breeding-driven resource automation gameplay loop while embracing modern Forge-era tooling, data packs, and integrations.
 
+### Mod Pages: 
+
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/modern-chickens)
+
+- [Modrinth](https://modrinth.com/mod/modern-chickens)
+
+## Gameplay overview
+
+1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
+2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
+3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
+4. **Scale production.** Tune `chickens.properties` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
+
 ## Feature highlights
 
 - **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.properties` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
@@ -11,6 +24,11 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 - **JEI and Jade integrations** - Recipe categories, item subtypes, and overlay tooltips surface roost, breeder, and chicken stats directly in-game when the companion mods are installed.
 - **Server-friendly utilities** - `/chickens export breeding` regenerates the breeding graph on demand, and the mod respects headless server runs out of the box.
 - **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them. You are able to tune the `chicken.properties` to disable duplicate chickens, change their breed 'recipe' and laid resource. 
+
+_Chickens available in ATM10!_
+
+![Chickens Available in ATM10](https://i.imgur.com/Eq2NYOr.gif)
+
 
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
 
@@ -105,53 +123,10 @@ Example `chickens_custom.json` entries (place inside the top-level `chickens` ar
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
 
-## Project layout
-
-```
-ModernChickens/
-├─ src/main/java               # Gameplay code and integrations
-├─ src/main/resources          # Pack metadata; runtime assets merged from OriginalChickens
-├─ OriginalChickens/           # Legacy assets copied during resource processing (read-only)
-├─ roost/                      # Legacy Roost textures used when available (read-only)
-├─ ModDevGradle-main/gradle/   # Wrapper and plugin bootstrap
-└─ build.gradle                # NeoForge configuration and custom asset generation tasks
-```
-
-Only files under `ModernChickens/src` and root documentation (like this README) should be edited; the legacy projects remain read-only snapshots.
-
-## Build prerequisites
-
-- Java Development Kit 21 (the build uses Gradle toolchains to target Java 21 automatically)
-- Git and a 64-bit operating system capable of running Minecraft 1.21.1
-- (Optional) A local installation of [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) or [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) for integration testing
-
-The project uses the bundled Gradle wrapper; no global Gradle installation is required.
-
-## Building the mod
-
-```bash
-# Clone and enter the project
-git clone https://example.com/ModernChickens.git
-cd ModernChickens
-
-# Run a clean build
-./gradlew --console=plain build
-```
-
-The build copies legacy resources from `OriginalChickens`, optionally mirrors Roost textures from `roost`, and produces a distributable JAR in `build/libs/`.
-
-> **Tip:** On first launch the build may download NeoForge dependencies; subsequent runs complete much faster. Use `./gradlew --info build` if you need detailed logging while debugging build issues.
-
-
-## Gameplay overview
-
-1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
-2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
-3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
-4. **Scale production.** Tune `chickens.properties` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
-
-
 ## Redstone Flux
+
+![RF Chicken Generator!](https://i.imgur.com/lkeGThc.png)
+
 
 Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
 
@@ -189,6 +164,44 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 | 1× base Redstone Flux Chicken (1/1/1) | ≈0.8 | ≈7.4 | ≈14.8 | ≈22.2 |
 | 1× max-stat Redstone Flux Chicken (10/10/10) | ≈82.2 | ≈822.2 | ≈1,644.4 | ≈2,466.6 |
 | 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈1,315.6 | ≈13,155.6 | ≈26,311.2 | ≈39,466.6 |
+
+
+## Project layout
+
+```
+ModernChickens/
+├─ src/main/java               # Gameplay code and integrations
+├─ src/main/resources          # Pack metadata; runtime assets merged from OriginalChickens
+├─ OriginalChickens/           # Legacy assets copied during resource processing (read-only)
+├─ roost/                      # Legacy Roost textures used when available (read-only)
+├─ ModDevGradle-main/gradle/   # Wrapper and plugin bootstrap
+└─ build.gradle                # NeoForge configuration and custom asset generation tasks
+```
+
+Only files under `ModernChickens/src` and root documentation (like this README) should be edited; the legacy projects remain read-only snapshots.
+
+## Build prerequisites
+
+- Java Development Kit 21 (the build uses Gradle toolchains to target Java 21 automatically)
+- Git and a 64-bit operating system capable of running Minecraft 1.21.1
+- (Optional) A local installation of [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) or [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) for integration testing
+
+The project uses the bundled Gradle wrapper; no global Gradle installation is required.
+
+## Building the mod
+
+```bash
+# Clone and enter the project
+git clone https://example.com/ModernChickens.git
+cd ModernChickens
+
+# Run a clean build
+./gradlew --console=plain build
+```
+
+The build copies legacy resources from `OriginalChickens`, optionally mirrors Roost textures from `roost`, and produces a distributable JAR in `build/libs/`.
+
+> **Tip:** On first launch the build may download NeoForge dependencies; subsequent runs complete much faster. Use `./gradlew --info build` if you need detailed logging while debugging build issues.
 
 
 ## Support and contributions
