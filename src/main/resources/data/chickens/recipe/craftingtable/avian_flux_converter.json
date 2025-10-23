@@ -1,17 +1,23 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "RGR",
-    "GEG",
-    "RIR"
+    "012",
+    "345",
+    "678"
   ],
   "key": {
-    "R": { "item": "minecraft:redstone" },
-    "G": { "item": "minecraft:glowstone_dust" },
-    "E": { "item": "chickens:collector" },
-    "I": { "item": "minecraft:iron_block" }
+    "0": { "item": "minecraft:redstone" },
+    "1": { "item": "minecraft:glowstone_dust" },
+    "2": { "item": "minecraft:redstone" },
+    "3": { "item": "minecraft:glowstone_dust" },
+    "4": { "item": "chickens:collector" },
+    "5": { "item": "minecraft:glowstone_dust" },
+    "6": { "item": "minecraft:redstone" },
+    "7": { "item": "minecraft:iron_block" },
+    "8": { "item": "minecraft:redstone" }
   },
   "result": {
-    "item": "chickens:avian_flux_converter"
+    "id": "chickens:avian_flux_converter",
+    "count": 1
   }
 }
