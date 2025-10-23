@@ -55,17 +55,14 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
     private void renderEnergyBar(GuiGraphics graphics, int originX, int originY) {
         int energy = this.menu.getEnergy();
         int capacity = Math.max(this.menu.getCapacity(), 1);
-        int filled = Math.min(ENERGY_BAR_HEIGHT, energy * ENERGY_BAR_HEIGHT / capacity);
-        if (filled <= 0) {
-            return;
+        int offset = ENERGY_BAR_HEIGHT
+                - Math.min(ENERGY_BAR_HEIGHT, energy * ENERGY_BAR_HEIGHT / Math.max(capacity, 1));
+        if (offset < ENERGY_BAR_HEIGHT) {
+            // Lift the gauge upward from the bottom of the slot just like the henhouse hay bar,
+            // reusing the authored fluxconverter.png coordinates provided by art.
+            graphics.blit(GUI_TEXTURE, originX + ENERGY_BAR_X, originY + ENERGY_BAR_Y + offset, ENERGY_TEXTURE_X,
+                    ENERGY_TEXTURE_Y + offset, ENERGY_BAR_WIDTH, ENERGY_BAR_HEIGHT - offset, 256, 256);
         }
-        int offset = ENERGY_BAR_HEIGHT - filled;
-        int targetX = originX + ENERGY_BAR_X;
-        int targetY = originY + ENERGY_BAR_Y + offset;
-        // Mirror the Henhouse hay gauge math so the bar grows upward from the new
-        // fluxconverter.png coordinates instead of draining downward.
-        graphics.blit(GUI_TEXTURE, targetX, targetY, ENERGY_TEXTURE_X, ENERGY_TEXTURE_Y + offset, ENERGY_BAR_WIDTH, filled,
-                256, 256);
     }
 
     private void renderEnergyTooltip(GuiGraphics graphics, int mouseX, int mouseY) {

@@ -587,3 +587,11 @@
   2. Hardened block entity loading by capping any saved capacity above 50k so the GUI, tooltip, and automation logic stay in sync after older worlds are upgraded.
   3. Ran `./gradlew build --console=plain` to validate the revised rendering and data migration compile cleanly.
 - **Rationale**: Mirroring the proven Henhouse UI logic and enforcing the new battery ceiling ensures players see accurate charge levels even on existing converters.
+
+## Entry 73
+- **Prompt/Task**: Resolve the Avian Flux Converter GUI still reporting 0 RF despite the internal buffer filling correctly.
+- **Steps**:
+  1. Mirrored the block entity's container data into a dedicated menu buffer before vanilla sync to guarantee the GUI always receives the latest energy and capacity shorts.
+  2. Realigned the flux converter gauge rendering to precisely follow the Henhouse upward-fill formula using the provided texture coordinates.
+  3. Executed `./gradlew build --console=plain` to confirm the refreshed syncing and rendering compile without regressions.
+- **Rationale**: Copying the server data into a menu-owned mirror prevents stale values from reaching the client, letting the Henhouse-style gauge and tooltip finally report the converter's stored RF accurately.

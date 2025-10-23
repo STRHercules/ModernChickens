@@ -27,7 +27,8 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
 
     private final AvianFluxConverterBlockEntity converter;
     private final ContainerLevelAccess access;
-    private final ContainerData data;
+    private final ContainerData sourceData;
+    private final ContainerData syncedData;
 
     public AvianFluxConverterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
@@ -40,7 +41,8 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
     public AvianFluxConverterMenu(int id, Inventory playerInventory, AvianFluxConverterBlockEntity converter, ContainerData data) {
         super(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), id);
         this.converter = converter;
-        this.data = data;
+        this.sourceData = data;
+        this.syncedData = createClientMirror(data.getCount());
         Level level = converter.getLevel();
         this.access = level != null ? ContainerLevelAccess.create(level, converter.getBlockPos()) : ContainerLevelAccess.NULL;
 
@@ -56,7 +58,13 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
             this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 142));
         }
 
-        this.addDataSlots(data);
+        if (playerInventory.player != null && !playerInventory.player.level().isClientSide) {
+            // Prime the mirrored data slots on the server so the initial GUI frame already
+            // reflects the converter's stored RF before vanilla begins diffing the values.
+            refreshSyncedData();
+        }
+
+        this.addDataSlots(syncedData);
     }
 
     private static AvianFluxConverterBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
@@ -116,9 +124,52 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
     }
 
     private int combineData(int lowIndex, int highIndex) {
-        int low = data.get(lowIndex) & 0xFFFF;
-        int high = data.get(highIndex) & 0xFFFF;
+        int low = syncedData.get(lowIndex) & 0xFFFF;
+        int high = syncedData.get(highIndex) & 0xFFFF;
         return (high << 16) | low;
+    }
+
+    @Override
+    public void broadcastChanges() {
+        if (converter != null && converter.getLevel() != null && !converter.getLevel().isClientSide) {
+            // Copy the latest energy/capacity shorts from the block entity into the
+            // mirrored ContainerData before vanilla compares values for syncing.
+            refreshSyncedData();
+        }
+        super.broadcastChanges();
+    }
+
+    private void refreshSyncedData() {
+        int count = Math.min(sourceData.getCount(), syncedData.getCount());
+        for (int index = 0; index < count; index++) {
+            int value = sourceData.get(index) & 0xFFFF;
+            if (syncedData.get(index) != value) {
+                syncedData.set(index, value);
+            }
+        }
+    }
+
+    private static ContainerData createClientMirror(int size) {
+        return new ContainerData() {
+            private final int[] values = new int[size];
+
+            @Override
+            public int get(int index) {
+                return index >= 0 && index < values.length ? values[index] : 0;
+            }
+
+            @Override
+            public void set(int index, int value) {
+                if (index >= 0 && index < values.length) {
+                    values[index] = value & 0xFFFF;
+                }
+            }
+
+            @Override
+            public int getCount() {
+                return values.length;
+            }
+        };
     }
 
     private static class FluxEggSlot extends Slot {

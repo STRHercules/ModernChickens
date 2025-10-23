@@ -56,3 +56,4 @@
 - Add a resource-pack audit that flags new folders under `AdditionalAssets/chickens/textures` so the build script can be updated alongside future asset drops instead of silently skipping categories like particles or block items.
 - Add subtle particles or ambient audio cues when the Avian Flux Converter consumes a Flux Egg so players notice the transfer kicked off even without staring at the GUI.
 - Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.
+- Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
