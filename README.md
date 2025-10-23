@@ -151,6 +151,37 @@ The build copies legacy resources from `OriginalChickens`, optionally mirrors Ro
 4. **Scale production.** Tune `chickens.properties` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
 
 
+## Redstone Flux
+
+Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
+
+- **Redstone Flux Chicken** – A tier 3 breed unlocked by pairing Redstone and Glowstone chickens. Every drop is a charged Flux Egg so energy farms can start as soon as the bird hatches.
+- **Flux Egg** – Stores Redstone Flux directly on the item stack. Freshly laid eggs hold 1,000 RF and gain another 100 RF for every growth, gain, or strength point above 1 (maxing out at 3,700 RF per egg from a 10/10/10 chicken).
+- **Avian Flux Converter** – A single-slot machine that drains Flux Eggs into a 50,000 RF internal buffer while exporting energy to adjacent consumers. Empty shells are discarded automatically once their payload is exhausted.
+
+### Flux Egg charge scaling
+
+Flux Eggs inherit the stats of the chicken that laid them, so every breed and breeding investment matters:
+
+| Chicken stats | Stored RF per egg | Notes |
+| --- | --- | --- |
+| 1/1/1 (base) | 1,000 RF | Entry-level output straight from newly bred birds. |
+| 10/10/10 (max) | 3,700 RF | Gains also triple the stack size, dropping **three** eggs per cycle. |
+
+The Avian Flux Converter converts each egg’s stored energy on a one-to-one basis, so farms can bank or route the full payload without transmission loss.
+
+### Roost throughput examples
+
+Roost production scales with both chicken stats and stack size. Each cycle takes roughly 27,000 server ticks (the midpoint between the Redstone Flux Chicken’s 18,000–36,000 tick lay window) divided by the number of working chickens times their growth stat. The figures below assume default config values, infinite storage, and continuous feeding so every roost stays active.
+
+| Installation | RF/t per roost | 10 roosts | 20 roosts | 30 roosts |
+| --- | ---: | ---: | ---: | ---: |
+| 1× base Redstone Flux Chicken (stats 1/1/1) | ≈0.04 | ≈0.37 | ≈0.74 | ≈1.11 |
+| 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
+| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
+
+> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.properties`.
+
 ## Support and contributions
 
 - File gameplay bugs or crash reports through the project issue tracker (link in `neoforge.mods.toml`).

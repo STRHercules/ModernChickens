@@ -635,3 +635,12 @@
   2. Wired block entity update packets to serialise and broadcast the full inventory tag whenever the server marks the chicken list dirty.
   3. Rebuilt the project with `./gradlew build --console=plain` to validate the real-time sync compiles cleanly.
 - **Rationale**: Broadcasting the block entity state as soon as chickens are inserted lets the renderer display the updated stack count without waiting for a GUI sync.
+
+## Entry 79
+- **Prompt/Task**: Document the Redstone Flux Chicken, Flux Egg, and Avian Flux Converter plus showcase Flux Egg efficiency numbers.
+- **Steps**:
+  1. Expanded the README with a dedicated Redstone Flux section outlining the new chicken, Flux Egg mechanics, and the Avian Flux Converter workflow.
+  2. Calculated Flux Egg charge scaling and roost throughput for base and max-stat chickens, summarising the numbers in tables covering 10/20/30 roost arrays.
+  3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
+- **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
+
