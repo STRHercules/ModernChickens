@@ -59,6 +59,12 @@ tasks.named('processResources') {
             into 'assets/chickens/textures/entity'
         }
     }
+    def extraItemTextures = additionalAssetsDir.dir('item').asFile
+    if (extraItemTextures.exists()) {
+        from(extraItemTextures) {
+            into 'assets/chickens/textures/item'
+        }
+    }
     def extraGuiTextures = additionalAssetsDir.dir('gui').asFile
     if (extraGuiTextures.exists()) {
         from(extraGuiTextures) {

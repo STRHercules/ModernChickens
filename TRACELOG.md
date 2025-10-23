@@ -563,3 +563,11 @@
   3. Re-skinned the Avian Flux Converter screen around `fluxconverter.png`, moved the slot to the authored location, and added a textured battery gauge that fills upward while reporting stored RF tooltips.
   4. Ensured the converter is the sole RF provider by consuming empty Flux Eggs, tightening the energy capability gate, and validating the behaviour with `./gradlew build --console=plain`.
 - **Rationale**: Wiring in the updated art and energy handling keeps the Redstone Flux feature set visually consistent, prevents stray blocks from leaking RF overlays, and delivers an accurate converter GUI that matches the supplied asset.
+
+## Entry 70
+- **Prompt/Task**: Restore the Redstone Flux chicken textures, fix the converter's energy display, and let it export RF to adjacent pipes.
+- **Steps**:
+  1. Expanded the Gradle resource task to scoop up `AdditionalAssets/chickens/textures/item` so the redstone crystal inventory sprite is packaged with the mod.
+  2. Broke the converter's egg draining into a helper that now also pushes stored RF to neighbouring energy handlers every tick, ensuring gauges/comparators stay in sync.
+  3. Reinstated the direct energy capability registration so probes once again detect the converter's buffer while keeping the API surface limited to that block.
+- **Rationale**: Shipping the missing texture fixes the crystal chicken icon, while the converter changes synchronise its GUI with real energy levels and allow standard automation pipes to extract RF from any face.

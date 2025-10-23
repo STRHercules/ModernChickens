@@ -25,7 +25,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
@@ -141,25 +143,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         if (level.isClientSide) {
             return;
         }
-        ItemStack stack = items.get(0);
-        if (!isFluxEgg(stack)) {
-            return;
+        boolean drainedEgg = drainFluxEgg();
+        if (energy > 0) {
+            pushEnergyToNeighbors(level);
         }
-        int stored = FluxEggItem.getStoredEnergy(stack);
-        if (stored <= 0 || energy >= capacity) {
-            return;
+        if (drainedEgg) {
+            setChanged();
         }
-        int transferred = energyStorage.receiveEnergy(stored, false);
-        if (transferred <= 0) {
-            return;
-        }
-        int remaining = stored - transferred;
-        FluxEggItem.setStoredEnergy(stack, remaining);
-        if (remaining <= 0) {
-            // Remove the depleted shell once its Redstone Flux payload is exhausted.
-            items.set(0, ItemStack.EMPTY);
-        }
-        setChanged();
     }
 
     private void markEnergyDirty() {
@@ -173,6 +163,57 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
     private int clampEnergy(int value) {
         return Mth.clamp(value, 0, capacity);
+    }
+
+    // Pulls Redstone Flux out of the inserted egg, returning whether the stack was
+    // mutated so the caller can refresh container state when needed.
+    private boolean drainFluxEgg() {
+        ItemStack stack = items.get(0);
+        if (!isFluxEgg(stack)) {
+            return false;
+        }
+        int stored = FluxEggItem.getStoredEnergy(stack);
+        if (stored <= 0 || energy >= capacity) {
+            return false;
+        }
+        int transferred = energyStorage.receiveEnergy(stored, false);
+        if (transferred <= 0) {
+            return false;
+        }
+        int remaining = stored - transferred;
+        FluxEggItem.setStoredEnergy(stack, remaining);
+        if (remaining <= 0) {
+            // Remove the depleted shell once its Redstone Flux payload is exhausted.
+            items.set(0, ItemStack.EMPTY);
+        }
+        return true;
+    }
+
+    // Attempts to hand off power to every adjacent block entity so automation
+    // mods can siphon the converter's charge with standard pipes.
+    private void pushEnergyToNeighbors(Level level) {
+        for (Direction direction : Direction.values()) {
+            if (energy <= 0) {
+                return;
+            }
+            BlockPos targetPos = worldPosition.relative(direction);
+            IEnergyStorage target = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos,
+                    direction.getOpposite());
+            if (target == null) {
+                continue;
+            }
+            int available = Math.min(MAX_TRANSFER, energy);
+            if (available <= 0) {
+                continue;
+            }
+            int accepted = target.receiveEnergy(available, false);
+            if (accepted <= 0) {
+                continue;
+            }
+            // Mirror the transfer into our internal storage so comparator outputs and
+            // GUI sync reflect the exported RF total immediately.
+            energyStorage.extractEnergy(accepted, false);
+        }
     }
 
     public NonNullList<ItemStack> getItems() {
