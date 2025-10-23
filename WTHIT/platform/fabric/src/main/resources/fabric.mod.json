@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id"           : "wthit",
+  "provides"     : ["waila"],
+  "version"      : "${version}",
+  "entrypoints"  : {
+    "main"          : ["mcp.mobius.waila.fabric.FabricWaila"],
+    "client"        : ["mcp.mobius.waila.fabric.FabricWailaClient"],
+    "server"        : ["mcp.mobius.waila.fabric.FabricWailaDedicatedServer"],
+    "emi"           : ["mcp.mobius.waila.integration.emi.EmiRecipeAction"],
+    "jei_mod_plugin": ["mcp.mobius.waila.integration.jei.JeiRecipeAction"],
+    "modmenu"       : ["mcp.mobius.waila.integration.modmenu.WailaModMenu"],
+    "rei_client"    : ["mcp.mobius.waila.integration.reiwhycheckingforpackagename.ReiRecipeAction"]
+  },
+  "mixins"       : ["wthit.mixins.json"],
+  "name"         : "wthit",
+  "description"  : "What the hell is that?",
+  "icon"         : "wthit.png",
+  "contact"      : {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/wthit",
+    "issues"  : "https://github.com/badasintended/wthit/issues",
+    "sources" : "https://github.com/badasintended/wthit"
+  },
+  "license"      : "CC-BY-NC-SA-4.0",
+  "authors"      : [
+    "deirn",
+    {
+      "name"   : "Nicholas \"TehNut\" Ignoffo",
+      "contact": {
+        "email"   : "nick@tehnut.info",
+        "homepage": "https://tehnut.info"
+      }
+    },
+    {
+      "name"   : "ProfMobius",
+      "contact": {
+        "homepage": "https://twitter.com/profmobius"
+      }
+    }
+  ],
+
+  "depends"      : {
+    "fabricloader": ">=0.17.2",
+    "fabric"      : ">=0.133.10",
+    "minecraft"   : ">=1.21.9-",
+    "badpackets"  : ">=0.10-0"
+  },
+  "breaks"       : {
+    "roughlyenoughitems": "<9.0.462"
+  },
+  "suggests"     : {
+    "modmenu": "*"
+  }
+}

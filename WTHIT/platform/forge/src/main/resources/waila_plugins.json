@@ -1,0 +1,46 @@
+{
+  "waila:core"   : {
+    "entrypoints": {
+      "common": "mcp.mobius.waila.plugin.core.CoreCommonPlugin",
+      "client": "mcp.mobius.waila.plugin.core.CoreClientPlugin"
+    },
+    "side"       : "*",
+    "required"   : []
+  },
+
+  "waila:vanilla": {
+    "entrypoints": {
+      "common": "mcp.mobius.waila.plugin.vanilla.VanillaCommonPlugin",
+      "client": "mcp.mobius.waila.plugin.vanilla.VanillaClientPlugin"
+    },
+    "side"       : "*",
+    "required"   : ["minecraft"]
+  },
+
+  "waila:harvest": {
+    "entrypoints": {
+      "common": "mcp.mobius.waila.plugin.harvest.HarvestCommonPlugin",
+      "client": "mcp.mobius.waila.plugin.harvest.HarvestClientPlugin"
+    },
+    "side"       : "*",
+    "required"   : []
+  },
+
+  "waila:extra"  : {
+    "entrypoints": {
+      "common": "mcp.mobius.waila.plugin.extra.ExtraPlugin",
+      "client": "mcp.mobius.waila.plugin.extra.ExtraPlugin"
+    },
+    "side"       : "*",
+    "required"   : []
+  },
+
+  "waila:forge"  : {
+    "entrypoints": {
+      "common": "mcp.mobius.waila.plugin.forge.ForgeCommonPlugin",
+      "client": "mcp.mobius.waila.plugin.forge.ForgeClientPlugin"
+    },
+    "side"       : "*",
+    "required"   : ["forge"]
+  }
+}

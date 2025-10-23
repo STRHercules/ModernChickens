@@ -23,6 +23,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ├─ MoreChickens/                      # MoreChickens - Chicken expansion mod Source Code (READ-ONLY)
 ├─ Hatchery/                          # Hatchery Source Code (READ-ONLY)
 ├─ Roost/                             # Roost Source Code (READ-ONLY)
+├─ WTHIT/                             # What The Hell Is That Source Code (WAILA) (READ-ONLY)
 ├─ Minecraft_Client_Source_1.21.1/    # Minecraft 1.21.1 Client Source Code (READ-ONLY)
 └─ NeoForge-1.21.x/                   # NeoForge Source Code (READ-ONLY)
 ```

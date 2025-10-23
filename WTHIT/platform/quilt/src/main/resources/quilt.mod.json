@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "quilt_loader"  : {
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "group"                : "mcp.mobius.waila",
+    "id"                   : "wthit",
+    "provides"             : ["waila"],
+    "version"              : "${version}",
+    "metadata"             : {
+      "name"        : "wthit",
+      "description" : "What the hell is that?",
+      "icon"        : "wthit.png",
+      "license"     : "CC-BY-NC-SA-4.0",
+      "contributors": {
+        "deirn"     : "Author",
+        "TehNut"    : "Author",
+        "ProfMobius": "Author"
+      },
+      "contact"     : {
+        "homepage": "https://www.curseforge.com/minecraft/mc-mods/wthit",
+        "issues"  : "https://github.com/badasintended/wthit/issues",
+        "sources" : "https://github.com/badasintended/wthit"
+      }
+    },
+    "entrypoints"          : {
+      "init"          : ["mcp.mobius.waila.quilt.QuiltWaila"],
+      "client_init"   : ["mcp.mobius.waila.quilt.QuiltWailaClient"],
+      "emi"           : ["mcp.mobius.waila.integration.emi.EmiRecipeAction"],
+      "jei_mod_plugin": ["mcp.mobius.waila.integration.jei.JeiRecipeAction"],
+      "modmenu"       : ["mcp.mobius.waila.integration.modmenu.WailaModMenu"],
+      "rei_client"    : ["mcp.mobius.waila.integration.reiwhycheckingforpackagename.ReiRecipeAction"]
+    },
+    "depends"              : [
+      {
+        "id"      : "quilt_loader",
+        "versions": ">=0.17.0-"
+      },
+      {
+        "id"      : "quilted_fabric_api",
+        "versions": ">=9.0.0-"
+      },
+      {
+        "id"      : "minecraft",
+        "versions": ">=1.20.3-"
+      },
+      {
+        "id"      : "badpackets",
+        "versions": ">=0.6-"
+      }
+    ]
+  },
+  "mixin"         : "wthit.mixins.json"
+}

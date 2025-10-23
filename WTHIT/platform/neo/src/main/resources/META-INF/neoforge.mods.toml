@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+issueTrackerURL = "https://github.com/badasintended/wthit/issues"
+displayURL = "https://github.com/badasintended/wthit"
+license = "CC-BY-NC-SA-4.0"
+
+[[mixins]]
+config = "wthit.mixins.json"
+
+[[mods]]
+modId = "wthit"
+version = "${version}"
+displayName = "wthit"
+description = "What the hell is that? Forge Edition"
+authors = "deirn, TehNut, ProfMobius"
+logoFile = "wthit.png"
+
+[[mods]]
+modId = "waila"
+version = "${version}"
+displayName = "waila"
+description = "Actually WTHIT but with \"waila\" as it's id lmao"
+authors = "deirn, TehNut, ProfMobius"
+logoFile = "wthit.png"
+
+[[dependencies.wthit]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.9.16-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.wthit]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.9,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.wthit]]
+modId = "badpackets"
+type = "required"
+versionRange = "[0.10.1,)"
+ordering = "NONE"
+side = "BOTH"
