@@ -56,7 +56,10 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
     private void renderEnergyBar(GuiGraphics graphics, int originX, int originY) {
         int energy = this.menu.getEnergy();
         int capacity = this.menu.getCapacity();
-        int filledHeight = capacity <= 0 ? 0 : Mth.ceil((energy / (float) capacity) * ENERGY_BAR_HEIGHT);
+        if (capacity <= 0) {
+            return;
+        }
+        int filledHeight = Mth.clamp(Mth.ceil((energy / (float) capacity) * ENERGY_BAR_HEIGHT), 0, ENERGY_BAR_HEIGHT);
         if (filledHeight <= 0) {
             return;
         }

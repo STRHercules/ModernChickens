@@ -54,3 +54,4 @@
 - Document the Avian Flux Converter inside JEI/REI so players can review its energy capacity, accepted items, and transfer speed without guessing how many Flux Eggs they should invest.
 - Provide a dedicated Jade/TOP data provider for the Avian Flux Converter so in-world overlays report the stored RF explicitly instead of relying on generic energy detection heuristics.
 - Add a resource-pack audit that flags new folders under `AdditionalAssets/chickens/textures` so the build script can be updated alongside future asset drops instead of silently skipping categories like particles or block items.
+- Add subtle particles or ambient audio cues when the Avian Flux Converter consumes a Flux Egg so players notice the transfer kicked off even without staring at the GUI.

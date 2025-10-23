@@ -571,3 +571,11 @@
   2. Broke the converter's egg draining into a helper that now also pushes stored RF to neighbouring energy handlers every tick, ensuring gauges/comparators stay in sync.
   3. Reinstated the direct energy capability registration so probes once again detect the converter's buffer while keeping the API surface limited to that block.
 - **Rationale**: Shipping the missing texture fixes the crystal chicken icon, while the converter changes synchronise its GUI with real energy levels and allow standard automation pipes to extract RF from any face.
+
+## Entry 71
+- **Prompt/Task**: Ensure the Redstone Flux chicken item sprite and flux converter GUI behave correctly with the new assets.
+- **Steps**:
+  1. Updated the chicken item override pipeline to prefer explicitly supplied textures even for built-in breeds so the redstone crystal sprite stitches instead of falling back to the tinted placeholder.
+  2. Lowered the Avian Flux Converter's battery to 50k RF and tightened the GUI gauge scaling so the on-screen bar mirrors the synced energy data.
+  3. Rebuilt the project to verify the revised renderer and capacity compile alongside the existing automation hooks.
+- **Rationale**: Honouring the bespoke texture and matching the GUI to the converter's actual buffer keeps the redstone flux feature set visually consistent and easier to read in-game.
