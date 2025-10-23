@@ -55,3 +55,4 @@
 - Provide a dedicated Jade/TOP data provider for the Avian Flux Converter so in-world overlays report the stored RF explicitly instead of relying on generic energy detection heuristics.
 - Add a resource-pack audit that flags new folders under `AdditionalAssets/chickens/textures` so the build script can be updated alongside future asset drops instead of silently skipping categories like particles or block items.
 - Add subtle particles or ambient audio cues when the Avian Flux Converter consumes a Flux Egg so players notice the transfer kicked off even without staring at the GUI.
+- Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.

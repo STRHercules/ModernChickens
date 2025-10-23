@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
@@ -55,19 +54,18 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
 
     private void renderEnergyBar(GuiGraphics graphics, int originX, int originY) {
         int energy = this.menu.getEnergy();
-        int capacity = this.menu.getCapacity();
-        if (capacity <= 0) {
+        int capacity = Math.max(this.menu.getCapacity(), 1);
+        int filled = Math.min(ENERGY_BAR_HEIGHT, energy * ENERGY_BAR_HEIGHT / capacity);
+        if (filled <= 0) {
             return;
         }
-        int filledHeight = Mth.clamp(Mth.ceil((energy / (float) capacity) * ENERGY_BAR_HEIGHT), 0, ENERGY_BAR_HEIGHT);
-        if (filledHeight <= 0) {
-            return;
-        }
+        int offset = ENERGY_BAR_HEIGHT - filled;
         int targetX = originX + ENERGY_BAR_X;
-        int targetY = originY + ENERGY_BAR_Y + (ENERGY_BAR_HEIGHT - filledHeight);
-        int textureY = ENERGY_TEXTURE_Y + (ENERGY_BAR_HEIGHT - filledHeight);
-        // Copy the lower segment of the gauge texture so the battery appears to fill upward.
-        graphics.blit(GUI_TEXTURE, targetX, targetY, ENERGY_TEXTURE_X, textureY, ENERGY_BAR_WIDTH, filledHeight, 256, 256);
+        int targetY = originY + ENERGY_BAR_Y + offset;
+        // Mirror the Henhouse hay gauge math so the bar grows upward from the new
+        // fluxconverter.png coordinates instead of draining downward.
+        graphics.blit(GUI_TEXTURE, targetX, targetY, ENERGY_TEXTURE_X, ENERGY_TEXTURE_Y + offset, ENERGY_BAR_WIDTH, filled,
+                256, 256);
     }
 
     private void renderEnergyTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -75,7 +73,7 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
             return;
         }
         int energy = this.menu.getEnergy();
-        int capacity = this.menu.getCapacity();
+        int capacity = Math.max(this.menu.getCapacity(), 1);
         graphics.renderTooltip(this.font, Component.translatable("tooltip.chickens.avian_flux_converter.energy", energy, capacity),
                 mouseX, mouseY);
     }

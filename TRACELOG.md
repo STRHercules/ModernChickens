@@ -579,3 +579,11 @@
   2. Lowered the Avian Flux Converter's battery to 50k RF and tightened the GUI gauge scaling so the on-screen bar mirrors the synced energy data.
   3. Rebuilt the project to verify the revised renderer and capacity compile alongside the existing automation hooks.
 - **Rationale**: Honouring the bespoke texture and matching the GUI to the converter's actual buffer keeps the redstone flux feature set visually consistent and easier to read in-game.
+
+## Entry 72
+- **Prompt/Task**: Match the Avian Flux Converter gauge to the Henhouse behaviour and clamp legacy batteries to 50k RF.
+- **Steps**:
+  1. Reworked the flux converter screen to reuse the Henhouse-style fill math so the new fluxconverter.png bar rises from the correct coordinates and reflects stored RF at a glance.
+  2. Hardened block entity loading by capping any saved capacity above 50k so the GUI, tooltip, and automation logic stay in sync after older worlds are upgraded.
+  3. Ran `./gradlew build --console=plain` to validate the revised rendering and data migration compile cleanly.
+- **Rationale**: Mirroring the proven Henhouse UI logic and enforcing the new battery ceiling ensures players see accurate charge levels even on existing converters.

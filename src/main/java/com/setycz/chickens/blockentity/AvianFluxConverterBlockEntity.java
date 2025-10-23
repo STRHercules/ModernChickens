@@ -361,7 +361,9 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("Capacity")) {
-            capacity = Math.max(1, tag.getInt("Capacity"));
+            // Clamp legacy saves down to the modern 50k ceiling so the GUI and
+            // battery math stay in sync with the new balance pass.
+            capacity = Math.min(CAPACITY, Math.max(1, tag.getInt("Capacity")));
         } else {
             capacity = CAPACITY;
         }
