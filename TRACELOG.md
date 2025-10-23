@@ -627,3 +627,11 @@
   2. Extended the WTHIT data payload with the new increment value and normalised the remaining ticks back into real-time before formatting the ETA line.
   3. Executed `./gradlew build --console=plain` to confirm the enhanced overlay compiles after the timing adjustments.
 - **Rationale**: Translating the accelerated progress counters into wall-clock ticks keeps the HUD countdown trustworthy even when multiple chickens speed up the roost.
+
+## Entry 78
+- **Prompt/Task**: Ensure roosted chickens appear immediately after being shift-right-clicked into the block.
+- **Steps**:
+  1. Triggered a block update every time the container chicken data changes so clients always receive fresh inventory snapshots.
+  2. Wired block entity update packets to serialise and broadcast the full inventory tag whenever the server marks the chicken list dirty.
+  3. Rebuilt the project with `./gradlew build --console=plain` to validate the real-time sync compiles cleanly.
+- **Rationale**: Broadcasting the block entity state as soon as chickens are inserted lets the renderer display the updated stack count without waiting for a GUI sync.

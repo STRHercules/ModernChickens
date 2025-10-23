@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.ContainerHelper;
@@ -23,6 +24,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -156,8 +160,10 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         boolean wasFullOfSeeds = fullOfSeeds;
         fullOfChickens = isFullOfChickens();
         fullOfSeeds = isFullOfSeeds();
+        // Always push a block update when chicken inventory data changes so the client
+        // receives the refreshed stack counts without needing an extra GUI sync.
+        notifyBlockUpdate(level);
         if (wasFullOfChickens != fullOfChickens || wasFullOfSeeds != fullOfSeeds) {
-            notifyBlockUpdate(level);
             onFullnessChanged(level, fullOfChickens, fullOfSeeds);
         }
         needsChickenUpdate = false;
@@ -559,6 +565,28 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     @Override
     public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        // Broadcast the full block entity tag whenever the server marks the chicken data
+        // dirty so the renderer can immediately reflect newly inserted stacks.
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            loadAdditional(tag, registries);
+        }
     }
 
     private void notifyBlockUpdate(Level level) {
