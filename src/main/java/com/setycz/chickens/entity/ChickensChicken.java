@@ -241,12 +241,32 @@ public class ChickensChicken extends Chicken {
         if (stack.isEmpty()) {
             return;
         }
+        ItemStack prepared = stack.copy();
+        imprintFluxEggCharge(prepared);
+        Level level = this.level();
+        if (level == null) {
+            // Defensive guard for edge cases where the entity is deserialised before
+            // the world reference is restored (e.g., during chunk rebuilds).
+            this.spawnAtLocation(prepared, 0.0F);
+            return;
+        }
         // Try to offload the item stack into any henhouse before spawning it
         // directly so farms that depend on automation remain intact.
-        ItemStack leftover = HenhouseBlockEntity.pushItemStack(stack.copy(), this.level(), this.position());
+        ItemStack leftover = HenhouseBlockEntity.pushItemStack(prepared, level, this.position());
         if (!leftover.isEmpty()) {
+            imprintFluxEggCharge(leftover);
             this.spawnAtLocation(leftover, 0.0F);
         }
+    }
+
+    private void imprintFluxEggCharge(ItemStack stack) {
+        if (!(stack.getItem() instanceof FluxEggItem)) {
+            return;
+        }
+        // Snapshot the bird's stats so every laid or dropped flux egg carries a
+        // matching RF payload, keeping henhouse deliveries and world drops in sync.
+        ChickenStats stats = new ChickenStats(this.getGrowth(), this.getGain(), this.getStrength(), this.getStatsAnalyzed());
+        FluxEggItem.imprintStats(stack, stats);
     }
 
     @Nullable
@@ -331,6 +351,7 @@ public class ChickensChicken extends Chicken {
         ChickensRegistryItem description = this.getChickenDescription();
         if (description != null) {
             ItemStack drop = description.createDropItem();
+            imprintFluxEggCharge(drop);
             drop.setCount(1 + this.random.nextInt(1 + this.getLooting(level, source)));
             this.spawnAtLocation(drop, 0.0F);
         }

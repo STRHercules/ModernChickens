@@ -45,26 +45,40 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     private final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
+            // Split the 32-bit energy/capacity pair across four shorts so vanilla's
+            // container sync (which writes values as unsigned shorts) can ship the
+            // full Redstone Flux totals to clients without truncating high bits.
             return switch (index) {
-            case 0 -> energy;
-            case 1 -> capacity;
+            case 0 -> energy & 0xFFFF;
+            case 1 -> (energy >>> 16) & 0xFFFF;
+            case 2 -> capacity & 0xFFFF;
+            case 3 -> (capacity >>> 16) & 0xFFFF;
             default -> 0;
             };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) {
-                energy = Mth.clamp(value, 0, capacity);
-            } else if (index == 1) {
-                capacity = Math.max(1, value);
+            int masked = value & 0xFFFF;
+            switch (index) {
+            case 0 -> energy = clampEnergy((energy & 0xFFFF0000) | masked);
+            case 1 -> energy = clampEnergy((energy & 0x0000FFFF) | (masked << 16));
+            case 2 -> {
+                capacity = Math.max(1, (capacity & 0xFFFF0000) | masked);
                 energy = Math.min(energy, capacity);
+            }
+            case 3 -> {
+                capacity = Math.max(1, (capacity & 0x0000FFFF) | (masked << 16));
+                energy = Math.min(energy, capacity);
+            }
+            default -> {
+            }
             }
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return 4;
         }
     };
 
@@ -150,6 +164,10 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
             level.updateNeighbourForOutputSignal(worldPosition, state.getBlock());
         }
+    }
+
+    private int clampEnergy(int value) {
+        return Mth.clamp(value, 0, capacity);
     }
 
     public NonNullList<ItemStack> getItems() {

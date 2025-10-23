@@ -105,11 +105,19 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
     }
 
     public int getEnergy() {
-        return data.get(0);
+        // Combine the low/high shorts mirrored by the block entity so the GUI
+        // reads the full 32-bit RF total rather than the truncated container data.
+        return combineData(0, 1);
     }
 
     public int getCapacity() {
-        return data.get(1);
+        return combineData(2, 3);
+    }
+
+    private int combineData(int lowIndex, int highIndex) {
+        int low = data.get(lowIndex) & 0xFFFF;
+        int high = data.get(highIndex) & 0xFFFF;
+        return (high << 16) | low;
     }
 
     private static class FluxEggSlot extends Slot {

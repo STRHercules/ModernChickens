@@ -51,4 +51,4 @@
 - Cache the generated `minecraft:item/generated` parent (or transition to a runtime resource pack) so repeated custom chickens avoid resolving the same model every render, keeping the override pipeline efficient as datapack counts grow.
 - Add a lightweight client regression test or debug assertion that verifies chicken item stacks resolve their per-breed display names so future refactors don't revert tooltips and inventory labels back to the generic "Chicken" title.
 - Expose configuration knobs for Flux Egg capacity scaling and the Avian Flux Converter's transfer rates so modpacks can balance energy progression without code changes.
-
+- Document the Avian Flux Converter inside JEI/REI so players can review its energy capacity, accepted items, and transfer speed without guessing how many Flux Eggs they should invest.

@@ -136,6 +136,16 @@ public final class DefaultChickens {
                 sandChicken);
         chickens.add(redstoneChicken);
 
+        ChickensRegistryItem redstoneFluxChicken = new ChickensRegistryItem(
+                404, "RedstoneFluxChicken", texture("RedstoneFluxChicken"),
+                // Pre-charge the egg so freshly bred birds immediately output RF.
+                FluxEggItem.create(FluxEggItem.BASE_CAPACITY),
+                0xff3c3c, 0xffb347,
+                redstoneChicken,
+                glowstoneChicken);
+        redstoneFluxChicken.setDropItem(FluxEggItem.create(FluxEggItem.BASE_CAPACITY));
+        chickens.add(redstoneFluxChicken);
+
         ChickensRegistryItem glassChicken = new ChickensRegistryItem(
                 106, "GlassChicken", texture("GlassChicken"),
                 new ItemStack(Blocks.GLASS),
