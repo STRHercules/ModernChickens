@@ -1,7 +1,6 @@
 package com.setycz.chickens.registry;
 
 import com.setycz.chickens.liquidegg.LiquidEggFluidWrapper;
-import com.setycz.chickens.registry.ModBlockEntities;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;

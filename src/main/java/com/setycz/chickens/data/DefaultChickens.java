@@ -144,6 +144,7 @@ public final class DefaultChickens {
                 redstoneChicken,
                 glowstoneChicken);
         redstoneFluxChicken.setDropItem(FluxEggItem.create(FluxEggItem.BASE_CAPACITY));
+        applyItemTextureOverride(redstoneFluxChicken);
         chickens.add(redstoneFluxChicken);
 
         ChickensRegistryItem glassChicken = new ChickensRegistryItem(
@@ -300,9 +301,31 @@ public final class DefaultChickens {
                 0xf2f2f2, color.getTextColor());
     }
 
+    // Map legacy entity identifiers onto bespoke texture assets supplied with the modern pack.
+    private static final Map<String, ResourceLocation> ENTITY_TEXTURE_OVERRIDES = Map.of(
+            "redstonefluxchicken",
+            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/redstone_crystal_chicken.png"));
+
+    // Mirror the entity override onto the item sprite so inventory icons match the in-world model.
+    private static final Map<String, ResourceLocation> ITEM_TEXTURE_OVERRIDES = Map.of(
+            "redstonefluxchicken",
+            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/chicken/redstonecrystalchicken.png"));
+
     private static ResourceLocation texture(String name) {
         String path = name.toLowerCase(Locale.ROOT);
+        ResourceLocation override = ENTITY_TEXTURE_OVERRIDES.get(path);
+        if (override != null) {
+            return override;
+        }
         return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
+    }
+
+    private static void applyItemTextureOverride(ChickensRegistryItem chicken) {
+        String key = chicken.getEntityName().toLowerCase(Locale.ROOT);
+        ResourceLocation override = ITEM_TEXTURE_OVERRIDES.get(key);
+        if (override != null) {
+            chicken.setItemTexture(override);
+        }
     }
 
     /**

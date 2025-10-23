@@ -19,13 +19,14 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
@@ -38,54 +39,14 @@ import javax.annotation.Nullable;
 public class AvianFluxConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
-    private static final int CAPACITY = 500_000;
+    private static final int CAPACITY = 50_000;
     private static final int MAX_TRANSFER = 4_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
-    private final ContainerData dataAccess = new ContainerData() {
-        @Override
-        public int get(int index) {
-            // Split the 32-bit energy/capacity pair across four shorts so vanilla's
-            // container sync (which writes values as unsigned shorts) can ship the
-            // full Redstone Flux totals to clients without truncating high bits.
-            return switch (index) {
-            case 0 -> energy & 0xFFFF;
-            case 1 -> (energy >>> 16) & 0xFFFF;
-            case 2 -> capacity & 0xFFFF;
-            case 3 -> (capacity >>> 16) & 0xFFFF;
-            default -> 0;
-            };
-        }
-
-        @Override
-        public void set(int index, int value) {
-            int masked = value & 0xFFFF;
-            switch (index) {
-            case 0 -> energy = clampEnergy((energy & 0xFFFF0000) | masked);
-            case 1 -> energy = clampEnergy((energy & 0x0000FFFF) | (masked << 16));
-            case 2 -> {
-                capacity = Math.max(1, (capacity & 0xFFFF0000) | masked);
-                energy = Math.min(energy, capacity);
-            }
-            case 3 -> {
-                capacity = Math.max(1, (capacity & 0x0000FFFF) | (masked << 16));
-                energy = Math.min(energy, capacity);
-            }
-            default -> {
-            }
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 4;
-        }
-    };
-
     private final EnergyStorage energyStorage = new EnergyStorage(CAPACITY, MAX_TRANSFER, MAX_TRANSFER) {
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            int space = capacity - energy;
+            int space = capacity - AvianFluxConverterBlockEntity.this.energy;
             if (space <= 0) {
                 return 0;
             }
@@ -94,7 +55,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
                 return 0;
             }
             if (!simulate) {
-                energy += accepted;
+                AvianFluxConverterBlockEntity.this.energy += accepted;
                 markEnergyDirty();
             }
             return accepted;
@@ -102,12 +63,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
         @Override
         public int extractEnergy(int maxExtract, boolean simulate) {
-            int available = Math.min(MAX_TRANSFER, Math.min(energy, maxExtract));
+            int available = Math.min(MAX_TRANSFER,
+                    Math.min(AvianFluxConverterBlockEntity.this.energy, maxExtract));
             if (available <= 0) {
                 return 0;
             }
             if (!simulate) {
-                energy -= available;
+                AvianFluxConverterBlockEntity.this.energy -= available;
                 markEnergyDirty();
             }
             return available;
@@ -115,12 +77,12 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
         @Override
         public int getEnergyStored() {
-            return energy;
+            return AvianFluxConverterBlockEntity.this.energy;
         }
 
         @Override
         public int getMaxEnergyStored() {
-            return capacity;
+            return AvianFluxConverterBlockEntity.this.capacity;
         }
     };
 
@@ -141,20 +103,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         if (level.isClientSide) {
             return;
         }
-        ItemStack stack = items.get(0);
-        if (!isFluxEgg(stack)) {
-            return;
+        boolean drainedEgg = drainFluxEgg();
+        if (energy > 0) {
+            pushEnergyToNeighbors(level);
         }
-        int stored = FluxEggItem.getStoredEnergy(stack);
-        if (stored <= 0 || energy >= capacity) {
-            return;
+        if (drainedEgg) {
+            setChanged();
         }
-        int transferred = energyStorage.receiveEnergy(stored, false);
-        if (transferred <= 0) {
-            return;
-        }
-        FluxEggItem.setStoredEnergy(stack, stored - transferred);
-        setChanged();
     }
 
     private void markEnergyDirty() {
@@ -166,16 +121,59 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
     }
 
-    private int clampEnergy(int value) {
-        return Mth.clamp(value, 0, capacity);
+    // Pulls Redstone Flux out of the inserted egg, returning whether the stack was
+    // mutated so the caller can refresh container state when needed.
+    private boolean drainFluxEgg() {
+        ItemStack stack = items.get(0);
+        if (!isFluxEgg(stack)) {
+            return false;
+        }
+        int stored = FluxEggItem.getStoredEnergy(stack);
+        if (stored <= 0 || energy >= capacity) {
+            return false;
+        }
+        int transferred = energyStorage.receiveEnergy(stored, false);
+        if (transferred <= 0) {
+            return false;
+        }
+        int remaining = stored - transferred;
+        FluxEggItem.setStoredEnergy(stack, remaining);
+        if (remaining <= 0) {
+            // Remove the depleted shell once its Redstone Flux payload is exhausted.
+            items.set(0, ItemStack.EMPTY);
+        }
+        return true;
+    }
+
+    // Attempts to hand off power to every adjacent block entity so automation
+    // mods can siphon the converter's charge with standard pipes.
+    private void pushEnergyToNeighbors(Level level) {
+        for (Direction direction : Direction.values()) {
+            if (energy <= 0) {
+                return;
+            }
+            BlockPos targetPos = worldPosition.relative(direction);
+            IEnergyStorage target = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos,
+                    direction.getOpposite());
+            if (target == null) {
+                continue;
+            }
+            int available = Math.min(MAX_TRANSFER, energy);
+            if (available <= 0) {
+                continue;
+            }
+            int accepted = target.receiveEnergy(available, false);
+            if (accepted <= 0) {
+                continue;
+            }
+            // Mirror the transfer into our internal storage so comparator outputs and
+            // GUI sync reflect the exported RF total immediately.
+            energyStorage.extractEnergy(accepted, false);
+        }
     }
 
     public NonNullList<ItemStack> getItems() {
         return items;
-    }
-
-    public ContainerData getDataAccess() {
-        return dataAccess;
     }
 
     public int getComparatorOutput() {
@@ -187,6 +185,22 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
     public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
         return energyStorage;
+    }
+
+    /**
+     * Exposes the current RF stored so menus can mirror the exact value over the
+     * vanilla {@link net.minecraft.world.inventory.DataSlot} syncing system.
+     */
+    public int getEnergyStored() {
+        return energy;
+    }
+
+    /**
+     * Reports the converter's configured RF ceiling for GUI widgets and other
+     * client-side displays that need to scale values against the full buffer.
+     */
+    public int getEnergyCapacity() {
+        return capacity;
     }
 
     @Override
@@ -295,7 +309,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new AvianFluxConverterMenu(id, playerInventory, this, dataAccess);
+        return new AvianFluxConverterMenu(id, playerInventory, this);
     }
 
     @Override
@@ -315,7 +329,9 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("Capacity")) {
-            capacity = Math.max(1, tag.getInt("Capacity"));
+            // Clamp legacy saves down to the modern 50k ceiling so the GUI and
+            // battery math stay in sync with the new balance pass.
+            capacity = Math.min(CAPACITY, Math.max(1, tag.getInt("Capacity")));
         } else {
             capacity = CAPACITY;
         }

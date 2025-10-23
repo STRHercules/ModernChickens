@@ -52,3 +52,10 @@
 - Add a lightweight client regression test or debug assertion that verifies chicken item stacks resolve their per-breed display names so future refactors don't revert tooltips and inventory labels back to the generic "Chicken" title.
 - Expose configuration knobs for Flux Egg capacity scaling and the Avian Flux Converter's transfer rates so modpacks can balance energy progression without code changes.
 - Document the Avian Flux Converter inside JEI/REI so players can review its energy capacity, accepted items, and transfer speed without guessing how many Flux Eggs they should invest.
+- Provide a dedicated Jade/TOP data provider for the Avian Flux Converter so in-world overlays report the stored RF explicitly instead of relying on generic energy detection heuristics.
+- Add a resource-pack audit that flags new folders under `AdditionalAssets/chickens/textures` so the build script can be updated alongside future asset drops instead of silently skipping categories like particles or block items.
+- Add subtle particles or ambient audio cues when the Avian Flux Converter consumes a Flux Egg so players notice the transfer kicked off even without staring at the GUI.
+- Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.
+- Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
+- Factor the new 32-bit DataSlot splitter into a shared menu helper so upcoming machines can mirror large counters without duplicating the bit-packaging logic.
+- Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
