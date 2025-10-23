@@ -59,3 +59,8 @@
 - Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
 - Factor the new 32-bit DataSlot splitter into a shared menu helper so upcoming machines can mirror large counters without duplicating the bit-packaging logic.
 - Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
+- Offer a synced config toggle for the WTHIT plugin so packs that already rely on another HUD mod can disable the duplicate overlay lines without forking the code.
+- Mirror the real-time ETA normalisation logic inside the Jade tooltip helper so both overlays report consistent countdowns when stacked chickens speed up production.
+- Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
+- Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
+

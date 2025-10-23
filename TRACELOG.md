@@ -611,3 +611,36 @@
   2. Updated the block's harvest routine to serialize the block entity data onto the dropped item, ensuring stored RF and custom capacity survive being picked up and replaced.
   3. Ran `./gradlew build --console=plain` to confirm the unified energy tracking and persistence changes compile cleanly.
 - **Rationale**: Sharing one energy source of truth fixes the stuck 0 RF gauge while copying the block entity data into the drop preserves both energy and capacity between placements, matching the requested behaviour.
+
+## Entry 76
+- **Prompt/Task**: Add WTHIT overlays for the Avian Flux Converter, Roost, Chicken Breeder, and Henhouse.
+- **Steps**:
+  1. Registered dedicated WTHIT providers that mirror the existing Jade tooltips so energy, production progress, ETA, and hay reserves appear in the HUD.
+  2. Exposed safe accessors for the server-side lay timers to let integrations compute accurate countdowns without poking internal fields.
+  3. Declared the plugin metadata and localisation strings required to render the new overlay lines with consistent formatting.
+- **Rationale**: Aligning the WTHIT overlay with our Jade integration keeps the in-world readouts consistent regardless of which tooltip mod players prefer, improving usability for popular HUD setups.
+
+## Entry 77
+- **Prompt/Task**: Make the WTHIT ETA respect stacked chickens so the countdown matches real-world timing.
+- **Steps**:
+  1. Added a progress-per-tick accessor on the shared chicken container block entity so overlays can understand how stacked chickens accelerate production.
+  2. Extended the WTHIT data payload with the new increment value and normalised the remaining ticks back into real-time before formatting the ETA line.
+  3. Executed `./gradlew build --console=plain` to confirm the enhanced overlay compiles after the timing adjustments.
+- **Rationale**: Translating the accelerated progress counters into wall-clock ticks keeps the HUD countdown trustworthy even when multiple chickens speed up the roost.
+
+## Entry 78
+- **Prompt/Task**: Ensure roosted chickens appear immediately after being shift-right-clicked into the block.
+- **Steps**:
+  1. Triggered a block update every time the container chicken data changes so clients always receive fresh inventory snapshots.
+  2. Wired block entity update packets to serialise and broadcast the full inventory tag whenever the server marks the chicken list dirty.
+  3. Rebuilt the project with `./gradlew build --console=plain` to validate the real-time sync compiles cleanly.
+- **Rationale**: Broadcasting the block entity state as soon as chickens are inserted lets the renderer display the updated stack count without waiting for a GUI sync.
+
+## Entry 79
+- **Prompt/Task**: Document the Redstone Flux Chicken, Flux Egg, and Avian Flux Converter plus showcase Flux Egg efficiency numbers.
+- **Steps**:
+  1. Expanded the README with a dedicated Redstone Flux section outlining the new chicken, Flux Egg mechanics, and the Avian Flux Converter workflow.
+  2. Calculated Flux Egg charge scaling and roost throughput for base and max-stat chickens, summarising the numbers in tables covering 10/20/30 roost arrays.
+  3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
+- **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
+
