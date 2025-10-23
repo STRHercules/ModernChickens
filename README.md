@@ -182,6 +182,15 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 
 > **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.properties`.
 
+### Same graph in RF/s:
+
+| Installation | RF/s per roost | 10 roosts | 20 roosts | 30 roosts |
+|---|---:|---:|---:|---:|
+| 1× base Redstone Flux Chicken (1/1/1) | ≈0.8 | ≈7.4 | ≈14.8 | ≈22.2 |
+| 1× max-stat Redstone Flux Chicken (10/10/10) | ≈82.2 | ≈822.2 | ≈1,644.4 | ≈2,466.6 |
+| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈1,315.6 | ≈13,155.6 | ≈26,311.2 | ≈39,466.6 |
+
+
 ## Support and contributions
 
 - File gameplay bugs or crash reports through the project issue tracker (link in `neoforge.mods.toml`).
