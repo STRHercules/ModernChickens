@@ -25,6 +25,7 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
 
     private static final String ETA_KEY = "ChickensEta";
     private static final String TOTAL_KEY = "ChickensTotal";
+    private static final String STEP_KEY = "ChickensStep";
 
     @Override
     public void appendData(IDataWriter writer, IServerAccessor<T> accessor, IPluginConfig config) {
@@ -33,6 +34,7 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
         container.storeTooltipData(tag);
         tag.putInt(ETA_KEY, container.getRemainingLayTimeTicks());
         tag.putInt(TOTAL_KEY, container.getTotalLayTimeTicks());
+        tag.putInt(STEP_KEY, container.getProgressIncrementPerTick());
     }
 
     @Override
@@ -57,9 +59,20 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
         boolean hasSeeds = tag.getBoolean("HasSeeds");
         int totalTicks = tag.getInt(TOTAL_KEY);
         int etaTicks = tag.getInt(ETA_KEY);
-        if (hasChickens && hasSeeds && totalTicks > 0 && etaTicks > 0) {
-            tooltip.addLine(Component.translatable("tooltip.chickens.wthit.eta", describeEta(etaTicks)));
+        int step = tag.getInt(STEP_KEY);
+        if (hasChickens && hasSeeds && totalTicks > 0 && etaTicks > 0 && step > 0) {
+            tooltip.addLine(Component.translatable("tooltip.chickens.wthit.eta",
+                    describeEta(normaliseRemainingTicks(etaTicks, step))));
         }
+    }
+
+    private static int normaliseRemainingTicks(int remaining, int step) {
+        if (remaining <= 0 || step <= 0) {
+            return 0;
+        }
+        // Convert the accelerated progress counters back into real server ticks so
+        // the tooltip communicates an accurate wall-clock ETA regardless of stack size.
+        return Math.max(Mth.ceil(remaining / (float) step), 1);
     }
 
     private static Component describeEta(int ticks) {

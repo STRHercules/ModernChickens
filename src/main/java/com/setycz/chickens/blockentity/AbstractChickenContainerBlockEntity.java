@@ -311,6 +311,19 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         return Math.max(timeUntilNextDrop - timeElapsed, 0);
     }
 
+    /**
+     * Reports how many progress units elapse per server tick while the
+     * container is actively working. This lets external integrations translate
+     * the internal counters into real-time durations even when multiple
+     * chickens accelerate production.
+     */
+    public int getProgressIncrementPerTick() {
+        if (fullOfChickens && fullOfSeeds && !outputIsFull()) {
+            return Math.max(getTimeElapsed(), 0);
+        }
+        return 0;
+    }
+
     private boolean isFullOfChickens() {
         for (int slot = 0; slot < chickenData.length; slot++) {
             updateChickenInfoForSlot(slot);

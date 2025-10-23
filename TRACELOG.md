@@ -619,3 +619,11 @@
   2. Exposed safe accessors for the server-side lay timers to let integrations compute accurate countdowns without poking internal fields.
   3. Declared the plugin metadata and localisation strings required to render the new overlay lines with consistent formatting.
 - **Rationale**: Aligning the WTHIT overlay with our Jade integration keeps the in-world readouts consistent regardless of which tooltip mod players prefer, improving usability for popular HUD setups.
+
+## Entry 77
+- **Prompt/Task**: Make the WTHIT ETA respect stacked chickens so the countdown matches real-world timing.
+- **Steps**:
+  1. Added a progress-per-tick accessor on the shared chicken container block entity so overlays can understand how stacked chickens accelerate production.
+  2. Extended the WTHIT data payload with the new increment value and normalised the remaining ticks back into real-time before formatting the ETA line.
+  3. Executed `./gradlew build --console=plain` to confirm the enhanced overlay compiles after the timing adjustments.
+- **Rationale**: Translating the accelerated progress counters into wall-clock ticks keeps the HUD countdown trustworthy even when multiple chickens speed up the roost.
