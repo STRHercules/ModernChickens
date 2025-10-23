@@ -153,7 +153,12 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         if (transferred <= 0) {
             return;
         }
-        FluxEggItem.setStoredEnergy(stack, stored - transferred);
+        int remaining = stored - transferred;
+        FluxEggItem.setStoredEnergy(stack, remaining);
+        if (remaining <= 0) {
+            // Remove the depleted shell once its Redstone Flux payload is exhausted.
+            items.set(0, ItemStack.EMPTY);
+        }
         setChanged();
     }
 

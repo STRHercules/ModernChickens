@@ -44,7 +44,8 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
         Level level = converter.getLevel();
         this.access = level != null ? ContainerLevelAccess.create(level, converter.getBlockPos()) : ContainerLevelAccess.NULL;
 
-        this.addSlot(new FluxEggSlot(converter, 0, 80, 35));
+        // Align the slot with the dedicated socket in fluxconverter.png (49,31 to 73,55).
+        this.addSlot(new FluxEggSlot(converter, 0, 52, 34));
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {

@@ -52,3 +52,4 @@
 - Add a lightweight client regression test or debug assertion that verifies chicken item stacks resolve their per-breed display names so future refactors don't revert tooltips and inventory labels back to the generic "Chicken" title.
 - Expose configuration knobs for Flux Egg capacity scaling and the Avian Flux Converter's transfer rates so modpacks can balance energy progression without code changes.
 - Document the Avian Flux Converter inside JEI/REI so players can review its energy capacity, accepted items, and transfer speed without guessing how many Flux Eggs they should invest.
+- Provide a dedicated Jade/TOP data provider for the Avian Flux Converter so in-world overlays report the stored RF explicitly instead of relying on generic energy detection heuristics.

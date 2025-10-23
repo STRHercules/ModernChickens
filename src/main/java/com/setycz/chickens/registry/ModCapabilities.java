@@ -1,7 +1,7 @@
 package com.setycz.chickens.registry;
 
+import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
 import com.setycz.chickens.liquidegg.LiquidEggFluidWrapper;
-import com.setycz.chickens.registry.ModBlockEntities;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -40,7 +40,13 @@ public final class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.AVIAN_FLUX_CONVERTER.get(),
-                (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
+                (blockEntity, direction) -> {
+                    if (blockEntity instanceof AvianFluxConverterBlockEntity converter) {
+                        return converter.getEnergyStorage(direction);
+                    }
+                    // Guard against mis-registered lookups so other machines never expose an energy buffer.
+                    return null;
+                });
     }
 
     private static <T extends BlockEntity & WorldlyContainer> void registerContainerCapability(

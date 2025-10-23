@@ -27,6 +27,7 @@ sourceSets {
 
 def roostTextureSourceDir = layout.projectDirectory.dir('roost/src/main/resources/assets/roost/textures/blocks')
 def generatedRoostDir = layout.buildDirectory.dir('generated/roostAssets')
+def additionalAssetsDir = layout.projectDirectory.dir('AdditionalAssets/chickens/textures')
 
 tasks.register('generateRoostTextures', Copy) {
     onlyIf { roostTextureSourceDir.asFile.exists() }
@@ -51,6 +52,18 @@ tasks.named('processResources') {
     from('OriginalChickens/src/main/resources')
     from('MoreChickens/src/main/resources/assets/morechickens/textures/entity') {
         into 'assets/chickens/textures/entity'
+    }
+    def extraEntityTextures = additionalAssetsDir.dir('entity').asFile
+    if (extraEntityTextures.exists()) {
+        from(extraEntityTextures) {
+            into 'assets/chickens/textures/entity'
+        }
+    }
+    def extraGuiTextures = additionalAssetsDir.dir('gui').asFile
+    if (extraGuiTextures.exists()) {
+        from(extraGuiTextures) {
+            into 'assets/chickens/textures/gui'
+        }
     }
     from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
         include 'WaterChicken.png'

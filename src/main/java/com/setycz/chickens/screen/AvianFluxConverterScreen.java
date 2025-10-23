@@ -1,5 +1,6 @@
 package com.setycz.chickens.screen;
 
+import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.menu.AvianFluxConverterMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -9,16 +10,19 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Client screen that repurposes the vanilla furnace background while rendering
- * a vertical energy gauge. The tooltip surfaces the precise RF totals so
+ * Client screen that renders the bespoke fluxconverter.png layout and overlays
+ * a vertical battery gauge. The tooltip surfaces the precise RF totals so
  * players can monitor charge levels without opening external probes.
  */
 public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxConverterMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
-    private static final int ENERGY_BAR_X = 152;
+    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+            "textures/gui/fluxconverter.png");
+    private static final int ENERGY_BAR_X = 103;
     private static final int ENERGY_BAR_Y = 14;
-    private static final int ENERGY_BAR_WIDTH = 14;
-    private static final int ENERGY_BAR_HEIGHT = 46;
+    private static final int ENERGY_BAR_WIDTH = 13;
+    private static final int ENERGY_BAR_HEIGHT = 58;
+    private static final int ENERGY_TEXTURE_X = 195;
+    private static final int ENERGY_TEXTURE_Y = 0;
 
     public AvianFluxConverterScreen(AvianFluxConverterMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -53,13 +57,14 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
         int energy = this.menu.getEnergy();
         int capacity = this.menu.getCapacity();
         int filledHeight = capacity <= 0 ? 0 : Mth.ceil((energy / (float) capacity) * ENERGY_BAR_HEIGHT);
-        int x = originX + ENERGY_BAR_X;
-        int y = originY + ENERGY_BAR_Y;
-        graphics.fill(x, y, x + ENERGY_BAR_WIDTH, y + ENERGY_BAR_HEIGHT, 0xFF202020);
-        if (filledHeight > 0) {
-            graphics.fill(x + 1, y + ENERGY_BAR_HEIGHT - filledHeight + 1, x + ENERGY_BAR_WIDTH - 1,
-                    y + ENERGY_BAR_HEIGHT - 1, 0xFFE53935);
+        if (filledHeight <= 0) {
+            return;
         }
+        int targetX = originX + ENERGY_BAR_X;
+        int targetY = originY + ENERGY_BAR_Y + (ENERGY_BAR_HEIGHT - filledHeight);
+        int textureY = ENERGY_TEXTURE_Y + (ENERGY_BAR_HEIGHT - filledHeight);
+        // Copy the lower segment of the gauge texture so the battery appears to fill upward.
+        graphics.blit(GUI_TEXTURE, targetX, targetY, ENERGY_TEXTURE_X, textureY, ENERGY_BAR_WIDTH, filledHeight, 256, 256);
     }
 
     private void renderEnergyTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
