@@ -652,3 +652,11 @@
   3. Executed `./gradlew build --console=plain` to verify the new tooltip compiles and the project stays healthy.
 - **Rationale**: Surfacing the carried RF directly on the stack lets players audit their preserved charge from storage inventories, avoiding unnecessary placement cycles just to read the buffer.
 
+## Entry 81
+- **Prompt/Task**: Fix the Avian Flux Converter tooltip so preserved energy is actually displayed on the dropped block item.
+- **Steps**:
+  1. Investigated the preserved data layout and discovered `saveToItem` wraps the payload inside a `BlockEntityTag` compound when routed through NeoForge's data components.
+  2. Updated the tooltip loader to unwrap the nested tag before clamping the stored RF and capacity, keeping backwards compatibility with legacy flat payloads.
+  3. Ran `./gradlew build --console=plain` to confirm the tooltip still compiles after the data migration guardrails were added.
+- **Rationale**: Unwrapping the nested `BlockEntityTag` ensures the tooltip reads the actual energy buffer, restoring the intended visibility for charged converters in player inventories.
+

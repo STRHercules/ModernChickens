@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -221,10 +222,19 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
     @Nullable
     private static CompoundTag extractBlockEntityTag(ItemStack stack) {
         CustomData component = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-        if (!component.isEmpty()) {
-            return component.copyTag();
+        if (component.isEmpty()) {
+            return null;
         }
-        return null;
+
+        CompoundTag tag = component.copyTag();
+        if (tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
+            // saveToItem writes the payload inside BlockEntityTag so unwrap it
+            // when present. Older stacks written before the NeoForge data
+            // component migration already contain the raw payload so fall back
+            // to the root tag when the nested structure is missing.
+            return tag.getCompound("BlockEntityTag");
+        }
+        return tag;
     }
 
     /**
