@@ -644,3 +644,11 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Add subtle redstone particles when the Avian Flux Converter consumes a Flux Egg.
+- **Steps**:
+  1. Injected a helper that bursts Dust (Redstone) particles whenever the converter siphons RF from an inserted Flux Egg.
+  2. Scaled the number of particles to the transferred energy so heavy drains feel livelier while keeping the effect understated.
+  3. Replaced the completed suggestion with a new audio follow-up in SUGGESTIONS.md to capture the next quality-of-life idea.
+- **Rationale**: The short-lived particle puff alerts nearby players that the machine has started processing without forcing them to keep the GUI open.
+

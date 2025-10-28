@@ -13,6 +13,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
@@ -138,11 +140,31 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
         int remaining = stored - transferred;
         FluxEggItem.setStoredEnergy(stack, remaining);
+        emitFluxTransferParticles(transferred);
         if (remaining <= 0) {
             // Remove the depleted shell once its Redstone Flux payload is exhausted.
             items.set(0, ItemStack.EMPTY);
         }
         return true;
+    }
+
+    // Kicks a subtle burst of red dust into the air whenever the converter absorbs
+    // power from a Flux Egg so players spot the transfer without relying on the GUI.
+    private void emitFluxTransferParticles(int transferred) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        int bursts = Mth.clamp(transferred / 2000 + 1, 1, 5);
+        double baseX = worldPosition.getX() + 0.5D;
+        double baseY = worldPosition.getY() + 0.6D;
+        double baseZ = worldPosition.getZ() + 0.5D;
+        for (int i = 0; i < bursts; i++) {
+            double offsetX = (serverLevel.getRandom().nextDouble() - 0.5D) * 0.3D;
+            double offsetZ = (serverLevel.getRandom().nextDouble() - 0.5D) * 0.3D;
+            double yMotion = 0.01D + serverLevel.getRandom().nextDouble() * 0.02D;
+            serverLevel.sendParticles(DustParticleOptions.REDSTONE, baseX + offsetX, baseY,
+                    baseZ + offsetZ, 1, 0.0D, yMotion, 0.0D, 0.0D);
+        }
     }
 
     // Attempts to hand off power to every adjacent block entity so automation
