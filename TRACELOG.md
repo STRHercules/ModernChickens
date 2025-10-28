@@ -644,3 +644,11 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Ensure right-clicking a vanilla chicken with a book converts it into a ModernChickens Smart Chicken.
+- **Steps**:
+  1. Subscribed the teach-chicken handler to both `EntityInteract` and `EntityInteractSpecific` so every book interaction path funnels through the conversion logic.
+  2. Centralised the validation and cancellation flow in a shared helper that checks for the vanilla chicken type, smart chicken availability, and server-side conversion success before cancelling the event on both sides.
+  3. Extracted the spawn routine into a reusable method that mirrors vanilla state onto the smart chicken and documented the intent for future maintainers.
+- **Rationale**: Handling both interaction variants and consolidating the conversion routine prevents missed clicks, guaranteeing players always see their vanilla chicken become a Smart Chicken when taught with a book.
+
