@@ -660,3 +660,11 @@
   3. Built the project with `./gradlew build --console=plain` to confirm the deterministic conversion compiles cleanly.
 - **Rationale**: Finalising the spawn before applying Smart Chicken traits preserves the desired breed and keeps the conversion faithful to player expectations when teaching vanilla chickens.
 
+## Entry 82
+- **Prompt/Task**: Stop book-taught chickens from randomising their breed during spawn finalisation.
+- **Steps**:
+  1. Updated the smart chicken entity spawn hook to detect conversion spawns so they skip the biome randomiser and preserve the explicitly assigned type.
+  2. Documented the conversion guard inline to clarify why conversion flows bypass the random selection branch.
+  3. Ran `./gradlew build --console=plain` to ensure the guarded spawn logic compiles.
+- **Rationale**: Skipping the random roll during conversion ensures book-taught chickens remain Smart Chickens even if future changes reuse the spawn helper before type assignment.
+
