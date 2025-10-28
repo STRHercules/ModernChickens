@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
@@ -14,6 +15,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Listens for players teaching vanilla chickens using a book. The handler
@@ -93,25 +98,49 @@ public final class ChickenTeachHandler {
         float headRot = chicken.getYHeadRot();
         float pitch = chicken.getXRot();
         int age = chicken.getAge();
+        Vec3 velocity = chicken.getDeltaMovement();
         BlockPos blockPos = chicken.blockPosition();
         Component customName = chicken.getCustomName();
         boolean customNameVisible = chicken.isCustomNameVisible();
+        boolean wasPersistenceRequired = chicken.isPersistenceRequired();
+        boolean hadNoAi = chicken.isNoAi();
+        boolean hadNoGravity = chicken.isNoGravity();
+        boolean wasInvulnerable = chicken.isInvulnerable();
+        List<Entity> passengers = new ArrayList<>(chicken.getPassengers());
 
-        ChickensChicken smartChicken = chicken.convertTo(ModEntityTypes.CHICKENS_CHICKEN.get(), false);
+        ChickensChicken smartChicken = ModEntityTypes.CHICKENS_CHICKEN.get().create(serverLevel);
         if (smartChicken == null) {
             return false;
         }
 
+        // Lock the breed before any spawn hooks run so the new entity never rolls
+        // a biome chicken when it finalises.
         smartChicken.markConversionType(typeId);
         smartChicken.moveTo(x, y, z, bodyRot, pitch);
         smartChicken.setYHeadRot(headRot);
+        smartChicken.setDeltaMovement(velocity);
+        if (wasPersistenceRequired) {
+            smartChicken.setPersistenceRequired();
+        }
+        smartChicken.setNoAi(hadNoAi);
+        smartChicken.setNoGravity(hadNoGravity);
+        smartChicken.setInvulnerable(wasInvulnerable);
         smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
         smartChicken.setChickenType(typeId);
         smartChicken.setAge(age);
+        smartChicken.setHealth(Math.min(smartChicken.getMaxHealth(), chicken.getHealth()));
         if (customName != null) {
             smartChicken.setCustomName(customName);
             smartChicken.setCustomNameVisible(customNameVisible);
         }
+
+        // Spawn the upgraded entity first so we can migrate riders and visuals
+        // before discarding the vanilla chicken.
+        serverLevel.addFreshEntity(smartChicken);
+        for (Entity passenger : passengers) {
+            passenger.startRiding(smartChicken, true);
+        }
+        chicken.remove(Entity.RemovalReason.DISCARDED);
         smartChicken.spawnAnim();
         return true;
     }

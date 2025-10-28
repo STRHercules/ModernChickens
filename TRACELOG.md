@@ -692,3 +692,11 @@
   3. Finalised the converted chicken's spawn state, orientation, age, and custom name after the swap to preserve visible traits and confirmed the helper still plays the teaching animation.
 - **Rationale**: Converting the entity in place and keeping the Smart Chicken id pinned for several ticks prevents late spawn passes from rolling biome breeds, delivering the expected 1:1 Smart Chicken outcome.
 
+## Entry 86
+- **Prompt/Task**: Stop vanilla-to-smart chicken conversions from ever rolling a biome-specific breed.
+- **Steps**:
+  1. Replaced the in-place `convertTo` call with a fresh smart chicken spawn that copies the vanilla bird's position, velocity, age, health, names, and persistence flags before the old entity is discarded.
+  2. Locked the Smart Chicken id ahead of spawn finalisation so no biome hooks can override the forced breed, then reattached any riders to the new entity to keep interactions seamless.
+  3. Ran `./gradlew build --console=plain` to verify the rebuilt conversion path compiles without errors.
+- **Rationale**: Mirroring the legacy spawn-and-replace workflow removes the last randomisation hook that could change the breed, ensuring book teaching is a deterministic 1:1 upgrade into Smart Chickens.
+
