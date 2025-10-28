@@ -652,3 +652,11 @@
   3. Ran `./gradlew build --console=plain` to verify the streamlined conversion compiles cleanly.
 - **Rationale**: Dropping the Smart Chicken item keeps the interaction aligned with the request while preserving the player's ability to teach the modded variant later without unexpectedly spawning a new mob.
 
+## Entry 81
+- **Prompt/Task**: Ensure using a book on a vanilla chicken deletes the mob and drops a Smart Chicken item instead of spawning a random bird.
+- **Steps**:
+  1. Reworked the NeoForge interaction listener to handle both generic and specific entity clicks while enforcing main-hand book usage.
+  2. Spawned an explicit Smart Chicken item entity on the server and removed the vanilla chicken to prevent legacy conversion code from firing.
+  3. Cancelled the client-side interaction to mirror the server outcome so the old random chicken spawn no longer triggers during prediction.
+- **Rationale**: Handling the conversion entirely within the NeoForge event layer guarantees consistent Smart Chicken item drops and removes the legacy entity swap behaviour that continued to spawn random chickens.
+
