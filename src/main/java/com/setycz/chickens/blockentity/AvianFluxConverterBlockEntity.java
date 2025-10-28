@@ -158,12 +158,18 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         // in one tick while keeping the effect proportional to the energy moved.
         int particleCount = Mth.clamp(Mth.ceil(transferred / 100.0F), 6, 40);
         double centerX = worldPosition.getX() + 0.5D;
-        double centerY = worldPosition.getY() + 0.7D;
+        double plumeY = worldPosition.getY() + 1.05D;
         double centerZ = worldPosition.getZ() + 0.5D;
-        double horizontalSpread = 0.35D;
-        double verticalSpread = 0.12D;
-        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, centerY, centerZ,
-                particleCount, horizontalSpread, verticalSpread, horizontalSpread, 0.0D);
+        // Kick a column of dust above the machine so the burst is visible even when
+        // the player is standing level with the converter instead of looking down
+        // into the block space.
+        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, plumeY, centerZ,
+                particleCount, 0.35D, 0.25D, 0.35D, 0.02D);
+        // Also rim the casing with a softer ring of dust so a player glancing at the
+        // converter from the side still spots that a drain started.
+        int ringCount = Math.max(4, particleCount / 3);
+        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, plumeY - 0.35D, centerZ,
+                ringCount, 0.6D, 0.05D, 0.6D, 0.03D);
     }
 
     // Attempts to hand off power to every adjacent block entity so automation
