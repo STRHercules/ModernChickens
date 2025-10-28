@@ -65,4 +65,5 @@
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
 - Surface the converter's current transfer rate in the item tooltip once NeoForge exposes a dedicated energy capability serializer so players can forecast throughput alongside stored RF.
 - Add a quick unit or integration test that spawns a converter item from a block entity and asserts the tooltip decodes the nested BlockEntityTag payload so future data component changes do not hide the stored energy again.
+- Add a data component smoke test that snapshots converter drops across Forge and NeoForge branches so tooltip decoding keeps up with future inventory tag layout tweaks.
 

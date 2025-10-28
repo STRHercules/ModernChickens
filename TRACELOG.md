@@ -660,3 +660,11 @@
   3. Ran `./gradlew build --console=plain` to confirm the tooltip still compiles after the data migration guardrails were added.
 - **Rationale**: Unwrapping the nested `BlockEntityTag` ensures the tooltip reads the actual energy buffer, restoring the intended visibility for charged converters in player inventories.
 
+## Entry 82
+- **Prompt/Task**: Tooltip is still not displaying stored RF level.
+- **Steps**:
+  1. Re-analysed converter drops in the latest NeoForge build and confirmed the preserved data now sits inside a `tag` compound nested under the component payload.
+  2. Extended the tooltip decoder to unwrap both the legacy `BlockEntityTag` shell and the newer `tag` container before reading stored RF and capacity.
+  3. Rebuilt with `./gradlew build --console=plain` to verify the broader tag handling compiles cleanly.
+- **Rationale**: Supporting both wrapper formats ensures converter stacks created through modern data components still advertise their stored RF without forcing players to test placement.
+

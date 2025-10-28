@@ -228,11 +228,15 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
 
         CompoundTag tag = component.copyTag();
         if (tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
-            // saveToItem writes the payload inside BlockEntityTag so unwrap it
-            // when present. Older stacks written before the NeoForge data
-            // component migration already contain the raw payload so fall back
-            // to the root tag when the nested structure is missing.
+            // saveToItem writes the payload inside BlockEntityTag when the
+            // stack was generated through the legacy item path.
             return tag.getCompound("BlockEntityTag");
+        }
+        if (tag.contains("tag", Tag.TAG_COMPOUND)) {
+            // NeoForge's data component payload nests the preserved
+            // BlockEntityTag under a "tag" compound, so unwrap that layer
+            // before reading the stored RF totals.
+            return tag.getCompound("tag");
         }
         return tag;
     }
