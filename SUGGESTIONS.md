@@ -64,4 +64,5 @@
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
 - Emit celebratory particles or sounds when a vanilla chicken becomes smart so players notice the successful conversion even if multiple interaction events fire in quick succession.
+- Add a regression test harness that teaches vanilla chickens in a data pack-driven scenario to ensure future spawn logic tweaks can't randomise the resulting Smart Chicken breed.
 

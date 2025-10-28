@@ -652,3 +652,11 @@
   3. Extracted the spawn routine into a reusable method that mirrors vanilla state onto the smart chicken and documented the intent for future maintainers.
 - **Rationale**: Handling both interaction variants and consolidating the conversion routine prevents missed clicks, guaranteeing players always see their vanilla chicken become a Smart Chicken when taught with a book.
 
+## Entry 81
+- **Prompt/Task**: Ensure book-taught vanilla chickens always become Smart Chickens instead of random breeds.
+- **Steps**:
+  1. Reordered the conversion helper so the spawn finalisation runs before copying vanilla state onto the new entity, preventing the randomiser from overriding our chosen type and age.
+  2. Verified the copied rotation, naming, and age still mirror the original vanilla chicken after the spawn shuffle completes.
+  3. Built the project with `./gradlew build --console=plain` to confirm the deterministic conversion compiles cleanly.
+- **Rationale**: Finalising the spawn before applying Smart Chicken traits preserves the desired breed and keeps the conversion faithful to player expectations when teaching vanilla chickens.
+
