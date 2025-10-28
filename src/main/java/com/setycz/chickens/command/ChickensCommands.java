@@ -37,13 +37,18 @@ public final class ChickensCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("export")
                         .then(Commands.literal("breeding")
-                                .executes(ctx -> exportBreedingGraph(ctx.getSource()))))
-                .then(Commands.literal("debug")
-                        .then(Commands.literal("collector_range")
-                                .executes(ctx -> toggleCollectorDebug(ctx.getSource()))
-                                .then(Commands.argument("enabled", BoolArgumentType.bool())
-                                        .executes(ctx -> setCollectorDebug(ctx.getSource(),
-                                                BoolArgumentType.getBool(ctx, "enabled"))))));
+                                .executes(ctx -> exportBreedingGraph(ctx.getSource()))));
+
+        // Build the collector debug branch separately so the bare literal executes
+        // path remains accessible even though we also expose the explicit boolean
+        // overload for directly setting the state.
+        LiteralArgumentBuilder<CommandSourceStack> collectorRange = Commands.literal("collector_range")
+                .executes(ctx -> toggleCollectorDebug(ctx.getSource()));
+        collectorRange.then(Commands.argument("enabled", BoolArgumentType.bool())
+                .executes(ctx -> setCollectorDebug(ctx.getSource(), BoolArgumentType.getBool(ctx, "enabled"))));
+
+        LiteralArgumentBuilder<CommandSourceStack> debug = Commands.literal("debug").then(collectorRange);
+        root.then(debug);
         event.getDispatcher().register(root);
     }
 

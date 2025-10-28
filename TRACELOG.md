@@ -667,3 +667,11 @@
   2. Rebuilt the project with `./gradlew build --console=plain` to confirm the adjusted payload handler compiles and the command tree remains intact.
 - **Rationale**: Guarding the client-only overlay removes the classloading failure that stripped the debug command from the server command tree, ensuring players can toggle the range visualisation in live worlds.
 
+
+## Entry 83
+- **Prompt/Task**: Resolve the `/chickens debug collector_range` command rejecting toggle usage without an explicit argument.
+- **Steps**:
+  1. Rebuilt the command tree so the collector debug literal executes handler is registered independently of the optional boolean argument builder.
+  2. Added inline documentation clarifying why the builder is staged in separate variables to keep the toggle form available alongside the explicit setter.
+  3. Appended a SUGGESTIONS note proposing a discoverable `/chickens debug` help summary and ran `./gradlew build --console=plain` to confirm the registry compiles cleanly.
+- **Rationale**: Brigadier treated the chained builder as exclusively accepting the boolean overload, so isolating the literal ensures the toggle form parses correctly while preserving the direct enable/disable variant.
