@@ -138,6 +138,10 @@ public class ChickensChicken extends Chicken {
         return this.forcedChickenType;
     }
 
+    private void clearForcedChickenType() {
+        this.forcedChickenType = -1;
+    }
+
     public int getLayProgress() {
         return this.entityData.get(DATA_LAY_PROGRESS);
     }
@@ -191,6 +195,17 @@ public class ChickensChicken extends Chicken {
 
     @Override
     public void aiStep() {
+        if (!this.level().isClientSide && this.hasForcedChickenType()) {
+            int type = this.getForcedChickenType();
+            if (this.getChickenType() != type) {
+                // Book conversions occasionally run additional spawn passes after the
+                // manual finalisation step. Re-applying the forced id here guarantees
+                // the smart chicken survives any late biome randomisation.
+                this.setChickenType(type);
+            }
+            this.clearForcedChickenType();
+        }
+
         // Keep the vanilla egg timer out of range so only the custom resource
         // laying logic below produces drops.
         this.eggTime = Math.max(this.eggTime, 6000);

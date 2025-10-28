@@ -676,3 +676,11 @@
   3. Copied the vanilla chicken's orientation, name, and age after the marked spawn to keep the converted entity visually identical to the original bird.
 - **Rationale**: Persisting the forced Smart Chicken type through every spawn finalisation cycle prevents the randomiser from overwriting conversions even when NeoForge re-invokes the spawn hook during entity insertion.
 
+## Entry 84
+- **Prompt/Task**: Stop converted Smart Chickens from reverting to biome-random breeds after additional spawn passes.
+- **Steps**:
+  1. Added a server-side guard at the start of `aiStep` that reapplies the forced Smart Chicken id if late spawn hooks reassign the type.
+  2. Cleared the forced marker once the corrective pass runs so future stat changes and breeding logic operate on the finalised breed.
+  3. Documented the safeguard inline to guide future maintainers and reran `./gradlew build --console=plain` to confirm the hotfix compiles.
+- **Rationale**: Reinstating the Smart Chicken id during the first server tick ensures every book-taught conversion stays 1:1 even when NeoForge schedules extra spawn finalisation passes after the manual conversion step.
+
