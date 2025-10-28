@@ -644,3 +644,19 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Expand the collector sweep so it gathers from roosts within a 9x9x9 area.
+- **Steps**:
+  1. Centred the collector's scan offsets and recalculated the cycle length so the search cube now covers an equal radius in every direction.
+  2. Adjusted the per-tick gather routine to translate the indexed offsets into symmetric X/Y/Z positions, matching the requested 9x9x9 coverage.
+  3. Ran `./gradlew build --console=plain` to confirm the enlarged scan compiles without regressions.
+- **Rationale**: The previous vertical sweep only checked three blocks above the collector, leaving nearby roosts untouched; the symmetric cube search reliably finds every roost in the intended 9×9×9 volume.
+
+## Entry 81
+- **Prompt/Task**: Add a debug overlay that can be toggled via command to visualise the collector's pickup range.
+- **Steps**:
+  1. Registered a versioned NeoForge payload along with a collector debug state tracker so commands can sync per-player overlay toggles to the client immediately.
+  2. Implemented a `/chickens debug collector_range` command that toggles or explicitly sets the overlay and reports the result with new localisation strings.
+  3. Rendered a client-side wireframe cube during the level stage event to outline each collector's clamped scan volume and ran `./gradlew build --console=plain` to validate the feature.
+- **Rationale**: Giving builders a visual confirmation of the collector's coverage eliminates guesswork when laying out roost arrays and ensures the new 9×9×9 scan volume can be inspected without digging into configs.
+

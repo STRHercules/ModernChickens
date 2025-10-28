@@ -25,7 +25,6 @@ import java.util.List;
  */
 public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int INVENTORY_SIZE = 27;
-    private static final int VERTICAL_SCAN_LAYERS = 3;
     private static final int MAX_SCAN_RANGE = 16;
     private int searchOffset = 0;
     private int cachedScanRange = -1;
@@ -81,8 +80,10 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         int range = clampRange(configuredRange);
         if (range != cachedScanRange) {
             cachedScanRange = range;
-            int zCount = Math.max(1, cachedScanRange * 2 + 1);
-            cycleLength = Math.max(1, VERTICAL_SCAN_LAYERS * zCount);
+            int diameter = Math.max(1, cachedScanRange * 2 + 1);
+            // Iterate through every Z/Y pair within the cube so a full 9x9x9
+            // (range == 4) volume is covered before the search offset loops.
+            cycleLength = Math.max(1, diameter * diameter);
             searchOffset %= cycleLength;
         }
         searchOffset = (searchOffset + 1) % cycleLength;
@@ -90,11 +91,13 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     private void gatherItems(Level level, int range) {
-        int zCount = Math.max(1, range * 2 + 1);
-        int y = searchOffset / zCount;
-        int zOffset = (searchOffset % zCount) - range;
+        int diameter = Math.max(1, range * 2 + 1);
+        // Offset indices are centred around the collector so the search cube
+        // extends equally in every direction.
+        int yOffset = (searchOffset / diameter) - range;
+        int zOffset = (searchOffset % diameter) - range;
         for (int xOffset = -range; xOffset <= range; xOffset++) {
-            BlockPos target = worldPosition.offset(xOffset, y, zOffset);
+            BlockPos target = worldPosition.offset(xOffset, yOffset, zOffset);
             if (target.equals(worldPosition) || !level.hasChunkAt(target)) {
                 continue;
             }
@@ -144,6 +147,14 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         tooltip.add(Component.translatable("tooltip.chickens.collector.slots", data.getInt("FilledSlots"),
                 data.getInt("TotalSlots")));
         super.appendTooltip(tooltip, data);
+    }
+
+    /**
+     * Reads the configured collector range and clamps it to the supported
+     * bounds so client debug overlays render the same volume the server scans.
+     */
+    public static int resolveConfiguredScanRange() {
+        return clampRange(ChickensConfigHolder.get().getCollectorScanRange());
     }
 
     private static int clampRange(int configuredRange) {

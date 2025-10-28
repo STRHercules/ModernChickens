@@ -172,5 +172,7 @@
   "entity.ChickensChicken.gain": "Gain: %s",
   "entity.ChickensChicken.strength": "Strength: %s",
   "commands.chickens.export.success": "Exported breeding graph to %s",
-  "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs."
+  "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs.",
+  "commands.chickens.debug.collector_range.enabled": "Collector range overlay enabled.",
+  "commands.chickens.debug.collector_range.disabled": "Collector range overlay disabled."
 }

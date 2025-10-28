@@ -1,11 +1,15 @@
 package com.setycz.chickens.command;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.data.BreedingGraphExporter;
+import com.setycz.chickens.debug.CollectorDebugState;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
@@ -33,7 +37,13 @@ public final class ChickensCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("export")
                         .then(Commands.literal("breeding")
-                                .executes(ctx -> exportBreedingGraph(ctx.getSource()))));
+                                .executes(ctx -> exportBreedingGraph(ctx.getSource()))))
+                .then(Commands.literal("debug")
+                        .then(Commands.literal("collector_range")
+                                .executes(ctx -> toggleCollectorDebug(ctx.getSource()))
+                                .then(Commands.argument("enabled", BoolArgumentType.bool())
+                                        .executes(ctx -> setCollectorDebug(ctx.getSource(),
+                                                BoolArgumentType.getBool(ctx, "enabled"))))));
         event.getDispatcher().register(root);
     }
 
@@ -46,6 +56,24 @@ public final class ChickensCommands {
         }
         source.sendFailure(Component.translatable("commands.chickens.export.failure"));
         return 0;
+    }
+
+    private static int toggleCollectorDebug(CommandSourceStack source) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        boolean enabled = CollectorDebugState.toggle(player);
+        source.sendSuccess(() -> Component.translatable(enabled
+                ? "commands.chickens.debug.collector_range.enabled"
+                : "commands.chickens.debug.collector_range.disabled"), true);
+        return enabled ? 1 : 0;
+    }
+
+    private static int setCollectorDebug(CommandSourceStack source, boolean enabled) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        CollectorDebugState.set(player, enabled);
+        source.sendSuccess(() -> Component.translatable(enabled
+                ? "commands.chickens.debug.collector_range.enabled"
+                : "commands.chickens.debug.collector_range.disabled"), true);
+        return enabled ? 1 : 0;
     }
 }
 
