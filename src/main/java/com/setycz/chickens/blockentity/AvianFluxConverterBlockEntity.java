@@ -154,17 +154,16 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
-        int bursts = Mth.clamp(transferred / 2000 + 1, 1, 5);
-        double baseX = worldPosition.getX() + 0.5D;
-        double baseY = worldPosition.getY() + 0.6D;
-        double baseZ = worldPosition.getZ() + 0.5D;
-        for (int i = 0; i < bursts; i++) {
-            double offsetX = (serverLevel.getRandom().nextDouble() - 0.5D) * 0.3D;
-            double offsetZ = (serverLevel.getRandom().nextDouble() - 0.5D) * 0.3D;
-            double yMotion = 0.01D + serverLevel.getRandom().nextDouble() * 0.02D;
-            serverLevel.sendParticles(DustParticleOptions.REDSTONE, baseX + offsetX, baseY,
-                    baseZ + offsetZ, 1, 0.0D, yMotion, 0.0D, 0.0D);
-        }
+        // Spawn enough particles to be noticeable even when an entire egg is drained
+        // in one tick while keeping the effect proportional to the energy moved.
+        int particleCount = Mth.clamp(Mth.ceil(transferred / 100.0F), 6, 40);
+        double centerX = worldPosition.getX() + 0.5D;
+        double centerY = worldPosition.getY() + 0.7D;
+        double centerZ = worldPosition.getZ() + 0.5D;
+        double horizontalSpread = 0.35D;
+        double verticalSpread = 0.12D;
+        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, centerY, centerZ,
+                particleCount, horizontalSpread, verticalSpread, horizontalSpread, 0.0D);
     }
 
     // Attempts to hand off power to every adjacent block entity so automation

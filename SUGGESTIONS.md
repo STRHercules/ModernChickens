@@ -55,6 +55,7 @@
 - Provide a dedicated Jade/TOP data provider for the Avian Flux Converter so in-world overlays report the stored RF explicitly instead of relying on generic energy detection heuristics.
 - Add a resource-pack audit that flags new folders under `AdditionalAssets/chickens/textures` so the build script can be updated alongside future asset drops instead of silently skipping categories like particles or block items.
 - Add a gentle redstone-themed ambient loop for the Avian Flux Converter while it is draining eggs so audio feedback complements the new particle burst.
+- Expose a client-side config knob for Avian Flux Converter particle density so players on lower-end machines (or with sensory sensitivities) can dial the effect up or down without disabling it entirely.
 - Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.
 - Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
 - Factor the new 32-bit DataSlot splitter into a shared menu helper so upcoming machines can mirror large counters without duplicating the bit-packaging logic.

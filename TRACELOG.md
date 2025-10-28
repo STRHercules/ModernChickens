@@ -652,3 +652,11 @@
   3. Replaced the completed suggestion with a new audio follow-up in SUGGESTIONS.md to capture the next quality-of-life idea.
 - **Rationale**: The short-lived particle puff alerts nearby players that the machine has started processing without forcing them to keep the GUI open.
 
+## Entry 81
+- **Prompt/Task**: Make the Avian Flux Converter particle burst actually visible during Flux Egg transfers.
+- **Steps**:
+  1. Increased the particle density and spread so draining a Flux Egg emits a noticeable red dust plume even when the egg is consumed in a single tick.
+  2. Recalibrated the particle scaling math to map the transferred RF directly into the spawn count for consistent feedback across egg sizes.
+  3. Logged a follow-up suggestion outlining a client toggle for players who may want to adjust the particle intensity themselves.
+- **Rationale**: Ensuring the converter visibly pulses when it starts draining an egg makes it clear that the machine is active without relying on the GUI or subtle single-particle puffs that were easy to miss.
+
