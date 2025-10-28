@@ -59,14 +59,7 @@ public class ChickensChicken extends Chicken {
     private static final String TAG_GROWTH = "Growth";
     private static final String TAG_GAIN = "Gain";
     private static final String TAG_STRENGTH = "Strength";
-    private static final String TAG_FORCED_TYPE = "ForcedType";
-    private static final String TAG_FORCED_TYPE_TICKS = "ForcedTypeTicks";
-
     private int layTime;
-    private static final int CONVERSION_GUARD_TICKS = 200;
-
-    private int forcedChickenType = -1;
-    private int forcedChickenTypeTicks;
 
     public ChickensChicken(net.minecraft.world.entity.EntityType<? extends Chicken> type, Level level) {
         super(type, level);
@@ -127,30 +120,6 @@ public class ChickensChicken extends Chicken {
         this.resetTimeUntilNextEgg();
     }
 
-    /**
-     * Marks the entity as part of a conversion flow so spawn finalisation keeps
-     * the explicitly assigned breed instead of rolling a biome random entry. The
-     * guard persists for multiple ticks to cover any delayed spawn passes that
-     * might try to re-roll the chicken type after conversion.
-     */
-    public void markConversionType(int type) {
-        this.forcedChickenType = type;
-        this.forcedChickenTypeTicks = CONVERSION_GUARD_TICKS;
-    }
-
-    private boolean hasForcedChickenType() {
-        return this.forcedChickenType >= 0;
-    }
-
-    private int getForcedChickenType() {
-        return this.forcedChickenType;
-    }
-
-    private void clearForcedChickenType() {
-        this.forcedChickenType = -1;
-        this.forcedChickenTypeTicks = 0;
-    }
-
     public int getLayProgress() {
         return this.entityData.get(DATA_LAY_PROGRESS);
     }
@@ -204,22 +173,6 @@ public class ChickensChicken extends Chicken {
 
     @Override
     public void aiStep() {
-        if (!this.level().isClientSide && this.hasForcedChickenType()) {
-            int type = this.getForcedChickenType();
-            if (this.getChickenType() != type) {
-                // Book conversions occasionally run additional spawn passes after the
-                // manual finalisation step. Re-applying the forced id here guarantees
-                // the smart chicken survives any late biome randomisation.
-                this.setChickenType(type);
-            }
-            if (this.forcedChickenTypeTicks > 0) {
-                this.forcedChickenTypeTicks--;
-            }
-            if (this.forcedChickenTypeTicks <= 0 && this.getChickenType() == type) {
-                this.clearForcedChickenType();
-            }
-        }
-
         // Keep the vanilla egg timer out of range so only the custom resource
         // laying logic below produces drops.
         this.eggTime = Math.max(this.eggTime, 6000);
@@ -427,10 +380,6 @@ public class ChickensChicken extends Chicken {
         tag.putInt(TAG_GROWTH, this.getGrowth());
         tag.putInt(TAG_GAIN, this.getGain());
         tag.putInt(TAG_STRENGTH, this.getStrength());
-        if (this.hasForcedChickenType()) {
-            tag.putInt(TAG_FORCED_TYPE, this.getForcedChickenType());
-            tag.putInt(TAG_FORCED_TYPE_TICKS, this.forcedChickenTypeTicks);
-        }
     }
 
     @Override
@@ -442,12 +391,6 @@ public class ChickensChicken extends Chicken {
         this.setGain(getStatusValue(tag, TAG_GAIN));
         this.setStrength(getStatusValue(tag, TAG_STRENGTH));
         this.updateLayProgress();
-        if (tag.contains(TAG_FORCED_TYPE)) {
-            this.markConversionType(tag.getInt(TAG_FORCED_TYPE));
-            if (tag.contains(TAG_FORCED_TYPE_TICKS)) {
-                this.forcedChickenTypeTicks = tag.getInt(TAG_FORCED_TYPE_TICKS);
-            }
-        }
     }
 
     private static int getStatusValue(CompoundTag tag, String key) {
@@ -458,9 +401,8 @@ public class ChickensChicken extends Chicken {
     public SpawnGroupData finalizeSpawn(ServerLevel level, DifficultyInstance difficulty, MobSpawnType spawnType,
             @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
-        boolean forcedConversion = this.hasForcedChickenType();
-        boolean conversion = spawnType == MobSpawnType.CONVERSION || forcedConversion;
-        if (spawnData instanceof GroupData groupData && !forcedConversion) {
+        boolean conversion = spawnType == MobSpawnType.CONVERSION;
+        if (spawnData instanceof GroupData groupData) {
             this.setChickenType(groupData.type);
         } else if (!conversion) {
             // Conversion spawns (e.g. vanilla chickens taught with a book) should
@@ -474,11 +416,6 @@ public class ChickensChicken extends Chicken {
                 this.setChickenType(type);
                 spawnData = new GroupData(type);
             }
-        }
-        if (forcedConversion) {
-            int type = this.getForcedChickenType();
-            this.setChickenType(type);
-            spawnData = new GroupData(type);
         }
         if (!conversion && this.random.nextInt(5) == 0) {
             this.setAge(-24000);

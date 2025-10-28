@@ -700,3 +700,11 @@
   3. Ran `./gradlew build --console=plain` to verify the rebuilt conversion path compiles without errors.
 - **Rationale**: Mirroring the legacy spawn-and-replace workflow removes the last randomisation hook that could change the breed, ensuring book teaching is a deterministic 1:1 upgrade into Smart Chickens.
 
+## Entry 87
+- **Prompt/Task**: Swap vanilla chickens for Smart Chicken items when taught with a book.
+- **Steps**:
+  1. Reworked `ChickenTeachHandler` to eject riders, drop a Smart Chicken item that inherits the bird's custom name, and discard the vanilla entity.
+  2. Removed the forced-type guard and associated NBT persistence from `ChickensChicken` since book conversions no longer spawn Smart Chicken entities directly.
+  3. Updated the project documentation files and reran `./gradlew build --console=plain` to confirm the item-drop conversion compiles cleanly.
+- **Rationale**: Dropping an item rather than spawning a replacement Smart Chicken guarantees a 1:1 outcome without fighting biome randomisers and lets players redeploy the upgraded bird wherever they want.
+

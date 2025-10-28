@@ -1,29 +1,25 @@
 package com.setycz.chickens;
 
-import com.setycz.chickens.entity.ChickensChicken;
-import com.setycz.chickens.registry.ModEntityTypes;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
+import com.setycz.chickens.ChickensRegistry;
+import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.registry.ModRegistry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraft.network.chat.Component;
 
 /**
  * Listens for players teaching vanilla chickens using a book. The handler
- * mirrors the legacy behaviour by converting a vanilla chicken into the smart
- * chicken variant as soon as the player interacts with a book.
+ * mirrors the legacy interaction but now swaps the target bird for a Smart
+ * Chicken item so players can place the upgraded chicken wherever they like.
  */
 public final class ChickenTeachHandler {
     private ChickenTeachHandler() {
@@ -76,7 +72,7 @@ public final class ChickenTeachHandler {
         }
 
         Level level = event.getLevel();
-        if (level instanceof ServerLevel serverLevel && !convertToSmartChicken(serverLevel, chicken, smartChickenData)) {
+        if (level instanceof ServerLevel serverLevel && !dropSmartChickenItem(serverLevel, chicken, smartChickenData)) {
             return false;
         }
 
@@ -84,64 +80,27 @@ public final class ChickenTeachHandler {
     }
 
     /**
-     * Spawns a fresh smart chicken on the server, mirroring the vanilla
-     * chicken's state before removing the original entity. Returning a boolean
-     * lets the caller keep client-side cancellation logic in sync with server
+     * Drops a smart chicken item in place of the vanilla bird so players can
+     * collect it and spawn the new entity wherever they please. Returning a
+     * boolean keeps the client-side cancellation logic in sync with server
      * success.
      */
-    private static boolean convertToSmartChicken(ServerLevel serverLevel, Chicken chicken, ChickensRegistryItem smartChickenData) {
-        int typeId = smartChickenData.getId();
-        double x = chicken.getX();
-        double y = chicken.getY();
-        double z = chicken.getZ();
-        float bodyRot = chicken.getYRot();
-        float headRot = chicken.getYHeadRot();
-        float pitch = chicken.getXRot();
-        int age = chicken.getAge();
-        Vec3 velocity = chicken.getDeltaMovement();
-        BlockPos blockPos = chicken.blockPosition();
+    private static boolean dropSmartChickenItem(ServerLevel serverLevel, Chicken chicken, ChickensRegistryItem smartChickenData) {
+        ItemStack smartChickenStack = ModRegistry.CHICKEN_ITEM.get().createFor(smartChickenData);
         Component customName = chicken.getCustomName();
-        boolean customNameVisible = chicken.isCustomNameVisible();
-        boolean wasPersistenceRequired = chicken.isPersistenceRequired();
-        boolean hadNoAi = chicken.isNoAi();
-        boolean hadNoGravity = chicken.isNoGravity();
-        boolean wasInvulnerable = chicken.isInvulnerable();
-        List<Entity> passengers = new ArrayList<>(chicken.getPassengers());
+        if (customName != null) {
+            smartChickenStack.set(DataComponents.CUSTOM_NAME, customName);
+        }
 
-        ChickensChicken smartChicken = ModEntityTypes.CHICKENS_CHICKEN.get().create(serverLevel);
-        if (smartChicken == null) {
+        // Ensure anything riding the chicken dismounts before the entity vanishes so
+        // passengers do not disappear alongside the bird.
+        chicken.ejectPassengers();
+
+        if (chicken.spawnAtLocation(smartChickenStack, 0.0F) == null) {
             return false;
         }
 
-        // Lock the breed before any spawn hooks run so the new entity never rolls
-        // a biome chicken when it finalises.
-        smartChicken.markConversionType(typeId);
-        smartChicken.moveTo(x, y, z, bodyRot, pitch);
-        smartChicken.setYHeadRot(headRot);
-        smartChicken.setDeltaMovement(velocity);
-        if (wasPersistenceRequired) {
-            smartChicken.setPersistenceRequired();
-        }
-        smartChicken.setNoAi(hadNoAi);
-        smartChicken.setNoGravity(hadNoGravity);
-        smartChicken.setInvulnerable(wasInvulnerable);
-        smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
-        smartChicken.setChickenType(typeId);
-        smartChicken.setAge(age);
-        smartChicken.setHealth(Math.min(smartChicken.getMaxHealth(), chicken.getHealth()));
-        if (customName != null) {
-            smartChicken.setCustomName(customName);
-            smartChicken.setCustomNameVisible(customNameVisible);
-        }
-
-        // Spawn the upgraded entity first so we can migrate riders and visuals
-        // before discarding the vanilla chicken.
-        serverLevel.addFreshEntity(smartChicken);
-        for (Entity passenger : passengers) {
-            passenger.startRiding(smartChicken, true);
-        }
-        chicken.remove(Entity.RemovalReason.DISCARDED);
-        smartChicken.spawnAnim();
+        chicken.discard();
         return true;
     }
 }

@@ -67,7 +67,8 @@
 - Add a regression test harness that teaches vanilla chickens in a data pack-driven scenario to ensure future spawn logic tweaks can't randomise the resulting Smart Chicken breed.
 - Expose a datapack hook to remap the book conversion target so modpacks can redirect vanilla chickens into bespoke starter breeds without patching the code.
 - Add a server-side stat or advancement trigger when players teach their first Smart Chicken so datapacks can celebrate the conversion milestone and confirm the interaction fired correctly.
-- Provide a `/chickens debugConversion` command that prints the forced breed id and chicken type around conversions so playtesters can verify the server applied Smart Chicken data before committing release builds.
+- Provide a `/chickens debugConversion` command that reports the last Smart Chicken item drop location and owning player so playtesters can confirm book conversions triggered even when the item falls into automation.
 - Add a biome-sweep regression test that repeatedly teaches vanilla chickens and asserts the resulting entity stays Smart, ensuring future spawn tweaks don't bypass the forced-type guard.
 - Mirror scoreboard team membership and persistent NBT tags when spawning the Smart Chicken so nameplates, scoreboard logic, and datapack-driven behaviours survive conversion.
+- Offer a server config toggle that hands the Smart Chicken item directly to the interacting player during book conversions so skyblock-style maps don't risk losing the drop to the void.
 
