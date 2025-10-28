@@ -68,4 +68,5 @@
 - Expose a datapack hook to remap the book conversion target so modpacks can redirect vanilla chickens into bespoke starter breeds without patching the code.
 - Add a server-side stat or advancement trigger when players teach their first Smart Chicken so datapacks can celebrate the conversion milestone and confirm the interaction fired correctly.
 - Provide a `/chickens debugConversion` command that prints the forced breed id and chicken type around conversions so playtesters can verify the server applied Smart Chicken data before committing release builds.
+- Add a biome-sweep regression test that repeatedly teaches vanilla chickens and asserts the resulting entity stays Smart, ensuring future spawn tweaks don't bypass the forced-type guard.
 

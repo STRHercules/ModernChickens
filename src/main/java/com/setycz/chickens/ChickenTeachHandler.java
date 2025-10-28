@@ -3,6 +3,7 @@ package com.setycz.chickens;
 import com.setycz.chickens.entity.ChickensChicken;
 import com.setycz.chickens.registry.ModEntityTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -84,25 +85,34 @@ public final class ChickenTeachHandler {
      * success.
      */
     private static boolean convertToSmartChicken(ServerLevel serverLevel, Chicken chicken, ChickensRegistryItem smartChickenData) {
-        ChickensChicken smartChicken = ModEntityTypes.CHICKENS_CHICKEN.get().create(serverLevel);
+        int typeId = smartChickenData.getId();
+        double x = chicken.getX();
+        double y = chicken.getY();
+        double z = chicken.getZ();
+        float bodyRot = chicken.getYRot();
+        float headRot = chicken.getYHeadRot();
+        float pitch = chicken.getXRot();
+        int age = chicken.getAge();
+        BlockPos blockPos = chicken.blockPosition();
+        Component customName = chicken.getCustomName();
+        boolean customNameVisible = chicken.isCustomNameVisible();
+
+        ChickensChicken smartChicken = chicken.convertTo(ModEntityTypes.CHICKENS_CHICKEN.get(), false);
         if (smartChicken == null) {
             return false;
         }
 
-        BlockPos blockPos = chicken.blockPosition();
-        smartChicken.markConversionType(smartChickenData.getId());
-        smartChicken.moveTo(chicken.getX(), chicken.getY(), chicken.getZ(), chicken.getYRot(), chicken.getXRot());
+        smartChicken.markConversionType(typeId);
+        smartChicken.moveTo(x, y, z, bodyRot, pitch);
+        smartChicken.setYHeadRot(headRot);
         smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
-        smartChicken.setYHeadRot(chicken.getYHeadRot());
-        smartChicken.setChickenType(smartChickenData.getId());
-        smartChicken.setAge(chicken.getAge());
-        if (chicken.hasCustomName()) {
-            smartChicken.setCustomName(chicken.getCustomName());
-            smartChicken.setCustomNameVisible(chicken.isCustomNameVisible());
+        smartChicken.setChickenType(typeId);
+        smartChicken.setAge(age);
+        if (customName != null) {
+            smartChicken.setCustomName(customName);
+            smartChicken.setCustomNameVisible(customNameVisible);
         }
-        serverLevel.addFreshEntity(smartChicken);
         smartChicken.spawnAnim();
-        chicken.discard();
         return true;
     }
 }

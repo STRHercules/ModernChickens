@@ -59,9 +59,14 @@ public class ChickensChicken extends Chicken {
     private static final String TAG_GROWTH = "Growth";
     private static final String TAG_GAIN = "Gain";
     private static final String TAG_STRENGTH = "Strength";
+    private static final String TAG_FORCED_TYPE = "ForcedType";
+    private static final String TAG_FORCED_TYPE_TICKS = "ForcedTypeTicks";
 
     private int layTime;
+    private static final int CONVERSION_GUARD_TICKS = 200;
+
     private int forcedChickenType = -1;
+    private int forcedChickenTypeTicks;
 
     public ChickensChicken(net.minecraft.world.entity.EntityType<? extends Chicken> type, Level level) {
         super(type, level);
@@ -124,10 +129,13 @@ public class ChickensChicken extends Chicken {
 
     /**
      * Marks the entity as part of a conversion flow so spawn finalisation keeps
-     * the explicitly assigned breed instead of rolling a biome random entry.
+     * the explicitly assigned breed instead of rolling a biome random entry. The
+     * guard persists for multiple ticks to cover any delayed spawn passes that
+     * might try to re-roll the chicken type after conversion.
      */
     public void markConversionType(int type) {
         this.forcedChickenType = type;
+        this.forcedChickenTypeTicks = CONVERSION_GUARD_TICKS;
     }
 
     private boolean hasForcedChickenType() {
@@ -140,6 +148,7 @@ public class ChickensChicken extends Chicken {
 
     private void clearForcedChickenType() {
         this.forcedChickenType = -1;
+        this.forcedChickenTypeTicks = 0;
     }
 
     public int getLayProgress() {
@@ -203,7 +212,12 @@ public class ChickensChicken extends Chicken {
                 // the smart chicken survives any late biome randomisation.
                 this.setChickenType(type);
             }
-            this.clearForcedChickenType();
+            if (this.forcedChickenTypeTicks > 0) {
+                this.forcedChickenTypeTicks--;
+            }
+            if (this.forcedChickenTypeTicks <= 0 && this.getChickenType() == type) {
+                this.clearForcedChickenType();
+            }
         }
 
         // Keep the vanilla egg timer out of range so only the custom resource
@@ -413,6 +427,10 @@ public class ChickensChicken extends Chicken {
         tag.putInt(TAG_GROWTH, this.getGrowth());
         tag.putInt(TAG_GAIN, this.getGain());
         tag.putInt(TAG_STRENGTH, this.getStrength());
+        if (this.hasForcedChickenType()) {
+            tag.putInt(TAG_FORCED_TYPE, this.getForcedChickenType());
+            tag.putInt(TAG_FORCED_TYPE_TICKS, this.forcedChickenTypeTicks);
+        }
     }
 
     @Override
@@ -424,6 +442,12 @@ public class ChickensChicken extends Chicken {
         this.setGain(getStatusValue(tag, TAG_GAIN));
         this.setStrength(getStatusValue(tag, TAG_STRENGTH));
         this.updateLayProgress();
+        if (tag.contains(TAG_FORCED_TYPE)) {
+            this.markConversionType(tag.getInt(TAG_FORCED_TYPE));
+            if (tag.contains(TAG_FORCED_TYPE_TICKS)) {
+                this.forcedChickenTypeTicks = tag.getInt(TAG_FORCED_TYPE_TICKS);
+            }
+        }
     }
 
     private static int getStatusValue(CompoundTag tag, String key) {

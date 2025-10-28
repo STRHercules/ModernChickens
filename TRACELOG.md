@@ -684,3 +684,11 @@
   3. Documented the safeguard inline to guide future maintainers and reran `./gradlew build --console=plain` to confirm the hotfix compiles.
 - **Rationale**: Reinstating the Smart Chicken id during the first server tick ensures every book-taught conversion stays 1:1 even when NeoForge schedules extra spawn finalisation passes after the manual conversion step.
 
+## Entry 85
+- **Prompt/Task**: Ensure teaching a vanilla chicken with a book always yields a Smart Chicken rather than a random breed.
+- **Steps**:
+  1. Reworked the conversion flow to use `Entity#convertTo` so the vanilla chicken swaps in-place to the ModernChickens entity before finalisation.
+  2. Persisted a multi-tick forced-type guard on `ChickensChicken` (including NBT storage) so any delayed spawn randomisation keeps reapplying the Smart Chicken id until the conversion stabilises.
+  3. Finalised the converted chicken's spawn state, orientation, age, and custom name after the swap to preserve visible traits and confirmed the helper still plays the teaching animation.
+- **Rationale**: Converting the entity in place and keeping the Smart Chicken id pinned for several ticks prevents late spawn passes from rolling biome breeds, delivering the expected 1:1 Smart Chicken outcome.
+
