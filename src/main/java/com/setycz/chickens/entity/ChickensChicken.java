@@ -61,6 +61,7 @@ public class ChickensChicken extends Chicken {
     private static final String TAG_STRENGTH = "Strength";
 
     private int layTime;
+    private int forcedChickenType = -1;
 
     public ChickensChicken(net.minecraft.world.entity.EntityType<? extends Chicken> type, Level level) {
         super(type, level);
@@ -119,6 +120,22 @@ public class ChickensChicken extends Chicken {
     public void setChickenType(int type) {
         this.entityData.set(DATA_TYPE, type);
         this.resetTimeUntilNextEgg();
+    }
+
+    /**
+     * Marks the entity as part of a conversion flow so spawn finalisation keeps
+     * the explicitly assigned breed instead of rolling a biome random entry.
+     */
+    public void markConversionType(int type) {
+        this.forcedChickenType = type;
+    }
+
+    private boolean hasForcedChickenType() {
+        return this.forcedChickenType >= 0;
+    }
+
+    private int getForcedChickenType() {
+        return this.forcedChickenType;
     }
 
     public int getLayProgress() {
@@ -402,8 +419,9 @@ public class ChickensChicken extends Chicken {
     public SpawnGroupData finalizeSpawn(ServerLevel level, DifficultyInstance difficulty, MobSpawnType spawnType,
             @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
-        boolean conversion = spawnType == MobSpawnType.CONVERSION;
-        if (spawnData instanceof GroupData groupData) {
+        boolean forcedConversion = this.hasForcedChickenType();
+        boolean conversion = spawnType == MobSpawnType.CONVERSION || forcedConversion;
+        if (spawnData instanceof GroupData groupData && !forcedConversion) {
             this.setChickenType(groupData.type);
         } else if (!conversion) {
             // Conversion spawns (e.g. vanilla chickens taught with a book) should
@@ -417,6 +435,11 @@ public class ChickensChicken extends Chicken {
                 this.setChickenType(type);
                 spawnData = new GroupData(type);
             }
+        }
+        if (forcedConversion) {
+            int type = this.getForcedChickenType();
+            this.setChickenType(type);
+            spawnData = new GroupData(type);
         }
         if (!conversion && this.random.nextInt(5) == 0) {
             this.setAge(-24000);

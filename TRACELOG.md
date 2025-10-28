@@ -668,3 +668,11 @@
   3. Ran `./gradlew build --console=plain` to ensure the guarded spawn logic compiles.
 - **Rationale**: Skipping the random roll during conversion ensures book-taught chickens remain Smart Chickens even if future changes reuse the spawn helper before type assignment.
 
+## Entry 83
+- **Prompt/Task**: Guarantee book-taught vanilla chickens always finalise as Smart Chickens.
+- **Steps**:
+  1. Added a conversion marker to `ChickensChicken` so spawn finalisation treats forced breeds as conversions and never re-rolls biome or baby variants.
+  2. Flagged smart chicken spawns as conversions before they enter the world so every finalisation pass keeps the Smart Chicken id intact.
+  3. Copied the vanilla chicken's orientation, name, and age after the marked spawn to keep the converted entity visually identical to the original bird.
+- **Rationale**: Persisting the forced Smart Chicken type through every spawn finalisation cycle prevents the randomiser from overwriting conversions even when NeoForge re-invokes the spawn hook during entity insertion.
+

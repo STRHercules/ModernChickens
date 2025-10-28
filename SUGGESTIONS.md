@@ -66,4 +66,5 @@
 - Emit celebratory particles or sounds when a vanilla chicken becomes smart so players notice the successful conversion even if multiple interaction events fire in quick succession.
 - Add a regression test harness that teaches vanilla chickens in a data pack-driven scenario to ensure future spawn logic tweaks can't randomise the resulting Smart Chicken breed.
 - Expose a datapack hook to remap the book conversion target so modpacks can redirect vanilla chickens into bespoke starter breeds without patching the code.
+- Add a server-side stat or advancement trigger when players teach their first Smart Chicken so datapacks can celebrate the conversion milestone and confirm the interaction fired correctly.
 

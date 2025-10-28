@@ -90,8 +90,9 @@ public final class ChickenTeachHandler {
         }
 
         BlockPos blockPos = chicken.blockPosition();
-        smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
+        smartChicken.markConversionType(smartChickenData.getId());
         smartChicken.moveTo(chicken.getX(), chicken.getY(), chicken.getZ(), chicken.getYRot(), chicken.getXRot());
+        smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
         smartChicken.setYHeadRot(chicken.getYHeadRot());
         smartChicken.setChickenType(smartChickenData.getId());
         smartChicken.setAge(chicken.getAge());
