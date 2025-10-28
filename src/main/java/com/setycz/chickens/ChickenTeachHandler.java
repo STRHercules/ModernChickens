@@ -1,16 +1,11 @@
 package com.setycz.chickens;
 
-import com.setycz.chickens.entity.ChickensChicken;
-import com.setycz.chickens.registry.ModEntityTypes;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
@@ -35,30 +30,17 @@ public final class ChickenTeachHandler {
         if (!(event.getTarget() instanceof Chicken chicken) || event.getTarget().getType() != EntityType.CHICKEN) {
             return;
         }
-        Level level = event.getLevel();
-        if (!(level instanceof ServerLevel serverLevel)) {
+        if (event.getLevel().isClientSide()) {
             return;
         }
         ChickensRegistryItem smartChickenData = ChickensRegistry.getSmartChicken();
         if (smartChickenData == null || !smartChickenData.isEnabled()) {
             return;
         }
-        ChickensChicken smartChicken = ModEntityTypes.CHICKENS_CHICKEN.get().create(serverLevel);
-        if (smartChicken == null) {
-            return;
-        }
-        smartChicken.moveTo(chicken.getX(), chicken.getY(), chicken.getZ(), chicken.getYRot(), chicken.getXRot());
-        smartChicken.setYHeadRot(chicken.getYHeadRot());
-        smartChicken.setChickenType(smartChickenData.getId());
-        smartChicken.setAge(chicken.getAge());
-        if (chicken.hasCustomName()) {
-            smartChicken.setCustomName(chicken.getCustomName());
-            smartChicken.setCustomNameVisible(chicken.isCustomNameVisible());
-        }
-        BlockPos blockPos = chicken.blockPosition();
-        smartChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
-        serverLevel.addFreshEntity(smartChicken);
-        smartChicken.spawnAnim();
+        // Replace the vanilla chicken with an item stack representing the smart variant so
+        // players can teach it later without spawning the modded entity immediately.
+        ItemStack smartChickenStack = ModRegistry.CHICKEN_ITEM.get().createFor(smartChickenData);
+        chicken.spawnAtLocation(smartChickenStack, 0.0F);
         chicken.discard();
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);

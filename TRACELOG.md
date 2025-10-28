@@ -644,3 +644,11 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Replace the book teaching interaction so vanilla chickens drop a Smart Chicken item instead of spawning the smart entity.
+- **Steps**:
+  1. Swapped the smart chicken conversion handler to create a Smart Chicken item stack and drop it at the targeted chicken's location.
+  2. Added explanatory comments and removed the unused entity conversion pipeline now that the interaction hands players an item.
+  3. Ran `./gradlew build --console=plain` to verify the streamlined conversion compiles cleanly.
+- **Rationale**: Dropping the Smart Chicken item keeps the interaction aligned with the request while preserving the player's ability to teach the modded variant later without unexpectedly spawning a new mob.
+

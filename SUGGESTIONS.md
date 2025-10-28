@@ -63,4 +63,5 @@
 - Mirror the real-time ETA normalisation logic inside the Jade tooltip helper so both overlays report consistent countdowns when stacked chickens speed up production.
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
+- Surface a quick tooltip hint or advancement when the Smart Chicken book conversion succeeds so players immediately understand the new item drop workflow.
 
