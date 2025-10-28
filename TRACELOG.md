@@ -644,3 +644,11 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
+- **Steps**:
+  1. Elevated the converter block entity's default capacity constant so the block tooltip can reuse the canonical RF ceiling while parsing preserved data.
+  2. Hooked the block's hover text to decode the CustomData payload, clamp energy values safely, and format a styled `Stored Energy` line with grouped numbers.
+  3. Executed `./gradlew build --console=plain` to verify the new tooltip compiles and the project stays healthy.
+- **Rationale**: Surfacing the carried RF directly on the stack lets players audit their preserved charge from storage inventories, avoiding unnecessary placement cycles just to read the buffer.
+

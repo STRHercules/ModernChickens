@@ -3,9 +3,12 @@ package com.setycz.chickens.block;
 import com.mojang.serialization.MapCodec;
 import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
 import com.setycz.chickens.registry.ModBlockEntities;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
@@ -13,6 +16,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -28,9 +34,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.util.Mth;
 import net.neoforged.neoforge.common.extensions.IPlayerExtension;
 
 import javax.annotation.Nullable;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Horizontal machine that accepts Flux Eggs and converts their stored RF into a
@@ -79,6 +89,16 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
                 AvianFluxConverterBlockEntity.serverTick(lvl, blockPos, blockState, converter);
             }
         };
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        // Surface the carried RF so players can confirm their preserved charge without placing the block back down.
+        EnergySnapshot snapshot = readEnergySnapshot(stack);
+        tooltip.add(Component.translatable("tooltip.chickens.avian_flux_converter.energy",
+                Component.literal(formatEnergy(snapshot.energy())).withStyle(ChatFormatting.GOLD),
+                Component.literal(formatEnergy(snapshot.capacity())).withStyle(ChatFormatting.GOLD))
+                .withStyle(ChatFormatting.GRAY));
     }
 
     @Override
@@ -178,5 +198,42 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
             return converter.getComparatorOutput();
         }
         return super.getAnalogOutputSignal(state, level, pos);
+    }
+
+    /**
+     * Pulls the preserved block entity data off the item stack so the tooltip can mirror
+     * the exact RF buffer that will be restored when the converter is placed again.
+     */
+    private static EnergySnapshot readEnergySnapshot(ItemStack stack) {
+        CompoundTag data = extractBlockEntityTag(stack);
+        int capacity = AvianFluxConverterBlockEntity.DEFAULT_CAPACITY;
+        if (data != null && data.contains("Capacity")) {
+            capacity = Mth.clamp(data.getInt("Capacity"), 1, AvianFluxConverterBlockEntity.DEFAULT_CAPACITY);
+        }
+        int energy = 0;
+        if (data != null && data.contains("Energy")) {
+            energy = data.getInt("Energy");
+        }
+        energy = Mth.clamp(energy, 0, capacity);
+        return new EnergySnapshot(energy, capacity);
+    }
+
+    @Nullable
+    private static CompoundTag extractBlockEntityTag(ItemStack stack) {
+        CustomData component = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        if (!component.isEmpty()) {
+            return component.copyTag();
+        }
+        return null;
+    }
+
+    /**
+     * Formats large RF totals with grouping separators to keep the tooltip legible at a glance.
+     */
+    private static String formatEnergy(int value) {
+        return NumberFormat.getIntegerInstance(Locale.ROOT).format(value);
+    }
+
+    private record EnergySnapshot(int energy, int capacity) {
     }
 }
