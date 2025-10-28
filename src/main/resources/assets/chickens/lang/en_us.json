@@ -174,5 +174,8 @@
   "commands.chickens.export.success": "Exported breeding graph to %s",
   "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs.",
   "commands.chickens.debug.collector_range.enabled": "Collector range overlay enabled.",
-  "commands.chickens.debug.collector_range.disabled": "Collector range overlay disabled."
+  "commands.chickens.debug.collector_range.disabled": "Collector range overlay disabled.",
+  "commands.chickens.debug.summary.header": "Available Chickens debug toggles:",
+  "commands.chickens.debug.summary.entry": " - /chickens debug %s — %s",
+  "commands.chickens.debug.collector_range.summary": "Toggle the collector range overlay; provide [enabled] to set explicitly or omit to flip."
 }

@@ -675,3 +675,11 @@
   2. Added inline documentation clarifying why the builder is staged in separate variables to keep the toggle form available alongside the explicit setter.
   3. Appended a SUGGESTIONS note proposing a discoverable `/chickens debug` help summary and ran `./gradlew build --console=plain` to confirm the registry compiles cleanly.
 - **Rationale**: Brigadier treated the chained builder as exclusively accepting the boolean overload, so isolating the literal ensures the toggle form parses correctly while preserving the direct enable/disable variant.
+
+## Entry 84
+- **Prompt/Task**: Surface a `/chickens debug` help summary so pack makers can discover toggle syntax, including optional arguments.
+- **Steps**:
+  1. Added a reusable `DebugToggle` list to the command registration that enumerates each toggle's usage string and translation key for its description.
+  2. Wired the `/chickens debug` literal to execute a new summary method that prints the header followed by each toggle's translated usage line when no subcommand is provided.
+  3. Localised the header, entry format, and collector toggle description while extending SUGGESTIONS with a follow-up idea covering client/server scope hints.
+- **Rationale**: Presenting a concise usage overview prevents players from guessing optional arguments and keeps future debug additions discoverable without relying on external documentation.

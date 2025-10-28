@@ -14,6 +14,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,6 +30,10 @@ public final class ChickensCommands {
         // Listen for the command registration callback on the Forge event bus.
         NeoForge.EVENT_BUS.addListener(ChickensCommands::onRegisterCommands);
     }
+
+    private static final List<DebugToggle> DEBUG_TOGGLES = List.of(
+            new DebugToggle("collector_range [enabled]",
+                    "commands.chickens.debug.collector_range.summary"));
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
         // Commands.literal returns a LiteralArgumentBuilder; keeping a local
@@ -47,7 +52,10 @@ public final class ChickensCommands {
         collectorRange.then(Commands.argument("enabled", BoolArgumentType.bool())
                 .executes(ctx -> setCollectorDebug(ctx.getSource(), BoolArgumentType.getBool(ctx, "enabled"))));
 
-        LiteralArgumentBuilder<CommandSourceStack> debug = Commands.literal("debug").then(collectorRange);
+        LiteralArgumentBuilder<CommandSourceStack> debug = Commands.literal("debug")
+                // Allow /chickens debug with no subcommand to surface usage hints.
+                .executes(ctx -> showDebugSummary(ctx.getSource()))
+                .then(collectorRange);
         root.then(debug);
         event.getDispatcher().register(root);
     }
@@ -79,6 +87,20 @@ public final class ChickensCommands {
                 ? "commands.chickens.debug.collector_range.enabled"
                 : "commands.chickens.debug.collector_range.disabled"), true);
         return enabled ? 1 : 0;
+    }
+
+    private static int showDebugSummary(CommandSourceStack source) {
+        // First announce the summary header so players know why extra messages appear.
+        source.sendSuccess(() -> Component.translatable("commands.chickens.debug.summary.header"), false);
+        // Then enumerate each toggle with its usage syntax and explanation to keep
+        // discovery aligned with future debug hooks.
+        DEBUG_TOGGLES.forEach(toggle -> source.sendSuccess(
+                () -> Component.translatable("commands.chickens.debug.summary.entry",
+                        toggle.usage(), Component.translatable(toggle.descriptionKey())), false));
+        return DEBUG_TOGGLES.isEmpty() ? 0 : 1;
+    }
+
+    private record DebugToggle(String usage, String descriptionKey) {
     }
 }
 

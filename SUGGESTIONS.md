@@ -69,3 +69,4 @@
 
 
 - Surface a `/chickens debug` help summary that lists available toggles and clarifies optional arguments so future debug tools stay discoverable for pack makers without guessing full syntaxes.
+- Extend the debug summary to advertise whether each toggle is client- or server-sided so administrators know which players must run the command when diagnosing multiplayer setups.
