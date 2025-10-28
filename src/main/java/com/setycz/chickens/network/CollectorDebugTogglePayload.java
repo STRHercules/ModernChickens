@@ -1,13 +1,14 @@
 package com.setycz.chickens.network;
 
 import com.setycz.chickens.ChickensMod;
-import com.setycz.chickens.client.debug.CollectorDebugOverlay;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * Clientbound payload that toggles the collector debug overlay for a specific
@@ -33,6 +34,12 @@ public record CollectorDebugTogglePayload(boolean enabled) implements CustomPack
         if (context.flow() != PacketFlow.CLIENTBOUND) {
             return;
         }
-        context.enqueueWork(() -> CollectorDebugOverlay.setEnabled(payload.enabled()));
+        if (FMLEnvironment.dist != Dist.CLIENT) {
+            return;
+        }
+        // Guard the client-only overlay class behind a dist check so dedicated servers
+        // can register the payload without loading Minecraft client classes.
+        context.enqueueWork(
+                () -> com.setycz.chickens.client.debug.CollectorDebugOverlay.setEnabled(payload.enabled()));
     }
 }

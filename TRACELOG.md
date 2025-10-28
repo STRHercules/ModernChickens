@@ -660,3 +660,10 @@
   3. Rendered a client-side wireframe cube during the level stage event to outline each collector's clamped scan volume and ran `./gradlew build --console=plain` to validate the feature.
 - **Rationale**: Giving builders a visual confirmation of the collector's coverage eliminates guesswork when laying out roost arrays and ensures the new 9×9×9 scan volume can be inspected without digging into configs.
 
+## Entry 82
+- **Prompt/Task**: Fix the `/chickens debug collector_range` command so it registers correctly on dedicated servers.
+- **Steps**:
+  1. Deferred the client overlay toggle to environments where the Minecraft client classes exist, preventing dedicated servers from loading the debug renderer while constructing the command tree.
+  2. Rebuilt the project with `./gradlew build --console=plain` to confirm the adjusted payload handler compiles and the command tree remains intact.
+- **Rationale**: Guarding the client-only overlay removes the classloading failure that stripped the debug command from the server command tree, ensuring players can toggle the range visualisation in live worlds.
+

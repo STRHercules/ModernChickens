@@ -65,4 +65,5 @@
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
 - Provide a debug overlay or particle toggle that visualises the collector's current search slice so players can verify their roost layouts stay within the 9×9×9 pickup cube without trial-and-error.
 - Add a secondary debug view that highlights the collector's currently processed slice each tick so pack makers can diagnose timing gaps beyond the static range cube.
+- Offer a client config option to recolour the collector range overlay so multiple players can differentiate their toggles when collaborating on large bases.
 
