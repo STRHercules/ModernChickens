@@ -644,3 +644,11 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Ensure using a book on a vanilla chicken removes the mob and drops a Smart Chicken item instead.
+- **Steps**:
+  1. Replaced the smart chicken spawn routine with logic that crafts the appropriate chicken item stack and drops it at the target's position while running server-side only.
+  2. Carried over any custom name by writing it to the item's custom name component so personalised birds keep their labels after conversion.
+  3. Ran `./gradlew build --console=plain` to verify the revised conversion handler compiles cleanly.
+- **Rationale**: Dropping the item fulfils the request and lets players stash or redeploy the trained chicken later without immediately spawning the replacement entity.
+
