@@ -63,4 +63,12 @@
 - Mirror the real-time ETA normalisation logic inside the Jade tooltip helper so both overlays report consistent countdowns when stacked chickens speed up production.
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
+- Emit celebratory particles or sounds when a vanilla chicken becomes smart so players notice the successful conversion even if multiple interaction events fire in quick succession.
+- Add a regression test harness that teaches vanilla chickens in a data pack-driven scenario to ensure future spawn logic tweaks can't randomise the resulting Smart Chicken breed.
+- Expose a datapack hook to remap the book conversion target so modpacks can redirect vanilla chickens into bespoke starter breeds without patching the code.
+- Add a server-side stat or advancement trigger when players teach their first Smart Chicken so datapacks can celebrate the conversion milestone and confirm the interaction fired correctly.
+- Provide a `/chickens debugConversion` command that reports the last Smart Chicken item drop location and owning player so playtesters can confirm book conversions triggered even when the item falls into automation.
+- Add a biome-sweep regression test that repeatedly teaches vanilla chickens and asserts the resulting entity stays Smart, ensuring future spawn tweaks don't bypass the forced-type guard.
+- Mirror scoreboard team membership and persistent NBT tags when spawning the Smart Chicken so nameplates, scoreboard logic, and datapack-driven behaviours survive conversion.
+- Offer a server config toggle that hands the Smart Chicken item directly to the interacting player during book conversions so skyblock-style maps don't risk losing the drop to the void.
 

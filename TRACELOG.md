@@ -644,3 +644,67 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Ensure right-clicking a vanilla chicken with a book converts it into a ModernChickens Smart Chicken.
+- **Steps**:
+  1. Subscribed the teach-chicken handler to both `EntityInteract` and `EntityInteractSpecific` so every book interaction path funnels through the conversion logic.
+  2. Centralised the validation and cancellation flow in a shared helper that checks for the vanilla chicken type, smart chicken availability, and server-side conversion success before cancelling the event on both sides.
+  3. Extracted the spawn routine into a reusable method that mirrors vanilla state onto the smart chicken and documented the intent for future maintainers.
+- **Rationale**: Handling both interaction variants and consolidating the conversion routine prevents missed clicks, guaranteeing players always see their vanilla chicken become a Smart Chicken when taught with a book.
+
+## Entry 81
+- **Prompt/Task**: Ensure book-taught vanilla chickens always become Smart Chickens instead of random breeds.
+- **Steps**:
+  1. Reordered the conversion helper so the spawn finalisation runs before copying vanilla state onto the new entity, preventing the randomiser from overriding our chosen type and age.
+  2. Verified the copied rotation, naming, and age still mirror the original vanilla chicken after the spawn shuffle completes.
+  3. Built the project with `./gradlew build --console=plain` to confirm the deterministic conversion compiles cleanly.
+- **Rationale**: Finalising the spawn before applying Smart Chicken traits preserves the desired breed and keeps the conversion faithful to player expectations when teaching vanilla chickens.
+
+## Entry 82
+- **Prompt/Task**: Stop book-taught chickens from randomising their breed during spawn finalisation.
+- **Steps**:
+  1. Updated the smart chicken entity spawn hook to detect conversion spawns so they skip the biome randomiser and preserve the explicitly assigned type.
+  2. Documented the conversion guard inline to clarify why conversion flows bypass the random selection branch.
+  3. Ran `./gradlew build --console=plain` to ensure the guarded spawn logic compiles.
+- **Rationale**: Skipping the random roll during conversion ensures book-taught chickens remain Smart Chickens even if future changes reuse the spawn helper before type assignment.
+
+## Entry 83
+- **Prompt/Task**: Guarantee book-taught vanilla chickens always finalise as Smart Chickens.
+- **Steps**:
+  1. Added a conversion marker to `ChickensChicken` so spawn finalisation treats forced breeds as conversions and never re-rolls biome or baby variants.
+  2. Flagged smart chicken spawns as conversions before they enter the world so every finalisation pass keeps the Smart Chicken id intact.
+  3. Copied the vanilla chicken's orientation, name, and age after the marked spawn to keep the converted entity visually identical to the original bird.
+- **Rationale**: Persisting the forced Smart Chicken type through every spawn finalisation cycle prevents the randomiser from overwriting conversions even when NeoForge re-invokes the spawn hook during entity insertion.
+
+## Entry 84
+- **Prompt/Task**: Stop converted Smart Chickens from reverting to biome-random breeds after additional spawn passes.
+- **Steps**:
+  1. Added a server-side guard at the start of `aiStep` that reapplies the forced Smart Chicken id if late spawn hooks reassign the type.
+  2. Cleared the forced marker once the corrective pass runs so future stat changes and breeding logic operate on the finalised breed.
+  3. Documented the safeguard inline to guide future maintainers and reran `./gradlew build --console=plain` to confirm the hotfix compiles.
+- **Rationale**: Reinstating the Smart Chicken id during the first server tick ensures every book-taught conversion stays 1:1 even when NeoForge schedules extra spawn finalisation passes after the manual conversion step.
+
+## Entry 85
+- **Prompt/Task**: Ensure teaching a vanilla chicken with a book always yields a Smart Chicken rather than a random breed.
+- **Steps**:
+  1. Reworked the conversion flow to use `Entity#convertTo` so the vanilla chicken swaps in-place to the ModernChickens entity before finalisation.
+  2. Persisted a multi-tick forced-type guard on `ChickensChicken` (including NBT storage) so any delayed spawn randomisation keeps reapplying the Smart Chicken id until the conversion stabilises.
+  3. Finalised the converted chicken's spawn state, orientation, age, and custom name after the swap to preserve visible traits and confirmed the helper still plays the teaching animation.
+- **Rationale**: Converting the entity in place and keeping the Smart Chicken id pinned for several ticks prevents late spawn passes from rolling biome breeds, delivering the expected 1:1 Smart Chicken outcome.
+
+## Entry 86
+- **Prompt/Task**: Stop vanilla-to-smart chicken conversions from ever rolling a biome-specific breed.
+- **Steps**:
+  1. Replaced the in-place `convertTo` call with a fresh smart chicken spawn that copies the vanilla bird's position, velocity, age, health, names, and persistence flags before the old entity is discarded.
+  2. Locked the Smart Chicken id ahead of spawn finalisation so no biome hooks can override the forced breed, then reattached any riders to the new entity to keep interactions seamless.
+  3. Ran `./gradlew build --console=plain` to verify the rebuilt conversion path compiles without errors.
+- **Rationale**: Mirroring the legacy spawn-and-replace workflow removes the last randomisation hook that could change the breed, ensuring book teaching is a deterministic 1:1 upgrade into Smart Chickens.
+
+## Entry 87
+- **Prompt/Task**: Swap vanilla chickens for Smart Chicken items when taught with a book.
+- **Steps**:
+  1. Reworked `ChickenTeachHandler` to eject riders, drop a Smart Chicken item that inherits the bird's custom name, and discard the vanilla entity.
+  2. Removed the forced-type guard and associated NBT persistence from `ChickensChicken` since book conversions no longer spawn Smart Chicken entities directly.
+  3. Updated the project documentation files and reran `./gradlew build --console=plain` to confirm the item-drop conversion compiles cleanly.
+- **Rationale**: Dropping an item rather than spawning a replacement Smart Chicken guarantees a 1:1 outcome without fighting biome randomisers and lets players redeploy the upgraded bird wherever they want.
+

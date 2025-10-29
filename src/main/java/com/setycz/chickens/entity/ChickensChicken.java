@@ -59,7 +59,6 @@ public class ChickensChicken extends Chicken {
     private static final String TAG_GROWTH = "Growth";
     private static final String TAG_GAIN = "Gain";
     private static final String TAG_STRENGTH = "Strength";
-
     private int layTime;
 
     public ChickensChicken(net.minecraft.world.entity.EntityType<? extends Chicken> type, Level level) {
@@ -402,9 +401,13 @@ public class ChickensChicken extends Chicken {
     public SpawnGroupData finalizeSpawn(ServerLevel level, DifficultyInstance difficulty, MobSpawnType spawnType,
             @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+        boolean conversion = spawnType == MobSpawnType.CONVERSION;
         if (spawnData instanceof GroupData groupData) {
             this.setChickenType(groupData.type);
-        } else {
+        } else if (!conversion) {
+            // Conversion spawns (e.g. vanilla chickens taught with a book) should
+            // keep the explicitly assigned type instead of randomising into a
+            // biome option. Natural spawns continue to roll a random chicken.
             SpawnType biomeSpawnType = ChickensRegistry.getSpawnType(level.getBiome(this.blockPosition()));
             List<ChickensRegistryItem> options = ChickensRegistry.getPossibleChickensToSpawn(biomeSpawnType);
             if (!options.isEmpty()) {
@@ -414,7 +417,7 @@ public class ChickensChicken extends Chicken {
                 spawnData = new GroupData(type);
             }
         }
-        if (this.random.nextInt(5) == 0) {
+        if (!conversion && this.random.nextInt(5) == 0) {
             this.setAge(-24000);
         }
         return spawnData;
