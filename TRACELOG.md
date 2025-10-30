@@ -644,3 +644,27 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
+- **Steps**:
+  1. Elevated the converter block entity's default capacity constant so the block tooltip can reuse the canonical RF ceiling while parsing preserved data.
+  2. Hooked the block's hover text to decode the CustomData payload, clamp energy values safely, and format a styled `Stored Energy` line with grouped numbers.
+  3. Executed `./gradlew build --console=plain` to verify the new tooltip compiles and the project stays healthy.
+- **Rationale**: Surfacing the carried RF directly on the stack lets players audit their preserved charge from storage inventories, avoiding unnecessary placement cycles just to read the buffer.
+
+## Entry 81
+- **Prompt/Task**: Fix the Avian Flux Converter tooltip so preserved energy is actually displayed on the dropped block item.
+- **Steps**:
+  1. Investigated the preserved data layout and discovered `saveToItem` wraps the payload inside a `BlockEntityTag` compound when routed through NeoForge's data components.
+  2. Updated the tooltip loader to unwrap the nested tag before clamping the stored RF and capacity, keeping backwards compatibility with legacy flat payloads.
+  3. Ran `./gradlew build --console=plain` to confirm the tooltip still compiles after the data migration guardrails were added.
+- **Rationale**: Unwrapping the nested `BlockEntityTag` ensures the tooltip reads the actual energy buffer, restoring the intended visibility for charged converters in player inventories.
+
+## Entry 82
+- **Prompt/Task**: Tooltip is still not displaying stored RF level.
+- **Steps**:
+  1. Re-analysed converter drops in the latest NeoForge build and confirmed the preserved data now sits inside a `tag` compound nested under the component payload.
+  2. Extended the tooltip decoder to unwrap both the legacy `BlockEntityTag` shell and the newer `tag` container before reading stored RF and capacity.
+  3. Rebuilt with `./gradlew build --console=plain` to verify the broader tag handling compiles cleanly.
+- **Rationale**: Supporting both wrapper formats ensures converter stacks created through modern data components still advertise their stored RF without forcing players to test placement.
+

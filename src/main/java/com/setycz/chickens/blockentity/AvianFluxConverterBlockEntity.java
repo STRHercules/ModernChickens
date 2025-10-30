@@ -39,7 +39,8 @@ import javax.annotation.Nullable;
 public class AvianFluxConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
-    private static final int CAPACITY = 50_000;
+    public static final int DEFAULT_CAPACITY = 50_000;
+    private static final int CAPACITY = DEFAULT_CAPACITY;
     private static final int MAX_TRANSFER = 4_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
