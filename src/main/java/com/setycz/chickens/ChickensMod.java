@@ -5,6 +5,8 @@ import com.setycz.chickens.data.ChickensDataLoader;
 import com.setycz.chickens.RoostEggPreventer;
 import com.setycz.chickens.entity.NetherPopulationHandler;
 import com.setycz.chickens.integration.jade.JadeIntegration;
+import com.setycz.chickens.debug.CollectorDebugState;
+import com.setycz.chickens.network.ChickensNetwork;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.data.ChickenItemModelProvider;
 import net.neoforged.bus.api.IEventBus;
@@ -30,6 +32,8 @@ public final class ChickensMod {
         modBus.addListener(this::onCommonSetup);
         ChickenTeachHandler.init();
         ChickensCommands.init();
+        ChickensNetwork.init(modBus); // Register payload handlers before commands dispatch packets.
+        CollectorDebugState.init(); // Track per-player overlay toggles and clean up on logout.
         JadeIntegration.init();
         NetherPopulationHandler.init();
         RoostEggPreventer.init();

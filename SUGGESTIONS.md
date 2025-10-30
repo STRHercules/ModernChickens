@@ -63,4 +63,10 @@
 - Mirror the real-time ETA normalisation logic inside the Jade tooltip helper so both overlays report consistent countdowns when stacked chickens speed up production.
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
+- Provide a debug overlay or particle toggle that visualises the collector's current search slice so players can verify their roost layouts stay within the 9×9×9 pickup cube without trial-and-error.
+- Add a secondary debug view that highlights the collector's currently processed slice each tick so pack makers can diagnose timing gaps beyond the static range cube.
+- Offer a client config option to recolour the collector range overlay so multiple players can differentiate their toggles when collaborating on large bases.
 
+
+- Surface a `/chickens debug` help summary that lists available toggles and clarifies optional arguments so future debug tools stay discoverable for pack makers without guessing full syntaxes.
+- Extend the debug summary to advertise whether each toggle is client- or server-sided so administrators know which players must run the command when diagnosing multiplayer setups.
