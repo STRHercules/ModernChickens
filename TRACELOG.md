@@ -644,3 +644,27 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Add subtle redstone particles when the Avian Flux Converter consumes a Flux Egg.
+- **Steps**:
+  1. Injected a helper that bursts Dust (Redstone) particles whenever the converter siphons RF from an inserted Flux Egg.
+  2. Scaled the number of particles to the transferred energy so heavy drains feel livelier while keeping the effect understated.
+  3. Replaced the completed suggestion with a new audio follow-up in SUGGESTIONS.md to capture the next quality-of-life idea.
+- **Rationale**: The short-lived particle puff alerts nearby players that the machine has started processing without forcing them to keep the GUI open.
+
+## Entry 81
+- **Prompt/Task**: Make the Avian Flux Converter particle burst actually visible during Flux Egg transfers.
+- **Steps**:
+  1. Increased the particle density and spread so draining a Flux Egg emits a noticeable red dust plume even when the egg is consumed in a single tick.
+  2. Recalibrated the particle scaling math to map the transferred RF directly into the spawn count for consistent feedback across egg sizes.
+  3. Logged a follow-up suggestion outlining a client toggle for players who may want to adjust the particle intensity themselves.
+- **Rationale**: Ensuring the converter visibly pulses when it starts draining an egg makes it clear that the machine is active without relying on the GUI or subtle single-particle puffs that were easy to miss.
+
+## Entry 82
+- **Prompt/Task**: Fix Avian Flux Converter particles still not appearing in-game.
+- **Steps**:
+  1. Raised the emission point above the casing and added a secondary ring burst so the dust plume is obvious from both top-down and side-on camera angles.
+  2. Introduced gentle particle velocity to keep the redstone dust moving, ensuring the plume lingers long enough to be seen during rapid-fire egg drains.
+  3. Captured a new client particle offset suggestion for future configurability once the default visuals are validated.
+- **Rationale**: Spawning a taller, animated plume directly in players' sightlines makes the transfer feedback reliable during normal gameplay, addressing reports that the previous bursts were invisible.
+

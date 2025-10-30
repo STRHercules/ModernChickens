@@ -13,6 +13,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
@@ -138,11 +140,36 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
         int remaining = stored - transferred;
         FluxEggItem.setStoredEnergy(stack, remaining);
+        emitFluxTransferParticles(transferred);
         if (remaining <= 0) {
             // Remove the depleted shell once its Redstone Flux payload is exhausted.
             items.set(0, ItemStack.EMPTY);
         }
         return true;
+    }
+
+    // Kicks a subtle burst of red dust into the air whenever the converter absorbs
+    // power from a Flux Egg so players spot the transfer without relying on the GUI.
+    private void emitFluxTransferParticles(int transferred) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        // Spawn enough particles to be noticeable even when an entire egg is drained
+        // in one tick while keeping the effect proportional to the energy moved.
+        int particleCount = Mth.clamp(Mth.ceil(transferred / 100.0F), 6, 40);
+        double centerX = worldPosition.getX() + 0.5D;
+        double plumeY = worldPosition.getY() + 1.05D;
+        double centerZ = worldPosition.getZ() + 0.5D;
+        // Kick a column of dust above the machine so the burst is visible even when
+        // the player is standing level with the converter instead of looking down
+        // into the block space.
+        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, plumeY, centerZ,
+                particleCount, 0.35D, 0.25D, 0.35D, 0.02D);
+        // Also rim the casing with a softer ring of dust so a player glancing at the
+        // converter from the side still spots that a drain started.
+        int ringCount = Math.max(4, particleCount / 3);
+        serverLevel.sendParticles(DustParticleOptions.REDSTONE, centerX, plumeY - 0.35D, centerZ,
+                ringCount, 0.6D, 0.05D, 0.6D, 0.03D);
     }
 
     // Attempts to hand off power to every adjacent block entity so automation
