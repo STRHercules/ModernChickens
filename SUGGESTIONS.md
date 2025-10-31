@@ -20,7 +20,7 @@
 - Add automated coverage for the new breeder and collector menus so progress syncing, seed consumption, and item transfers stay reliable across future refactors.
 - Generate bespoke GUI textures for the roost, breeder, and collector once binary assets can be shipped so the new screens stop borrowing vanilla art.
 - Explore lightweight in-world upgrades (e.g., range charms) so individual collectors can extend or shrink their scan radius without relying on the global configuration.
-- Add a lightweight NeoForge config screen that exposes the new roost/breeder speed multipliers and egg toggle so pack makers can tweak values without hand-editing `chickens.properties`.
+- Add a lightweight NeoForge config screen that exposes the new roost/breeder speed multipliers and egg toggle so pack makers can tweak values without hand-editing `chickens.cfg`.
 - Monitor the maturation of NeoForge’s transfer API and migrate the new capability bindings away from `SidedInvWrapper` once a public `WorldlyContainerWrapper`/resource handler is exposed, keeping the item automation bridge future-proof.
 - Add a lightweight validation (e.g., data gen or unit test) that asserts spawn egg stacks populate `CustomModelData`, catching regressions that would revert the icons to vanilla eggs.
 - Consider exposing a config toggle that lets packs opt back into the Roost-style chicken icons for spawn eggs if they prefer the newer look.
@@ -58,7 +58,7 @@
 - Consider persisting an "overcharged" flag on Flux Eggs so future upgrades can temporarily exceed the 50k buffer when linked to external batteries, letting the converter UI highlight bonus storage without rebalancing the base machine.
 - Introduce a lightweight packet-based diagnostic (`/chickens debugFlux`) that prints the server's measured RF alongside the menu-mirrored value so future UI regressions can be spotted without guessing whether the client desyncs or the block entity miscounted energy.
 - Factor the new 32-bit DataSlot splitter into a shared menu helper so upcoming machines can mirror large counters without duplicating the bit-packaging logic.
-- Add an item tooltip for the Avian Flux Converter block stack that surfaces the stored RF and capacity so players can confirm the preserved charge without replacing the machine.
+- Extend the Avian Flux Converter tooltip with a shift-activated section that lists max transfer rates and the last egg drain timestamp, giving players deeper diagnostics now that the base RF total is visible.
 - Offer a synced config toggle for the WTHIT plugin so packs that already rely on another HUD mod can disable the duplicate overlay lines without forking the code.
 - Mirror the real-time ETA normalisation logic inside the Jade tooltip helper so both overlays report consistent countdowns when stacked chickens speed up production.
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.

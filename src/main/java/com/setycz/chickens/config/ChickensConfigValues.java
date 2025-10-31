@@ -17,11 +17,18 @@ public final class ChickensConfigValues {
     private final double breederSpeedMultiplier;
     private final boolean disableVanillaEggLaying;
     private final int collectorScanRange;
+    private final boolean avianFluxEffectsEnabled;
+    private final double fluxEggCapacityMultiplier;
+    private final int avianFluxCapacity;
+    private final int avianFluxMaxReceive;
+    private final int avianFluxMaxExtract;
 
     public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
             float netherSpawnChanceMultiplier, boolean alwaysShowStats,
             double roostSpeedMultiplier, double breederSpeedMultiplier,
-            boolean disableVanillaEggLaying, int collectorScanRange) {
+            boolean disableVanillaEggLaying, int collectorScanRange,
+            boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
+            int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract) {
         this.spawnProbability = spawnProbability;
         this.minBroodSize = minBroodSize;
         this.maxBroodSize = maxBroodSize;
@@ -31,6 +38,11 @@ public final class ChickensConfigValues {
         this.breederSpeedMultiplier = breederSpeedMultiplier;
         this.disableVanillaEggLaying = disableVanillaEggLaying;
         this.collectorScanRange = collectorScanRange;
+        this.avianFluxEffectsEnabled = avianFluxEffectsEnabled;
+        this.fluxEggCapacityMultiplier = fluxEggCapacityMultiplier;
+        this.avianFluxCapacity = avianFluxCapacity;
+        this.avianFluxMaxReceive = avianFluxMaxReceive;
+        this.avianFluxMaxExtract = avianFluxMaxExtract;
     }
 
     public int getSpawnProbability() {
@@ -67,5 +79,25 @@ public final class ChickensConfigValues {
 
     public int getCollectorScanRange() {
         return collectorScanRange;
+    }
+
+    public boolean isAvianFluxEffectsEnabled() {
+        return avianFluxEffectsEnabled;
+    }
+
+    public double getFluxEggCapacityMultiplier() {
+        return fluxEggCapacityMultiplier;
+    }
+
+    public int getAvianFluxCapacity() {
+        return avianFluxCapacity;
+    }
+
+    public int getAvianFluxMaxReceive() {
+        return avianFluxMaxReceive;
+    }
+
+    public int getAvianFluxMaxExtract() {
+        return avianFluxMaxExtract;
     }
 }

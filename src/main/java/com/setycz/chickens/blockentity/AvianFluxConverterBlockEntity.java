@@ -1,5 +1,8 @@
 package com.setycz.chickens.blockentity;
 
+import com.setycz.chickens.block.AvianFluxConverterBlock;
+import com.setycz.chickens.config.ChickensConfigHolder;
+import com.setycz.chickens.config.ChickensConfigValues;
 import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.menu.AvianFluxConverterMenu;
 import com.setycz.chickens.registry.ModBlockEntities;
@@ -39,18 +42,23 @@ import javax.annotation.Nullable;
 public class AvianFluxConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
-    private static final int CAPACITY = 50_000;
-    private static final int MAX_TRANSFER = 4_000;
+    private static final int DEFAULT_CAPACITY = 50_000;
+    private static final int DEFAULT_MAX_RECEIVE = 4_000;
+    private static final int DEFAULT_MAX_EXTRACT = 4_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
-    private final EnergyStorage energyStorage = new EnergyStorage(CAPACITY, MAX_TRANSFER, MAX_TRANSFER) {
+    private final EnergyStorage energyStorage = new EnergyStorage(DEFAULT_CAPACITY, DEFAULT_MAX_RECEIVE, DEFAULT_MAX_EXTRACT) {
         @Override
-        public int receiveEnergy(int maxReceive, boolean simulate) {
+        public int receiveEnergy(int requestedReceive, boolean simulate) {
             int space = capacity - AvianFluxConverterBlockEntity.this.energy;
             if (space <= 0) {
                 return 0;
             }
-            int accepted = Math.min(MAX_TRANSFER, Math.min(space, maxReceive));
+            int limit = AvianFluxConverterBlockEntity.this.maxReceive;
+            if (limit <= 0) {
+                return 0;
+            }
+            int accepted = Math.min(limit, Math.min(space, requestedReceive));
             if (accepted <= 0) {
                 return 0;
             }
@@ -62,9 +70,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
 
         @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
-            int available = Math.min(MAX_TRANSFER,
-                    Math.min(AvianFluxConverterBlockEntity.this.energy, maxExtract));
+        public int extractEnergy(int requestedExtract, boolean simulate) {
+            int limit = AvianFluxConverterBlockEntity.this.maxExtract;
+            if (limit <= 0) {
+                return 0;
+            }
+            int available = Math.min(limit,
+                    Math.min(AvianFluxConverterBlockEntity.this.energy, requestedExtract));
             if (available <= 0) {
                 return 0;
             }
@@ -87,12 +99,19 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     };
 
     private int energy = 0;
-    private int capacity = CAPACITY;
+    private int capacity = DEFAULT_CAPACITY;
+    private int maxReceive = DEFAULT_MAX_RECEIVE;
+    private int maxExtract = DEFAULT_MAX_EXTRACT;
+    private boolean cachedActiveState = false;
     @Nullable
     private Component customName;
 
     public AvianFluxConverterBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.AVIAN_FLUX_CONVERTER.get(), pos, state);
+        if (state.hasProperty(AvianFluxConverterBlock.LIT)) {
+            cachedActiveState = state.getValue(AvianFluxConverterBlock.LIT);
+        }
+        syncWithConfig(true);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AvianFluxConverterBlockEntity converter) {
@@ -104,10 +123,15 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
             return;
         }
         boolean drainedEgg = drainFluxEgg();
+        boolean exported = false;
+        int energyBeforePush = energy;
         if (energy > 0) {
             pushEnergyToNeighbors(level);
+            exported = energyBeforePush != energy;
         }
-        if (drainedEgg) {
+        boolean shouldGlow = shouldBlockGlow(drainedEgg || exported);
+        updateActiveState(level, shouldGlow);
+        if (drainedEgg || exported) {
             setChanged();
         }
     }
@@ -118,6 +142,8 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
             BlockState state = getBlockState();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
             level.updateNeighbourForOutputSignal(worldPosition, state.getBlock());
+            // Keep the visual state in sync with external energy transfers (pipes, etc.).
+            updateActiveState(level, shouldBlockGlow(false));
         }
     }
 
@@ -158,7 +184,11 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
             if (target == null) {
                 continue;
             }
-            int available = Math.min(MAX_TRANSFER, energy);
+            int limit = maxExtract;
+            if (limit <= 0) {
+                continue;
+            }
+            int available = Math.min(limit, energy);
             if (available <= 0) {
                 continue;
             }
@@ -248,6 +278,9 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
             stack.setCount(getMaxStackSize());
         }
         setChanged();
+        if (level != null && !level.isClientSide) {
+            updateActiveState(level, shouldBlockGlow(false));
+        }
     }
 
     @Override
@@ -329,11 +362,9 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("Capacity")) {
-            // Clamp legacy saves down to the modern 50k ceiling so the GUI and
-            // battery math stay in sync with the new balance pass.
-            capacity = Math.min(CAPACITY, Math.max(1, tag.getInt("Capacity")));
+            capacity = Math.max(1, tag.getInt("Capacity"));
         } else {
-            capacity = CAPACITY;
+            capacity = DEFAULT_CAPACITY;
         }
         energy = Mth.clamp(tag.getInt("Energy"), 0, capacity);
         if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
@@ -342,9 +373,57 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         } else {
             customName = null;
         }
+        syncWithConfig(false);
+        cachedActiveState = false;
+    }
+
+    private void syncWithConfig(boolean overwriteCapacity) {
+        ChickensConfigValues config = ChickensConfigHolder.get();
+        int configuredCapacity = Math.max(1, config.getAvianFluxCapacity());
+        maxReceive = Math.max(0, config.getAvianFluxMaxReceive());
+        maxExtract = Math.max(0, config.getAvianFluxMaxExtract());
+        if (overwriteCapacity) {
+            capacity = configuredCapacity;
+        } else {
+            capacity = Mth.clamp(capacity, 1, configuredCapacity);
+        }
+        if (energy > capacity) {
+            energy = capacity;
+        }
     }
 
     private static boolean isFluxEgg(ItemStack stack) {
         return stack.getItem() instanceof FluxEggItem;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        syncWithConfig(false);
+        if (level != null && !level.isClientSide) {
+            updateActiveState(level, shouldBlockGlow(false));
+        }
+    }
+
+    private boolean shouldBlockGlow(boolean drainedThisTick) {
+        ItemStack stack = items.get(0);
+        boolean hasEggReserves = isFluxEgg(stack) && energy < capacity;
+        if (!ChickensConfigHolder.get().isAvianFluxEffectsEnabled()) {
+            return false;
+        }
+        return drainedThisTick || hasEggReserves || energy > 0;
+    }
+
+    private void updateActiveState(Level level, boolean active) {
+        if (cachedActiveState == active) {
+            return;
+        }
+        cachedActiveState = active;
+        BlockState state = getBlockState();
+        if (!state.hasProperty(AvianFluxConverterBlock.LIT)) {
+            return;
+        }
+        level.setBlock(worldPosition, state.setValue(AvianFluxConverterBlock.LIT, active),
+                Block.UPDATE_CLIENTS);
     }
 }

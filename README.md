@@ -13,11 +13,11 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
 2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
 3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
-4. **Scale production.** Tune `chickens.properties` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
+4. **Scale production.** Tune `chickens.cfg` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
 
 ## Feature Highlights
 
-- **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.properties` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
+- **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.cfg` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
 - **Automation blocks** - Roosts, breeders, collectors, and henhouses ship with their original block entities, menus, and renderers so farms can incubate, store, and harvest chickens hands-free.
 - **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
@@ -33,13 +33,15 @@ _Chickens available in ATM10!_
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
 
 
-> Configuration and breeding data live in `config/chickens.properties`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. The `chickens.cfg` is a compatability holdover which is unused. If you wish to make changes to `chickens.properties`, delete the `chickens.cfg` before launching the client.
+> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade.
+> Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
+> Want different RF pacing? Adjust `general.fluxEggCapacityMultiplier` for Flux Egg storage or tweak `general.avianFluxCapacity`, `general.avianFluxMaxReceive`, and `general.avianFluxMaxExtract` to rebalance the converter.
 
 ### Custom Chicken Definitions
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
-- Custom chickens participate in the existing `chickens.properties` flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
+- Custom chickens participate in the existing `chickens.cfg` flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
 
 Example `chickens_custom.json` entries (place inside the top-level `chickens` array):
 
@@ -155,7 +157,7 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 | 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
 | 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
 
-> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.properties`.
+> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.cfg`.
 
 ### Same graph in RF/s:
 

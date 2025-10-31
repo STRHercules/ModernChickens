@@ -2,10 +2,14 @@ package com.setycz.chickens.block;
 
 import com.mojang.serialization.MapCodec;
 import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
@@ -13,6 +17,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -25,10 +32,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -40,18 +51,22 @@ import javax.annotation.Nullable;
 public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<AvianFluxConverterBlock> CODEC = simpleCodec(AvianFluxConverterBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public AvianFluxConverterBlock() {
         this(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.WOOD)
                 .strength(2.5F, 6.0F)
                 .sound(SoundType.WOOD)
-                .noOcclusion());
+                .noOcclusion()
+                .lightLevel(state -> state.getValue(LIT) ? 7 : 0));
     }
 
     public AvianFluxConverterBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(LIT, Boolean.FALSE));
     }
 
     @Override
@@ -128,7 +143,7 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, LIT);
     }
 
     @Override
@@ -156,6 +171,30 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
     }
 
     @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        // Surface the baseline description so players can recall the machine's purpose without
+        // visiting the manual or patch notes.
+        tooltip.add(Component.translatable("tooltip.chickens.avian_flux_converter"));
+
+        int capacity = Math.max(1, ChickensConfigHolder.get().getAvianFluxCapacity());
+        int energy = 0;
+
+        CustomData blockEntityData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        if (!blockEntityData.isEmpty()) {
+            CompoundTag tag = blockEntityData.copyTag();
+            if (tag.contains("Capacity")) {
+                capacity = Math.max(1, tag.getInt("Capacity"));
+            }
+            if (tag.contains("Energy")) {
+                energy = Math.max(0, tag.getInt("Energy"));
+            }
+        }
+
+        // Display the stored RF so the item mirrors the GUI readout and the WTHIT overlay.
+        tooltip.add(Component.translatable("tooltip.chickens.avian_flux_converter.energy", energy, capacity));
+    }
+
+    @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (stack.has(DataComponents.CUSTOM_NAME)) {
@@ -178,5 +217,28 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
             return converter.getComparatorOutput();
         }
         return super.getAnalogOutputSignal(state, level, pos);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        if (!ChickensConfigHolder.get().isAvianFluxEffectsEnabled() || !state.getValue(LIT)) {
+            return;
+        }
+        // Emit redstone-like particles while active to signal energy conversion.
+        double x = pos.getX() + 0.5D;
+        double y = pos.getY() + 0.55D;
+        double z = pos.getZ() + 0.5D;
+        Direction facing = state.getValue(FACING);
+        for (int i = 0; i < 3; i++) {
+            double spreadX = x + (random.nextDouble() - 0.5D) * 0.4D;
+            double spreadY = y + random.nextDouble() * 0.2D;
+            double spreadZ = z + (random.nextDouble() - 0.5D) * 0.4D;
+            double offset = 0.32D;
+            level.addParticle(DustParticleOptions.REDSTONE,
+                    spreadX + facing.getStepX() * offset,
+                    spreadY,
+                    spreadZ + facing.getStepZ() * offset,
+                    0.0D, 0.0D, 0.0D);
+        }
     }
 }

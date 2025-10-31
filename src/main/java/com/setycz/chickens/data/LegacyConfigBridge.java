@@ -111,6 +111,11 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    D:breederSpeed=%.3f%n", general.getBreederSpeedMultiplier()));
             writer.write(String.format(Locale.ROOT, "    B:disableEggLaying=%s%n", general.isVanillaEggLayingDisabled()));
             writer.write(String.format(Locale.ROOT, "    I:collectorScanRange=%d%n", general.getCollectorScanRange()));
+            writer.write(String.format(Locale.ROOT, "    B:avianFluxEffectsEnabled=%s%n", general.isAvianFluxEffectsEnabled()));
+            writer.write(String.format(Locale.ROOT, "    D:fluxEggCapacityMultiplier=%.3f%n", general.getFluxEggCapacityMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    I:avianFluxCapacity=%d%n", general.getAvianFluxCapacity()));
+            writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxReceive=%d%n", general.getAvianFluxMaxReceive()));
+            writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxExtract=%d%n", general.getAvianFluxMaxExtract()));
             writer.write("}\n\n");
 
             for (ChickensRegistryItem chicken : ordered) {
@@ -144,6 +149,11 @@ public final class LegacyConfigBridge {
             case "breederSpeed" -> props.setProperty("general.breederSpeedMultiplier", value);
             case "disableEggLaying" -> props.setProperty("general.disableVanillaEggLaying", value);
             case "collectorScanRange" -> props.setProperty("general.collectorScanRange", value);
+            case "avianFluxEffectsEnabled" -> props.setProperty("general.avianFluxEffectsEnabled", value);
+            case "fluxEggCapacityMultiplier" -> props.setProperty("general.fluxEggCapacityMultiplier", value);
+            case "avianFluxCapacity" -> props.setProperty("general.avianFluxCapacity", value);
+            case "avianFluxMaxReceive" -> props.setProperty("general.avianFluxMaxReceive", value);
+            case "avianFluxMaxExtract" -> props.setProperty("general.avianFluxMaxExtract", value);
             default -> {
             }
         }

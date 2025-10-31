@@ -1,5 +1,6 @@
 package com.setycz.chickens.item;
 
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -38,7 +39,8 @@ public class FluxEggItem extends Item {
      */
     public static ItemStack create(int capacity) {
         ItemStack stack = new ItemStack(ModRegistry.FLUX_EGG.get());
-        setEnergy(stack, capacity, capacity);
+        int scaled = scaledCapacity(capacity);
+        setEnergy(stack, scaled, scaled);
         return stack;
     }
 
@@ -52,7 +54,8 @@ public class FluxEggItem extends Item {
         int growthBonus = Math.max(0, stats.growth() - 1);
         int gainBonus = Math.max(0, stats.gain() - 1);
         int strengthBonus = Math.max(0, stats.strength() - 1);
-        return BASE_CAPACITY + STAT_BONUS * (growthBonus + gainBonus + strengthBonus);
+        int base = BASE_CAPACITY + STAT_BONUS * (growthBonus + gainBonus + strengthBonus);
+        return scaledCapacity(base);
     }
 
     /**
@@ -70,7 +73,7 @@ public class FluxEggItem extends Item {
      * between inventories.
      */
     public static void setEnergy(ItemStack stack, int stored, int capacity) {
-        int safeCapacity = Math.max(BASE_CAPACITY, capacity);
+        int safeCapacity = Math.max(getMinimumCapacity(), capacity);
         int clampedEnergy = Mth.clamp(stored, 0, safeCapacity);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
             tag.putInt(TAG_CAPACITY, safeCapacity);
@@ -92,7 +95,7 @@ public class FluxEggItem extends Item {
             CompoundTag tag = data.copyTag();
             return Mth.clamp(tag.getInt(TAG_ENERGY), 0, getCapacity(stack));
         }
-        return BASE_CAPACITY;
+        return getMinimumCapacity();
     }
 
     public static int getCapacity(ItemStack stack) {
@@ -100,9 +103,9 @@ public class FluxEggItem extends Item {
         if (data.contains(TAG_CAPACITY)) {
             CompoundTag tag = data.copyTag();
             int capacity = tag.getInt(TAG_CAPACITY);
-            return Math.max(BASE_CAPACITY, capacity);
+            return Math.max(getMinimumCapacity(), capacity);
         }
-        return BASE_CAPACITY;
+        return getMinimumCapacity();
     }
 
     @Override
@@ -130,5 +133,21 @@ public class FluxEggItem extends Item {
     public int getBarColor(ItemStack stack) {
         // Lean on a bright red hue so the charge bar reads as stored RF at a glance.
         return 0xFF3C3C;
+    }
+
+    private static int scaledCapacity(int baseCapacity) {
+        double multiplier = Math.max(0.0D, ChickensConfigHolder.get().getFluxEggCapacityMultiplier());
+        long scaled = Math.round(baseCapacity * multiplier);
+        if (scaled <= 0L) {
+            scaled = 1L;
+        }
+        long clamped = Math.min(Integer.MAX_VALUE, Math.max(1L, scaled));
+        int scaledInt = (int) clamped;
+        int minimum = Math.max(1, (int) Math.round(BASE_CAPACITY * multiplier));
+        return Math.max(minimum, scaledInt);
+    }
+
+    private static int getMinimumCapacity() {
+        return scaledCapacity(BASE_CAPACITY);
     }
 }

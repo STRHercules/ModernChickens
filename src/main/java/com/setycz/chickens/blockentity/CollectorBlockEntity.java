@@ -25,11 +25,7 @@ import java.util.List;
  */
 public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int INVENTORY_SIZE = 27;
-    private static final int VERTICAL_SCAN_LAYERS = 3;
     private static final int MAX_SCAN_RANGE = 16;
-    private int searchOffset = 0;
-    private int cachedScanRange = -1;
-    private int cycleLength = 1;
 
     public CollectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.COLLECTOR.get(), pos, state, INVENTORY_SIZE, 0);
@@ -38,7 +34,7 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     @Override
     protected void runServerTick(Level level) {
         super.runServerTick(level);
-        int range = updateSearchOffset(ChickensConfigHolder.get().getCollectorScanRange());
+        int range = clampRange(ChickensConfigHolder.get().getCollectorScanRange());
         gatherItems(level, range);
     }
 
@@ -77,50 +73,50 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         return null;
     }
 
-    private int updateSearchOffset(int configuredRange) {
-        int range = clampRange(configuredRange);
-        if (range != cachedScanRange) {
-            cachedScanRange = range;
-            int zCount = Math.max(1, cachedScanRange * 2 + 1);
-            cycleLength = Math.max(1, VERTICAL_SCAN_LAYERS * zCount);
-            searchOffset %= cycleLength;
-        }
-        searchOffset = (searchOffset + 1) % cycleLength;
-        return range;
-    }
-
     private void gatherItems(Level level, int range) {
-        int zCount = Math.max(1, range * 2 + 1);
-        int y = searchOffset / zCount;
-        int zOffset = (searchOffset % zCount) - range;
+        if (range <= 0) {
+            return;
+        }
+        // Sweep the entire configured cube (default 9x9x9) each tick to mirror the original mod reach.
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (int xOffset = -range; xOffset <= range; xOffset++) {
-            BlockPos target = worldPosition.offset(xOffset, y, zOffset);
-            if (target.equals(worldPosition) || !level.hasChunkAt(target)) {
-                continue;
-            }
-            BlockEntity blockEntity = level.getBlockEntity(target);
-            if (blockEntity instanceof AbstractChickenContainerBlockEntity other && other != this) {
-                if (pullFromContainer(other)) {
-                    return;
+            for (int yOffset = -range; yOffset <= range; yOffset++) {
+                for (int zOffset = -range; zOffset <= range; zOffset++) {
+                    if (xOffset == 0 && yOffset == 0 && zOffset == 0) {
+                        continue;
+                    }
+                    cursor.setWithOffset(worldPosition, xOffset, yOffset, zOffset);
+                    if (!level.hasChunkAt(cursor)) {
+                        continue;
+                    }
+                    BlockEntity blockEntity = level.getBlockEntity(cursor);
+                    if (blockEntity instanceof AbstractChickenContainerBlockEntity other && other != this) {
+                        if (drainContainer(other)) {
+                            return;
+                        }
+                    }
                 }
             }
         }
     }
 
-    private boolean pullFromContainer(AbstractChickenContainerBlockEntity other) {
+    private boolean drainContainer(AbstractChickenContainerBlockEntity other) {
         int start = other.getOutputSlotIndex();
         int size = other.getContainerSize();
         for (int slot = start; slot < size; slot++) {
             ItemStack stack = other.getItem(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            ItemStack single = stack.copy();
-            single.setCount(1);
-            ItemStack remaining = pushIntoOutput(single);
-            if (remaining.isEmpty()) {
-                other.removeItem(slot, 1);
-                return true;
+            // Drain the full stack before advancing so large drop buffers empty quickly.
+            while (!stack.isEmpty()) {
+                ItemStack remaining = pushIntoOutput(stack);
+                int transferred = stack.getCount() - remaining.getCount();
+                if (transferred <= 0) {
+                    return true;
+                }
+                other.removeItem(slot, transferred);
+                if (isOutputInventoryFull()) {
+                    return true;
+                }
+                stack = other.getItem(slot);
             }
         }
         return false;
@@ -148,5 +144,17 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
 
     private static int clampRange(int configuredRange) {
         return Mth.clamp(configuredRange, 0, MAX_SCAN_RANGE);
+    }
+
+    private boolean isOutputInventoryFull() {
+        int start = getOutputSlotIndex();
+        int size = getContainerSize();
+        for (int slot = start; slot < size; slot++) {
+            ItemStack stack = getItem(slot);
+            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

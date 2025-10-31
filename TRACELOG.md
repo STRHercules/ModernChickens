@@ -644,3 +644,10 @@
   3. Updated SUGGESTIONS with a follow-up idea to surface the new power math in-game through JEI or a manual tab for easy reference.
 - **Rationale**: Capturing the power chain and concrete RF/t projections in documentation highlights the Avian Flux ecosystem and helps players plan energy installations without external calculators.
 
+## Entry 80
+- **Prompt/Task**: Show the Avian Flux Converter's stored RF on the item tooltip after harvesting the block.
+- **Steps**:
+  1. Extended `AvianFluxConverterBlock.appendHoverText` to read the saved block entity `CustomData`, default the capacity from the config, and format the stored RF line for the inventory tooltip.
+  2. Verified the drop routine already writes block-entity data during harvest so the item mirrors in-world state without extra persistence hooks.
+  3. Ran `./gradlew.bat compileJava` to ensure the tooltip additions and imports compile cleanly alongside existing flux logic.
+- **Rationale**: Presenting the stored energy directly on the item lets players gauge the converter's charge without replacing it, matching the in-world GUI and WTHIT overlays.

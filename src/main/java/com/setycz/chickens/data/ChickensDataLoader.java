@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -32,15 +31,14 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * Handles the legacy configuration file that drives chicken definitions.
- * The original release stored everything in a Forge {@code .cfg}; here we
- * emulate that behaviour with a simple {@link Properties} file so that we
- * can preserve the mod's customisation surface without waiting for the GUI
- * tooling to be ported.
+ * Handles the external configuration that drives chicken definitions.
+ * The modern release stores everything in a Forge-style {@code chickens.cfg}
+ * file, but still honours the old {@code chickens.properties} if it is found
+ * so existing packs upgrade without losing their tweaks.
  */
 public final class ChickensDataLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensData");
-    private static final String CONFIG_FILE = "chickens.properties";
+    private static final String LEGACY_PROPERTIES_FILE = "chickens.properties";
 
     private ChickensDataLoader() {
     }
@@ -51,8 +49,7 @@ public final class ChickensDataLoader {
         // Allow external JSON definitions to extend the in-memory list before
         // configuration overrides are resolved.
         CustomChickensLoader.load(defaults);
-        Path configFile = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);
-        ChickensConfigValues values = applyConfiguration(configFile, defaults);
+        ChickensConfigValues values = applyConfiguration(defaults);
         ChickensConfigHolder.set(values);
         defaults.forEach(ChickensRegistry::register);
 
@@ -71,16 +68,8 @@ public final class ChickensDataLoader {
         LiquidEggRegistry.register(new LiquidEggRegistryItem(1, Blocks.LAVA, 0xff0000, Fluids.LAVA));
     }
 
-    private static ChickensConfigValues applyConfiguration(Path configFile, List<ChickensRegistryItem> chickens) {
-        Properties props = new Properties();
-        if (Files.exists(configFile)) {
-            try (Reader reader = Files.newBufferedReader(configFile)) {
-                props.load(reader);
-            } catch (IOException e) {
-                LOGGER.warn("Failed to read chickens configuration; using defaults", e);
-            }
-        }
-
+    private static ChickensConfigValues applyConfiguration(List<ChickensRegistryItem> chickens) {
+        Properties props = loadLegacyProperties();
         LegacyConfigBridge.importIfPresent(props, chickens);
 
         ChickensConfigValues values = readGeneralSettings(props);
@@ -133,15 +122,6 @@ public final class ChickensDataLoader {
             } else {
                 chicken.setNoParents();
             }
-        }
-
-        try {
-            Files.createDirectories(configFile.getParent());
-            try (Writer writer = Files.newBufferedWriter(configFile)) {
-                props.store(writer, "Modern Chickens configuration");
-            }
-        } catch (IOException e) {
-            LOGGER.warn("Unable to write chickens configuration", e);
         }
 
         LegacyConfigBridge.export(props, chickens, values);
@@ -280,8 +260,18 @@ public final class ChickensDataLoader {
         double breederSpeed = readDouble(props, "general.breederSpeedMultiplier", 1.0D);
         boolean disableEggLaying = readBoolean(props, "general.disableVanillaEggLaying", false);
         int collectorRange = readInt(props, "general.collectorScanRange", 4);
+        boolean avianFluxEffects = readBoolean(props, "general.avianFluxEffectsEnabled", true);
+        double fluxEggMultiplier = readDouble(props, "general.fluxEggCapacityMultiplier", 1.0D);
+        if (fluxEggMultiplier < 0.0D) {
+            fluxEggMultiplier = 0.0D;
+            props.setProperty("general.fluxEggCapacityMultiplier", Double.toString(fluxEggMultiplier));
+        }
+        int avianCapacity = ensurePositive(props, "general.avianFluxCapacity", readInt(props, "general.avianFluxCapacity", 50_000), 1);
+        int avianReceive = ensureNonNegative(props, "general.avianFluxMaxReceive", readInt(props, "general.avianFluxMaxReceive", 4_000));
+        int avianExtract = ensureNonNegative(props, "general.avianFluxMaxExtract", readInt(props, "general.avianFluxMaxExtract", 4_000));
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
-                roostSpeed, breederSpeed, disableEggLaying, collectorRange);
+                roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
+                Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {
@@ -346,6 +336,37 @@ public final class ChickensDataLoader {
             props.setProperty(key, Double.toString(defaultValue));
             return defaultValue;
         }
+    }
+
+    private static int ensurePositive(Properties props, String key, int value, int minValue) {
+        if (value < minValue) {
+            int clamped = Math.max(minValue, 1);
+            props.setProperty(key, Integer.toString(clamped));
+            return clamped;
+        }
+        return value;
+    }
+
+    private static int ensureNonNegative(Properties props, String key, int value) {
+        if (value < 0) {
+            props.setProperty(key, "0");
+            return 0;
+        }
+        return value;
+    }
+
+    private static Properties loadLegacyProperties() {
+        Properties props = new Properties();
+        Path legacyProps = FMLPaths.CONFIGDIR.get().resolve(LEGACY_PROPERTIES_FILE);
+        if (Files.exists(legacyProps)) {
+            try (Reader reader = Files.newBufferedReader(legacyProps)) {
+                props.load(reader);
+                LOGGER.info("Loaded configuration overrides from legacy chickens.properties; future saves only update chickens.cfg");
+            } catch (IOException e) {
+                LOGGER.warn("Failed to migrate chickens.properties; continuing with defaults", e);
+            }
+        }
+        return props;
     }
 
     public static void onTagsUpdated(TagsUpdatedEvent event) {
