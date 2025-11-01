@@ -29,6 +29,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ### Allowed edits
 - `src/**`
 - Root docs: `README.md`, `CONTRIBUTING.md`, `.gitignore`, `.editorconfig`, `SUGGESTIONS.md`, `TRACELOG.md`
+- Build configs: `gradle.properties`, `build.gradle`, `settings.gradle`
 
 ### Forbidden edits
 - Anything under the other top-level folders listed as read-only
