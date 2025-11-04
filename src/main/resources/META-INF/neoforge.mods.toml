@@ -2,7 +2,8 @@ modLoader="javafml"
 loaderVersion="[4,)"
 license="MIT"
 issueTrackerURL="https://example.com"
-showAsResourcePack=true
+# Keep the built-in textures active by default; NeoForge ignores pack.mcmeta's default flags.
+showAsResourcePack=false
 
 [[mods]]
 modId="chickens"
