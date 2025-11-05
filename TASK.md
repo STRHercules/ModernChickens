@@ -1,0 +1,3 @@
+Industrial Incubators & Gene Splicing – Add high-tech machines that let players bypass or enhance breeding. For example, a Gene Splicing Incubator could consume RF (or Forge Energy) to instantly create or upgrade chickens using gene samples or DNA, similar to how Gendustry let you genetically manipulate Forestry’s bees
+bdew.net
+. This end-game machine might require rare materials and power, but would reward the player with custom-stat chickens or even entirely new breeds without manual breeding. It provides a late-game automation path for chicken breeding, satisfying tech players who love complex machinery.
