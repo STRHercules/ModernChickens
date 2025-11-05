@@ -64,3 +64,6 @@
 - Add a lightweight client regression harness that validates roost and breeder block entities broadcast their inventory updates without opening the GUI, preventing future sync changes from reintroducing invisible chickens.
 - Add an in-game manual or JEI info tab that mirrors the README's Redstone Flux math so players can review Flux Egg charge scaling and roost throughput without leaving Minecraft.
 
+- Provide a lightweight Gradle task (e.g., `devplanCheck`) that fails the build when `DEVPLAN.md` drifts from the authoritative planning notes, keeping future roadmap edits synchronised between documentation and implementation discussions.
+- Add config-driven toggles for liquid egg hazard effects and per-egg fluid volumes so modpacks can tone down the safety penalties or rebalance throughput alongside the upcoming Avian Fluid Converter.
+- Teach the liquid egg loader to consult fluid tags (e.g., `forge:oil` or `forge:biofuel`) so future integrations can register once per tag instead of hard-coding every mod namespace, reducing maintenance when tech mods rename their fluids.

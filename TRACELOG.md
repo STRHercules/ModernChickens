@@ -651,3 +651,27 @@
   2. Verified the drop routine already writes block-entity data during harvest so the item mirrors in-world state without extra persistence hooks.
   3. Ran `./gradlew.bat compileJava` to ensure the tooltip additions and imports compile cleanly alongside existing flux logic.
 - **Rationale**: Presenting the stored energy directly on the item lets players gauge the converter's charge without replacing it, matching the in-world GUI and WTHIT overlays.
+
+## Entry 81
+- **Prompt/Task**: Copy the previously drafted development plan into `DEVPLAN.md` and kick off the new feature cycle.
+- **Steps**:
+  1. Created `DEVPLAN.md` at the project root and copied the existing multi-phase liquid egg and fluid converter roadmap into it for persistent reference.
+  2. Verified repository build health with `./gradlew build` to ensure the documentation-only change preserved a clean baseline for upcoming feature work.
+  3. Reviewed repository guidelines to confirm no restricted assets were touched and prepared supporting logs for traceability.
+- **Rationale**: Persisting the development roadmap inside the repository keeps the long-form plan accessible to future contributors while validating the build maintains a stable starting point for implementing the outlined tasks.
+
+## Entry 82
+- **Prompt/Task**: Get started on the development process outlined in `DEVPLAN.md`, beginning with the liquid egg infrastructure refactor and new fluid chickens.
+- **Steps**:
+  1. Expanded `LiquidEggRegistryItem` to carry fluid volume, optional block/Fluid suppliers, and hazard flags, then rewired `LiquidEggItem` and the fluid capability wrapper to consume the richer metadata, use NeoForge's `FluidUtil` for placement, and surface hazard-aware tooltips/effects.
+  2. Reworked `ChickensDataLoader.registerLiquidEggs` into a data-driven table that probes the fluid registry before registering entries (water, lava, optional experience) and updated the XP chicken definition to lay the new liquid egg when available.
+  3. Regenerated localisation strings for the refreshed tooltips and ran `./gradlew build --console=plain` to confirm the refactor compiles cleanly.
+- **Rationale**: Establishing extensible liquid egg metadata and plumbing ensures future fluids—from vanilla sources to tech-mod additions—can be registered conditionally with consistent gameplay feedback while maintaining automation compatibility.
+
+## Entry 83
+- **Prompt/Task**: Continue the `DEVPLAN.md` roadmap by introducing tech-mod fluid eggs and conditional chickens that lay them.
+- **Steps**:
+  1. Extended the liquid egg definition table with Immersive Engineering, BuildCraft, Mekanism, and Industrial Foregoing fluids, tagging hazard flags and colours while documenting each group inline.
+  2. Added mod-aware chicken definitions that source the new liquid eggs, wiring parent chains for progression and keeping the IDs grouped by mod family.
+  3. Updated localisation strings so the new chickens present sensible names in tooltips and JEI, preparing the data layer for future texture work.
+- **Rationale**: Populating the registry with modded fluids and hooking them into conditional chickens moves the project toward comprehensive tech-mod coverage while respecting packs that omit those fluids.

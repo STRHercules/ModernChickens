@@ -14,7 +14,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import org.slf4j.Logger;
@@ -24,11 +27,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * Handles the external configuration that drives chicken definitions.
@@ -64,8 +70,136 @@ public final class ChickensDataLoader {
     }
 
     private static void registerLiquidEggs() {
-        LiquidEggRegistry.register(new LiquidEggRegistryItem(0, Blocks.WATER, 0x0000ff, Fluids.WATER));
-        LiquidEggRegistry.register(new LiquidEggRegistryItem(1, Blocks.LAVA, 0xff0000, Fluids.LAVA));
+        for (LiquidEggDefinition definition : LiquidEggDefinition.ALL) {
+            Optional<Fluid> fluid = BuiltInRegistries.FLUID.getOptional(definition.fluidId());
+            if (fluid.isEmpty() || fluid.get() == Fluids.EMPTY) {
+                LOGGER.debug("Skipping liquid egg {} because fluid {} is missing", definition.id(), definition.fluidId());
+                continue;
+            }
+
+            Supplier<Fluid> fluidSupplier = () -> BuiltInRegistries.FLUID.getOptional(definition.fluidId()).orElse(Fluids.EMPTY);
+            Supplier<BlockState> blockSupplier = definition.blockId()
+                    .flatMap(id -> BuiltInRegistries.BLOCK.getOptional(id))
+                    .<Supplier<BlockState>>map(block -> () -> block.defaultBlockState())
+                    .orElse(null);
+
+            LiquidEggRegistry.register(new LiquidEggRegistryItem(
+                    definition.id(),
+                    blockSupplier,
+                    definition.eggColor(),
+                    fluidSupplier,
+                    definition.volume(),
+                    definition.hazards()));
+        }
+    }
+
+    private record LiquidEggDefinition(int id,
+                                       ResourceLocation fluidId,
+                                       Optional<ResourceLocation> blockId,
+                                       int eggColor,
+                                       int volume,
+                                       EnumSet<LiquidEggRegistryItem.HazardFlag> hazards) {
+        private static final List<LiquidEggDefinition> ALL = List.of(
+                // Vanilla support retained for water and lava so legacy chickens still work.
+                new LiquidEggDefinition(0,
+                        id("minecraft", "water"),
+                        Optional.of(BuiltInRegistries.BLOCK.getKey(Blocks.WATER)),
+                        0x0000ff,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class)),
+                new LiquidEggDefinition(1,
+                        id("minecraft", "lava"),
+                        Optional.of(BuiltInRegistries.BLOCK.getKey(Blocks.LAVA)),
+                        0xff0000,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.HOT)),
+                new LiquidEggDefinition(2,
+                        id("minecraft", "experience"),
+                        Optional.empty(),
+                        0x3dff1e,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.MAGICAL)),
+                // Immersive Engineering fuels.
+                new LiquidEggDefinition(3,
+                        id("immersiveengineering", "creosote"),
+                        Optional.empty(),
+                        0x3c2f1f,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.TOXIC)),
+                new LiquidEggDefinition(4,
+                        id("immersiveengineering", "plantoil"),
+                        Optional.empty(),
+                        0xc9a866,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class)),
+                new LiquidEggDefinition(5,
+                        id("immersiveengineering", "ethanol"),
+                        Optional.empty(),
+                        0xf1db72,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.HOT)),
+                new LiquidEggDefinition(6,
+                        id("immersiveengineering", "biodiesel"),
+                        Optional.empty(),
+                        0xf5c244,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.HOT)),
+                // BuildCraft energy fluids.
+                new LiquidEggDefinition(7,
+                        id("buildcraftenergy", "oil"),
+                        Optional.empty(),
+                        0x1f1b15,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.TOXIC)),
+                new LiquidEggDefinition(8,
+                        id("buildcraftenergy", "fuel"),
+                        Optional.empty(),
+                        0xfbe34b,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.HOT, LiquidEggRegistryItem.HazardFlag.TOXIC)),
+                // Mekanism chemicals that manifest as fluids.
+                new LiquidEggDefinition(9,
+                        id("mekanism", "bioethanol"),
+                        Optional.empty(),
+                        0xffe880,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.HOT)),
+                new LiquidEggDefinition(10,
+                        id("mekanism", "brine"),
+                        Optional.empty(),
+                        0xf0f6ff,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.CORROSIVE)),
+                new LiquidEggDefinition(11,
+                        id("mekanism", "spent_nuclear_waste"),
+                        Optional.empty(),
+                        0x88b43c,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.RADIOACTIVE, LiquidEggRegistryItem.HazardFlag.TOXIC)),
+                new LiquidEggDefinition(12,
+                        id("mekanism", "sulfuric_acid"),
+                        Optional.empty(),
+                        0xf7ff99,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.CORROSIVE)),
+                // Industrial Foregoing processing fluids.
+                new LiquidEggDefinition(13,
+                        id("industrialforegoing", "latex"),
+                        Optional.empty(),
+                        0xd7d0b2,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class)),
+                new LiquidEggDefinition(14,
+                        id("industrialforegoing", "pink_slime"),
+                        Optional.empty(),
+                        0xff9ad7,
+                        FluidType.BUCKET_VOLUME,
+                        EnumSet.of(LiquidEggRegistryItem.HazardFlag.MAGICAL))
+        );
+
+        private static ResourceLocation id(String namespace, String path) {
+            return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        }
     }
 
     private static ChickensConfigValues applyConfiguration(List<ChickensRegistryItem> chickens) {

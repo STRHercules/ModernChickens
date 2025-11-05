@@ -6,7 +6,6 @@ import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 
@@ -39,12 +38,16 @@ public final class LiquidEggFluidWrapper implements IFluidHandlerItem {
         if (entry == null) {
             return FluidStack.EMPTY;
         }
-        return new FluidStack(entry.getFluid(), FluidType.BUCKET_VOLUME);
+        return entry.createFluidStack();
     }
 
     @Override
     public int getTankCapacity(int tank) {
-        return tank == 0 ? FluidType.BUCKET_VOLUME : 0;
+        if (tank != 0) {
+            return 0;
+        }
+        LiquidEggRegistryItem entry = resolve();
+        return entry != null ? entry.getVolume() : 0;
     }
 
     @Override
@@ -53,7 +56,11 @@ public final class LiquidEggFluidWrapper implements IFluidHandlerItem {
             return false;
         }
         LiquidEggRegistryItem entry = resolve();
-        return entry != null && stack.getFluid() == entry.getFluid();
+        if (entry == null) {
+            return false;
+        }
+        FluidStack contained = entry.createFluidStack();
+        return !contained.isEmpty() && stack.isFluidEqual(contained);
     }
 
     @Override
@@ -67,7 +74,7 @@ public final class LiquidEggFluidWrapper implements IFluidHandlerItem {
         if (entry == null || resource.isEmpty()) {
             return FluidStack.EMPTY;
         }
-        FluidStack contained = new FluidStack(entry.getFluid(), FluidType.BUCKET_VOLUME);
+        FluidStack contained = entry.createFluidStack();
         if (!resource.isFluidEqual(contained)) {
             return FluidStack.EMPTY;
         }
@@ -77,10 +84,13 @@ public final class LiquidEggFluidWrapper implements IFluidHandlerItem {
     @Override
     public FluidStack drain(int maxDrain, IFluidHandler.FluidAction action) {
         LiquidEggRegistryItem entry = resolve();
-        if (entry == null || container.isEmpty() || maxDrain < FluidType.BUCKET_VOLUME) {
+        if (entry == null || container.isEmpty()) {
             return FluidStack.EMPTY;
         }
-        FluidStack drained = new FluidStack(entry.getFluid(), FluidType.BUCKET_VOLUME);
+        FluidStack drained = entry.createFluidStack();
+        if (drained.isEmpty() || maxDrain < drained.getAmount()) {
+            return FluidStack.EMPTY;
+        }
         if (action.execute()) {
             container.shrink(1);
         }

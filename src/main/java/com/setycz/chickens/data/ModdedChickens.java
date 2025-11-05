@@ -3,7 +3,10 @@ package com.setycz.chickens.data;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.LiquidEggRegistry;
+import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.SpawnType;
+import com.setycz.chickens.item.LiquidEggItem;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -182,9 +185,65 @@ final class ModdedChickens {
                 "WaterChicken", "LavaChicken", null));
 
         list.add(new Definition(504, "xpChicken", "xp_chicken",
-                () -> Optional.of(new ItemStack(Items.EXPERIENCE_BOTTLE)),
+                liquidEgg(2),
                 0x3dff1e, 0x3ff123, SpawnType.NONE,
                 "EmeraldChicken", "GreenChicken", null));
+
+        // Immersive Engineering fluid chickens – unlocked when the matching fluids exist.
+        list.add(new Definition(553, "creosoteChicken", "immersive_engineering/creosote_chicken",
+                liquidEgg(3),
+                0x372920, 0x6e5131, SpawnType.NONE,
+                "CoalChicken", "WaterChicken", null));
+        list.add(new Definition(554, "plantOilChicken", "immersive_engineering/plant_oil_chicken",
+                liquidEgg(4),
+                0xc3a45a, 0xf1d27a, SpawnType.NONE,
+                "LogChicken", "WaterChicken", null));
+        list.add(new Definition(555, "ethanolChicken", "immersive_engineering/ethanol_chicken",
+                liquidEgg(5),
+                0xf1d372, 0xfff2a3, SpawnType.NONE,
+                "plantOilChicken", "NetherwartChicken", null));
+        list.add(new Definition(556, "biodieselChicken", "immersive_engineering/biodiesel_chicken",
+                liquidEgg(6),
+                0xf3bd45, 0xffe781, SpawnType.NONE,
+                "ethanolChicken", "plantOilChicken", null));
+
+        // BuildCraft energy fluids.
+        list.add(new Definition(557, "oilChicken", "buildcraft/oil_chicken",
+                liquidEgg(7),
+                0x1f1b15, 0x3d3329, SpawnType.NONE,
+                "CoalChicken", "WaterChicken", null));
+        list.add(new Definition(558, "fuelChicken", "buildcraft/fuel_chicken",
+                liquidEgg(8),
+                0xfbe34b, 0xfff784, SpawnType.NONE,
+                "oilChicken", "BlazeChicken", null));
+
+        // Mekanism chemical fluids.
+        list.add(new Definition(559, "bioethanolChicken", "mekanism/bioethanol_chicken",
+                liquidEgg(9),
+                0xffe880, 0xfff3b1, SpawnType.NONE,
+                "ethanolChicken", "GreenChicken", null));
+        list.add(new Definition(560, "brineChicken", "mekanism/brine_chicken",
+                liquidEgg(10),
+                0xeaf4ff, 0xffffff, SpawnType.NONE,
+                "WaterChicken", "SandChicken", null));
+        list.add(new Definition(561, "radioactiveWasteChicken", "mekanism/radioactive_waste_chicken",
+                liquidEgg(11),
+                0x7fb93c, 0xa7d662, SpawnType.NONE,
+                "UraniumChicken", "WaterChicken", null));
+        list.add(new Definition(562, "sulfuricAcidChicken", "mekanism/sulfuric_acid_chicken",
+                liquidEgg(12),
+                0xf7ff99, 0xffffca, SpawnType.NONE,
+                "SulfurChicken", "WaterChicken", null));
+
+        // Industrial Foregoing processing fluids.
+        list.add(new Definition(563, "latexChicken", "industrial_foregoing/latex_chicken",
+                liquidEgg(13),
+                0xd7d0b2, 0xf2ebc5, SpawnType.NONE,
+                "SlimeChicken", "LogChicken", null));
+        list.add(new Definition(564, "pinkSlimeChicken", "industrial_foregoing/pink_slime_chicken",
+                liquidEgg(14),
+                0xff9ad7, 0xffc5e9, SpawnType.NONE,
+                "latexChicken", "SlimeChicken", null));
 
         // Draconic Evolution
         list.add(new Definition(505, "draconiumChicken", "draconic/draconium_chicken",
@@ -554,6 +613,17 @@ final class ModdedChickens {
                 }
             }
             return Optional.empty();
+        };
+    }
+
+    private static Supplier<Optional<ItemStack>> liquidEgg(int id) {
+        return () -> {
+            LiquidEggRegistryItem entry = LiquidEggRegistry.findById(id);
+            if (entry == null) {
+                return Optional.empty();
+            }
+            ItemStack stack = LiquidEggItem.createFor(entry);
+            return stack.isEmpty() ? Optional.empty() : Optional.of(stack);
         };
     }
 
