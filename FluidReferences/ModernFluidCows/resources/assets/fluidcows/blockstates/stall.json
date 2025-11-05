@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "cow=false,facing=north": { "model": "fluidcows:block/model_open" },
+    "cow=false,facing=east": { "model": "fluidcows:block/model_open", "y": 90 },
+    "cow=false,facing=south": { "model": "fluidcows:block/model_open", "y": 180 },
+    "cow=false,facing=west": { "model": "fluidcows:block/model_open", "y": 270 },
+    "cow=true,facing=north": { "model": "fluidcows:block/model_closed" },
+    "cow=true,facing=east": { "model": "fluidcows:block/model_closed", "y": 90 },
+    "cow=true,facing=south": { "model": "fluidcows:block/model_closed", "y": 180 },
+    "cow=true,facing=west": { "model": "fluidcows:block/model_closed", "y": 270 }
+  }
+}

@@ -35,11 +35,16 @@ public final class ModCapabilities {
         registerContainerCapability(event, ModBlockEntities.COLLECTOR.get());
         registerContainerCapability(event, ModBlockEntities.HENHOUSE.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUX_CONVERTER.get());
+        registerContainerCapability(event, ModBlockEntities.AVIAN_FLUID_CONVERTER.get());
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.AVIAN_FLUX_CONVERTER.get(),
                 (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.AVIAN_FLUID_CONVERTER.get(),
+                (blockEntity, direction) -> blockEntity.getFluidTank(direction));
     }
 
     private static <T extends BlockEntity & WorldlyContainer> void registerContainerCapability(

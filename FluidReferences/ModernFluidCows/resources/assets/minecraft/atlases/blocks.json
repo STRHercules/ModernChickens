@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "sources": [
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/accelerator/accelerator_back" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/accelerator/accelerator_bottom" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/accelerator/accelerator_front_full" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/accelerator/accelerator_side" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/accelerator/accelerator_top_full" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/feeder/top" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/feeder/front" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/feeder/side" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/feeder/bottom" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/sorter/top" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/sorter/front" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/sorter/side" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/sorter/bottom" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/sorter/work" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/vanilla/concrete_gray" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/vanilla/hay_block_top" },
+    { "type": "minecraft:single", "resource": "fluidcows:blocks/vanilla/iron_bars" }
+  ]
+}

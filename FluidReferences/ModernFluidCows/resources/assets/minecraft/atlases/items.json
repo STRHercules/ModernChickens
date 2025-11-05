@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "sources": [
+    { "type": "minecraft:single", "resource": "fluidcows:item/cow_displayer" },
+    { "type": "minecraft:single", "resource": "fluidcows:item/cow_halter" },
+    { "type": "minecraft:single", "resource": "fluidcows:item/ranger" }
+  ]
+}

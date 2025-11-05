@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="fluidcows"
+version="${mod_version}"
+displayName="Modern Fluid Cows"
+description='''Modernised port of the Fluid Cows mod for NeoForge 1.21.1.'''
+
+[[dependencies.fluidcows]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.fluidcows]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,)"
+ordering="NONE"
+side="BOTH"

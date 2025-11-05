@@ -1,18 +1,23 @@
 package com.setycz.chickens.data;
 
+import com.setycz.chickens.ChemicalEggRegistry;
+import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.SpawnType;
+import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
+import com.setycz.chickens.integration.mekanism.MekanismChemicalHelper;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -27,13 +32,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -45,17 +53,41 @@ import java.util.function.Supplier;
 public final class ChickensDataLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensData");
     private static final String LEGACY_PROPERTIES_FILE = "chickens.properties";
+    private static final int CHEMICAL_ID_BASE = 4_000_000;
+    private static final int CHEMICAL_ID_SPAN = 1_000_000;
+    private static final int GAS_ID_BASE = 5_000_000;
+    private static final int GAS_ID_SPAN = 1_000_000;
 
     private ChickensDataLoader() {
     }
 
     public static void bootstrap() {
-        registerLiquidEggs();
-        List<ChickensRegistryItem> defaults = DefaultChickens.create();
+        Properties props = loadLegacyProperties();
+        LegacyConfigBridge.importIfPresent(props, List.of());
+
+        ChickensConfigValues preview = readGeneralSettings(props);
+        if (preview.isFluidChickensEnabled()) {
+            registerLiquidEggs();
+        } else {
+            LOGGER.info("Skipping fluid egg registration because general.enableFluidChickens is false");
+        }
+        if (preview.isChemicalChickensEnabled()) {
+            registerChemicalEggs();
+        } else {
+            LOGGER.info("Skipping chemical egg registration because general.enableChemicalChickens is false");
+        }
+        if (preview.isGasChickensEnabled()) {
+            registerGasEggs();
+        } else {
+            LOGGER.info("Skipping gas egg registration because general.enableGasChickens is false");
+        }
+
         // Allow external JSON definitions to extend the in-memory list before
         // configuration overrides are resolved.
+        List<ChickensRegistryItem> defaults = DefaultChickens.create();
+        LegacyConfigBridge.importIfPresent(props, defaults);
         CustomChickensLoader.load(defaults);
-        ChickensConfigValues values = applyConfiguration(defaults);
+        ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
         defaults.forEach(ChickensRegistry::register);
 
@@ -70,6 +102,9 @@ public final class ChickensDataLoader {
     }
 
     private static void registerLiquidEggs() {
+        Set<ResourceLocation> predefinedFluids = new HashSet<>();
+        int highestId = -1;
+
         for (LiquidEggDefinition definition : LiquidEggDefinition.ALL) {
             Optional<Fluid> fluid = BuiltInRegistries.FLUID.getOptional(definition.fluidId());
             if (fluid.isEmpty() || fluid.get() == Fluids.EMPTY) {
@@ -90,7 +125,174 @@ public final class ChickensDataLoader {
                     fluidSupplier,
                     definition.volume(),
                     definition.hazards()));
+            predefinedFluids.add(definition.fluidId());
+            highestId = Math.max(highestId, definition.id());
         }
+
+        registerDynamicLiquidEggs(predefinedFluids, highestId);
+    }
+
+    private static void registerChemicalEggs() {
+        if (!MekanismChemicalHelper.isAvailable()) {
+            LOGGER.info("Skipping chemical egg registration because Mekanism API bridge is unavailable");
+            ChemicalEggRegistry.clear();
+            return;
+        }
+        ChemicalEggRegistry.clear();
+        Collection<MekanismChemicalHelper.ChemicalData> chemicals = MekanismChemicalHelper.getChemicals();
+        Set<Integer> usedIds = new HashSet<>();
+        int registered = 0;
+        for (MekanismChemicalHelper.ChemicalData chemical : chemicals) {
+            if (chemical.gaseous()) {
+                continue;
+            }
+            int id = allocateChemicalId(chemical.id(), CHEMICAL_ID_BASE, CHEMICAL_ID_SPAN, usedIds);
+            EnumSet<LiquidEggRegistryItem.HazardFlag> hazards = EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class);
+            if (chemical.radioactive()) {
+                hazards.add(LiquidEggRegistryItem.HazardFlag.RADIOACTIVE);
+            }
+            ChemicalEggRegistry.register(new ChemicalEggRegistryItem(
+                    id,
+                    chemical.id(),
+                    chemical.texture(),
+                    chemical.displayName(),
+                    chemical.tint(),
+                    FluidType.BUCKET_VOLUME,
+                    hazards,
+                    false));
+            registered++;
+        }
+        LOGGER.info("Chemical egg scan complete: {} entries{}", registered,
+                registered == 0 ? " (no Mekanism chemicals were discoverable)" : "");
+    }
+
+    private static void registerGasEggs() {
+        if (!MekanismChemicalHelper.isAvailable()) {
+            LOGGER.info("Skipping gas egg registration because Mekanism API bridge is unavailable");
+            GasEggRegistry.clear();
+            return;
+        }
+        GasEggRegistry.clear();
+        Collection<MekanismChemicalHelper.ChemicalData> chemicals = MekanismChemicalHelper.getChemicals();
+        Set<Integer> usedIds = new HashSet<>();
+        int registered = 0;
+        for (MekanismChemicalHelper.ChemicalData chemical : chemicals) {
+            if (!chemical.gaseous()) {
+                continue;
+            }
+            int id = allocateChemicalId(chemical.id(), GAS_ID_BASE, GAS_ID_SPAN, usedIds);
+            EnumSet<LiquidEggRegistryItem.HazardFlag> hazards = EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class);
+            if (chemical.radioactive()) {
+                hazards.add(LiquidEggRegistryItem.HazardFlag.RADIOACTIVE);
+            }
+            GasEggRegistry.register(new ChemicalEggRegistryItem(
+                    id,
+                    chemical.id(),
+                    chemical.texture(),
+                    chemical.displayName(),
+                    chemical.tint(),
+                    FluidType.BUCKET_VOLUME,
+                    hazards,
+                    true));
+            registered++;
+        }
+        LOGGER.info("Gas egg scan complete: {} entries{}", registered,
+                registered == 0 ? " (no Mekanism gases were discoverable)" : "");
+    }
+
+    private static void registerDynamicLiquidEggs(Set<ResourceLocation> excludedFluids, int highestId) {
+        int nextId = Math.max(highestId + 1, 100);
+        Set<Item> encounteredBuckets = new HashSet<>();
+
+        for (Fluid fluid : BuiltInRegistries.FLUID) {
+            if (fluid == Fluids.EMPTY) {
+                continue;
+            }
+            ResourceLocation fluidId = BuiltInRegistries.FLUID.getKey(fluid);
+            if (fluidId == null || excludedFluids.contains(fluidId)) {
+                continue;
+            }
+            if (LiquidEggRegistry.findByFluid(fluidId) != null) {
+                excludedFluids.add(fluidId);
+                continue;
+            }
+            if (!shouldGenerateLiquidEgg(fluid, fluidId, encounteredBuckets)) {
+                continue;
+            }
+
+            int eggColor = deriveFluidColor(fluid, fluidId);
+            Supplier<BlockState> blockSupplier = resolveFluidBlock(fluid);
+            EnumSet<LiquidEggRegistryItem.HazardFlag> hazards = deriveFluidHazards(fluid);
+            Fluid targetFluid = fluid;
+
+            LiquidEggRegistry.register(new LiquidEggRegistryItem(
+                    nextId,
+                    blockSupplier,
+                    eggColor,
+                    () -> targetFluid,
+                    FluidType.BUCKET_VOLUME,
+                    hazards));
+            excludedFluids.add(fluidId);
+            nextId++;
+        }
+    }
+
+    private static boolean shouldGenerateLiquidEgg(Fluid fluid,
+                                                   ResourceLocation fluidId,
+                                                   Set<Item> encounteredBuckets) {
+        Item bucket = fluid.getBucket();
+        if (bucket == null || bucket == Items.AIR) {
+            return false;
+        }
+        if (!encounteredBuckets.add(bucket)) {
+            return false;
+        }
+        String path = fluidId.getPath();
+        if (path.startsWith("flowing_") || path.endsWith("_flowing")) {
+            return false;
+        }
+        return true;
+    }
+
+    private static Supplier<BlockState> resolveFluidBlock(Fluid fluid) {
+        BlockState state = fluid.defaultFluidState().createLegacyBlock();
+        if (state == null || state.isAir()) {
+            return null;
+        }
+        return () -> state;
+    }
+
+    private static int deriveFluidColor(Fluid fluid, ResourceLocation fluidId) {
+        int hash = Math.abs(fluidId.hashCode());
+        int r = 0x40 | (hash & 0x3F);
+        int g = 0x40 | ((hash >> 6) & 0x3F);
+        int b = 0x40 | ((hash >> 12) & 0x3F);
+        if (fluid.getFluidType().getTemperature() >= 600) {
+            r = Math.min(0xFF, r + 0x40);
+            g = Math.max(0x20, g - 0x20);
+        }
+        return (r << 16) | (g << 8) | b;
+    }
+
+    private static EnumSet<LiquidEggRegistryItem.HazardFlag> deriveFluidHazards(Fluid fluid) {
+        EnumSet<LiquidEggRegistryItem.HazardFlag> hazards = EnumSet.noneOf(LiquidEggRegistryItem.HazardFlag.class);
+        FluidType type = fluid.getFluidType();
+        if (type.getTemperature() >= 600) {
+            hazards.add(LiquidEggRegistryItem.HazardFlag.HOT);
+        }
+        if (type.getDensity() < -500) {
+            hazards.add(LiquidEggRegistryItem.HazardFlag.MAGICAL);
+        }
+        return hazards;
+    }
+
+    private static int allocateChemicalId(ResourceLocation chemicalId, int base, int span, Set<Integer> usedIds) {
+        int seed = Math.floorMod(chemicalId.hashCode(), span);
+        int candidate = base + seed;
+        while (!usedIds.add(candidate)) {
+            candidate++;
+        }
+        return candidate;
     }
 
     private record LiquidEggDefinition(int id,
@@ -202,10 +404,7 @@ public final class ChickensDataLoader {
         }
     }
 
-    private static ChickensConfigValues applyConfiguration(List<ChickensRegistryItem> chickens) {
-        Properties props = loadLegacyProperties();
-        LegacyConfigBridge.importIfPresent(props, chickens);
-
+    private static ChickensConfigValues applyConfiguration(Properties props, List<ChickensRegistryItem> chickens) {
         ChickensConfigValues values = readGeneralSettings(props);
         Map<String, ChickensRegistryItem> byName = new HashMap<>();
         for (ChickensRegistryItem chicken : chickens) {
@@ -403,9 +602,20 @@ public final class ChickensDataLoader {
         int avianCapacity = ensurePositive(props, "general.avianFluxCapacity", readInt(props, "general.avianFluxCapacity", 50_000), 1);
         int avianReceive = ensureNonNegative(props, "general.avianFluxMaxReceive", readInt(props, "general.avianFluxMaxReceive", 4_000));
         int avianExtract = ensureNonNegative(props, "general.avianFluxMaxExtract", readInt(props, "general.avianFluxMaxExtract", 4_000));
+        int avianFluidCapacity = ensurePositive(props, "general.avianFluidConverterCapacity",
+                readInt(props, "general.avianFluidConverterCapacity", 8_000), 1);
+        int avianFluidTransfer = ensureNonNegative(props, "general.avianFluidConverterTransferRate",
+                readInt(props, "general.avianFluidConverterTransferRate", 2_000));
+        boolean avianFluidEffects = readBoolean(props, "general.avianFluidConverterEffectsEnabled", true);
+        boolean liquidEggHazards = readBoolean(props, "general.liquidEggHazardsEnabled", true);
+        boolean fluidChickensEnabled = readBoolean(props, "general.enableFluidChickens", true);
+        boolean chemicalChickensEnabled = readBoolean(props, "general.enableChemicalChickens", true);
+        boolean gasChickensEnabled = readBoolean(props, "general.enableGasChickens", true);
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
                 roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
-                Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract);
+                Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract,
+                avianFluidCapacity, avianFluidTransfer, avianFluidEffects, liquidEggHazards,
+                fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {
@@ -508,6 +718,9 @@ public final class ChickensDataLoader {
                 || event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             ModdedChickens.retryPending();
             DynamicMaterialChickens.refresh();
+            DynamicFluidChickens.refresh();
+            DynamicChemicalChickens.refresh();
+            DynamicGasChickens.refresh();
         }
     }
 

@@ -67,3 +67,7 @@
 - Provide a lightweight Gradle task (e.g., `devplanCheck`) that fails the build when `DEVPLAN.md` drifts from the authoritative planning notes, keeping future roadmap edits synchronised between documentation and implementation discussions.
 - Add config-driven toggles for liquid egg hazard effects and per-egg fluid volumes so modpacks can tone down the safety penalties or rebalance throughput alongside the upcoming Avian Fluid Converter.
 - Teach the liquid egg loader to consult fluid tags (e.g., `forge:oil` or `forge:biofuel`) so future integrations can register once per tag instead of hard-coding every mod namespace, reducing maintenance when tech mods rename their fluids.
+- Replace deprecated `FluidStack` helper calls (`getDisplayName`, `isFluidEqual`) with the modern NeoForge fluid API once the new compatibility shims land to keep the build free of removal warnings.
+- Expose client-side controls for the liquid overlay (opacity, scroll speed, optional disable) so accessibility-focused packs and resource pack authors can tune the new animation without editing code.
+- Add an Avian Chemical Converter that drains chemical and gas eggs into Mekanism tanks, completing the automation loop for the new resource types.
+- Surface a startup warning or diagnostics command when the Mekanism reflection bridge fails (e.g., future method renames) so pack makers notice registries that could not initialise instead of silently losing chemical/gas chickens.

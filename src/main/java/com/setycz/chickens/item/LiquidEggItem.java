@@ -2,6 +2,7 @@ package com.setycz.chickens.item;
 
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -152,6 +153,9 @@ public class LiquidEggItem extends Item {
     }
 
     private void appendHazardTooltips(Set<LiquidEggRegistryItem.HazardFlag> hazards, List<Component> tooltip) {
+        if (!ChickensConfigHolder.get().isLiquidEggHazardsEnabled()) {
+            return;
+        }
         for (LiquidEggRegistryItem.HazardFlag flag : hazards) {
             tooltip.add(Component.translatable("item.chickens.liquid_egg.tooltip.hazard." + flag.getTranslationKey())
                     .withStyle(ChatFormatting.DARK_RED));
@@ -160,6 +164,10 @@ public class LiquidEggItem extends Item {
 
     private void applyHazardEffects(LiquidEggRegistryItem liquid, Level level, @Nullable Player player) {
         if (player == null || player.getAbilities().instabuild) {
+            return;
+        }
+
+        if (!ChickensConfigHolder.get().isLiquidEggHazardsEnabled()) {
             return;
         }
 

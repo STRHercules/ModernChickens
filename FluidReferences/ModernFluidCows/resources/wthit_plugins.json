@@ -1,0 +1,13 @@
+{
+  "fluidcows:wthit": {
+    "entrypoints": {
+      "common": "com.modernfluidcows.compat.wthit.FluidCowsWthitCommonPlugin",
+      "client": "com.modernfluidcows.compat.wthit.FluidCowsWthitClientPlugin"
+    },
+    "side": "*",
+    "required": [
+      "fluidcows"
+    ],
+    "defaultEnabled": true
+  }
+}

@@ -1,11 +1,15 @@
 package com.setycz.chickens;
 
+import com.setycz.chickens.ChemicalEggRegistry;
+import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.client.render.ChickenItemModels;
 import com.setycz.chickens.client.render.ChickenItemSpriteModels;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.client.render.DynamicChickenTextures;
+import com.setycz.chickens.client.render.LiquidChickenOverlayLayer;
 import com.setycz.chickens.client.render.blockentity.BreederBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.CollectorBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.RoostBlockEntityRenderer;
@@ -15,6 +19,7 @@ import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.registry.ModMenuTypes;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.screen.AvianFluxConverterScreen;
+import com.setycz.chickens.screen.AvianFluidConverterScreen;
 import com.setycz.chickens.screen.BreederScreen;
 import com.setycz.chickens.screen.CollectorScreen;
 import com.setycz.chickens.screen.HenhouseScreen;
@@ -62,6 +67,8 @@ public final class ChickensClient {
         event.register((stack, tint) -> tint <= 0 ? getChickenColor(stack, true) : getChickenColor(stack, false), ModRegistry.SPAWN_EGG.get());
         event.register((stack, tint) -> getColoredEggColor(stack), ModRegistry.COLORED_EGG.get());
         event.register((stack, tint) -> getLiquidEggColor(stack), ModRegistry.LIQUID_EGG.get());
+        event.register((stack, tint) -> getChemicalEggColor(stack), ModRegistry.CHEMICAL_EGG.get());
+        event.register((stack, tint) -> getGasEggColor(stack), ModRegistry.GAS_EGG.get());
         event.register((stack, tint) -> getChickenItemColor(stack, tint == 0), ModRegistry.CHICKEN_ITEM.get());
     }
 
@@ -73,6 +80,7 @@ public final class ChickensClient {
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
         event.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
+        event.register(ModMenuTypes.AVIAN_FLUID_CONVERTER.get(), AvianFluidConverterScreen::new);
     }
 
     @SubscribeEvent
@@ -80,6 +88,7 @@ public final class ChickensClient {
         event.registerReloadListener(DynamicChickenTextures.reloadListener());
         event.registerReloadListener(ChickensChickenRenderer.textureAvailabilityReloader());
         event.registerReloadListener(ChickenItemSpriteModels.reloadListener());
+        event.registerReloadListener(LiquidChickenOverlayLayer.reloadListener());
     }
 
     @SubscribeEvent
@@ -128,6 +137,18 @@ public final class ChickensClient {
     private static int getLiquidEggColor(ItemStack stack) {
         LiquidEggRegistryItem liquid = LiquidEggRegistry.findById(ChickenItemHelper.getChickenType(stack));
         int color = liquid != null ? liquid.getEggColor() : 0xFFFFFF;
+        return 0xFF000000 | color;
+    }
+
+    private static int getChemicalEggColor(ItemStack stack) {
+        ChemicalEggRegistryItem chemical = ChemicalEggRegistry.findById(ChickenItemHelper.getChickenType(stack));
+        int color = chemical != null ? chemical.getEggColor() : 0xFFFFFF;
+        return 0xFF000000 | color;
+    }
+
+    private static int getGasEggColor(ItemStack stack) {
+        ChemicalEggRegistryItem gas = GasEggRegistry.findById(ChickenItemHelper.getChickenType(stack));
+        int color = gas != null ? gas.getEggColor() : 0xFFFFFF;
         return 0xFF000000 | color;
     }
 }

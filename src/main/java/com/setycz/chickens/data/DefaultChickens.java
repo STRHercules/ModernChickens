@@ -288,6 +288,9 @@ public final class DefaultChickens {
         }
         ModdedChickens.register(chickens, byName);
         DynamicMaterialChickens.register(chickens, byName);
+        DynamicFluidChickens.register(chickens, byName);
+        DynamicChemicalChickens.register(chickens, byName);
+        DynamicGasChickens.register(chickens, byName);
 
         return chickens;
     }

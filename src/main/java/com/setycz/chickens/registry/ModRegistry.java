@@ -1,11 +1,15 @@
 package com.setycz.chickens.registry;
 
+import com.setycz.chickens.ChemicalEggRegistry;
+import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.block.AvianFluxConverterBlock;
+import com.setycz.chickens.block.AvianFluidConverterBlock;
 import com.setycz.chickens.block.BreederBlock;
 import com.setycz.chickens.block.CollectorBlock;
 import com.setycz.chickens.block.HenhouseBlock;
@@ -17,6 +21,9 @@ import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenCatcherItem;
 import com.setycz.chickens.item.LiquidEggItem;
+import com.setycz.chickens.item.ChemicalEggItem;
+import com.setycz.chickens.item.GasEggItem;
+import com.setycz.chickens.config.ChickensConfigHolder;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
@@ -63,6 +70,10 @@ public final class ModRegistry {
             () -> new ColoredEggItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<LiquidEggItem> LIQUID_EGG = ITEMS.register("liquid_egg",
             () -> new LiquidEggItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<ChemicalEggItem> CHEMICAL_EGG = ITEMS.register("chemical_egg",
+            () -> new ChemicalEggItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<GasEggItem> GAS_EGG = ITEMS.register("gas_egg",
+            () -> new GasEggItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<FluxEggItem> FLUX_EGG = ITEMS.register("flux_egg",
             () -> new FluxEggItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
@@ -71,6 +82,7 @@ public final class ModRegistry {
     public static final DeferredBlock<BreederBlock> BREEDER = BLOCKS.register("breeder", () -> new BreederBlock());
     public static final DeferredBlock<CollectorBlock> COLLECTOR = BLOCKS.register("collector", () -> new CollectorBlock());
     public static final DeferredBlock<AvianFluxConverterBlock> AVIAN_FLUX_CONVERTER = BLOCKS.register("avian_flux_converter", () -> new AvianFluxConverterBlock());
+    public static final DeferredBlock<AvianFluidConverterBlock> AVIAN_FLUID_CONVERTER = BLOCKS.register("avian_fluid_converter", () -> new AvianFluidConverterBlock());
     // Register the henhouse block and its item form so players can place the storage structure.
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
@@ -96,6 +108,8 @@ public final class ModRegistry {
             () -> new BlockItem(COLLECTOR.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> AVIAN_FLUX_CONVERTER_ITEM = ITEMS.register("avian_flux_converter",
             () -> new BlockItem(AVIAN_FLUX_CONVERTER.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> AVIAN_FLUID_CONVERTER_ITEM = ITEMS.register("avian_fluid_converter",
+            () -> new BlockItem(AVIAN_FLUID_CONVERTER.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
@@ -132,14 +146,27 @@ public final class ModRegistry {
             event.accept(BREEDER_ITEM.get());
             event.accept(COLLECTOR_ITEM.get());
             event.accept(AVIAN_FLUX_CONVERTER_ITEM.get());
+            event.accept(AVIAN_FLUID_CONVERTER_ITEM.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(FLUX_EGG.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ANALYZER.get());
             event.accept(CHICKEN_ITEM.get());
             event.accept(CATCHER.get());
-            for (LiquidEggRegistryItem liquid : LiquidEggRegistry.getAll()) {
-                event.accept(LiquidEggItem.createFor(liquid));
+            if (ChickensConfigHolder.get().isFluidChickensEnabled()) {
+                for (LiquidEggRegistryItem liquid : LiquidEggRegistry.getAll()) {
+                    event.accept(LiquidEggItem.createFor(liquid));
+                }
+            }
+            if (ChickensConfigHolder.get().isChemicalChickensEnabled()) {
+                for (ChemicalEggRegistryItem chemical : ChemicalEggRegistry.getAll()) {
+                    event.accept(ChemicalEggItem.createFor(chemical));
+                }
+            }
+            if (ChickensConfigHolder.get().isGasChickensEnabled()) {
+                for (ChemicalEggRegistryItem gas : GasEggRegistry.getAll()) {
+                    event.accept(GasEggItem.createFor(gas));
+                }
             }
         }
     }

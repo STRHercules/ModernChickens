@@ -116,6 +116,9 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    I:avianFluxCapacity=%d%n", general.getAvianFluxCapacity()));
             writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxReceive=%d%n", general.getAvianFluxMaxReceive()));
             writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxExtract=%d%n", general.getAvianFluxMaxExtract()));
+            writer.write(String.format(Locale.ROOT, "    B:enableFluidChickens=%s%n", general.isFluidChickensEnabled()));
+            writer.write(String.format(Locale.ROOT, "    B:enableChemicalChickens=%s%n", general.isChemicalChickensEnabled()));
+            writer.write(String.format(Locale.ROOT, "    B:enableGasChickens=%s%n", general.isGasChickensEnabled()));
             writer.write("}\n\n");
 
             for (ChickensRegistryItem chicken : ordered) {
@@ -154,6 +157,9 @@ public final class LegacyConfigBridge {
             case "avianFluxCapacity" -> props.setProperty("general.avianFluxCapacity", value);
             case "avianFluxMaxReceive" -> props.setProperty("general.avianFluxMaxReceive", value);
             case "avianFluxMaxExtract" -> props.setProperty("general.avianFluxMaxExtract", value);
+            case "enableFluidChickens" -> props.setProperty("general.enableFluidChickens", value);
+            case "enableChemicalChickens" -> props.setProperty("general.enableChemicalChickens", value);
+            case "enableGasChickens" -> props.setProperty("general.enableGasChickens", value);
             default -> {
             }
         }

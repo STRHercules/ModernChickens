@@ -3,6 +3,9 @@ package com.setycz.chickens.integration.jei;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.LiquidEggRegistry;
+import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.integration.jei.category.AvianFluidConverterCategory;
 import com.setycz.chickens.integration.jei.category.BreederCategory;
 import com.setycz.chickens.integration.jei.category.BreedingCategory;
 import com.setycz.chickens.integration.jei.category.CatchingCategory;
@@ -16,6 +19,7 @@ import com.setycz.chickens.item.ColoredEggItem;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.item.ChickenStats;
+import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.registry.ModRegistry;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -29,9 +33,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Registers the Chickens JEI plugin so the modern port exposes the same recipe
@@ -74,7 +80,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new ThrowingCategory(guiHelper),
                 new HenhousingCategory(guiHelper),
                 new RoostingCategory(guiHelper),
-                new CatchingCategory(guiHelper)
+                new CatchingCategory(guiHelper),
+                new AvianFluidConverterCategory(guiHelper)
         );
     }
 
@@ -88,6 +95,7 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.ROOSTING, buildRoostingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.CATCHING, buildCatchingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.BREEDER, buildBreederRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER, buildAvianFluidConverterRecipes());
     }
 
     @Override
@@ -101,6 +109,8 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.ROOST.get()), ChickensJeiRecipeTypes.ROOSTING);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.BREEDER.get()), ChickensJeiRecipeTypes.BREEDER);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.CATCHER.get()), ChickensJeiRecipeTypes.CATCHING);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_FLUID_CONVERTER_ITEM.get()),
+                ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -186,6 +196,21 @@ public class ChickensJeiPlugin implements IModPlugin {
                         seeds.copy(),
                         chickenItem.createFor(chicken),
                         Math.round(ChickensRegistry.getChildChance(chicken))))
+                .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianFluidConverterRecipe> buildAvianFluidConverterRecipes() {
+        return LiquidEggRegistry.getAll().stream()
+                .map(liquid -> {
+                    FluidStack fluid = liquid.createFluidStack();
+                    if (fluid.isEmpty()) {
+                        return null;
+                    }
+                    return new ChickensJeiRecipeTypes.AvianFluidConverterRecipe(
+                            LiquidEggItem.createFor(liquid),
+                            fluid);
+                })
+                .filter(Objects::nonNull)
                 .toList();
     }
 

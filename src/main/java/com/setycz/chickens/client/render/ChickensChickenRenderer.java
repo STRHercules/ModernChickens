@@ -4,6 +4,8 @@ import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.entity.ChickensChicken;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ChickenModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.ChickenRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +31,9 @@ public class ChickensChickenRenderer extends ChickenRenderer {
 
     public ChickensChickenRenderer(EntityRendererProvider.Context context) {
         super(context);
+        // Mirror the Fluid Cows setup by decorating the base model with a
+        // translucent, animated fluid layer for liquid chickens.
+        this.addLayer(new LiquidChickenOverlayLayer(this, new ChickenModel<>(context.bakeLayer(ModelLayers.CHICKEN))));
     }
 
     @Override

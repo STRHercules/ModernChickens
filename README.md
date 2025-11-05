@@ -19,9 +19,10 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 
 - **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.cfg` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
-- **Automation blocks** - Roosts, breeders, collectors, and henhouses ship with their original block entities, menus, and renderers so farms can incubate, store, and harvest chickens hands-free.
+- **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, and the new Avian Fluid Converter ship with their original block entities, menus, and renderers so farms can incubate, store, and harvest chickens hands-free.
 - **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
-- **JEI and Jade integrations** - Recipe categories, item subtypes, and overlay tooltips surface roost, breeder, and chicken stats directly in-game when the companion mods are installed.
+- **Fluid automation** - Liquid eggs can now be cracked into configurable fluid stacks with the Avian Fluid Converter, complete with tank overlays, JEI recipes, and WTHIT/Jade readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack.
+- **JEI and Jade integrations** - Recipe categories, item subtypes, and overlay tooltips surface roost, breeder, fluid converter, and chicken stats directly in-game when the companion mods are installed.
 - **Server-friendly utilities** - `/chickens export breeding` regenerates the breeding graph on demand, and the mod respects headless server runs out of the box.
 - **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them. You are able to tune the `chicken.properties` to disable duplicate chickens, change their breed 'recipe' and laid resource. 
 
@@ -36,6 +37,18 @@ _Chickens available in ATM10!_
 > Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade.
 > Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
 > Want different RF pacing? Adjust `general.fluxEggCapacityMultiplier` for Flux Egg storage or tweak `general.avianFluxCapacity`, `general.avianFluxMaxReceive`, and `general.avianFluxMaxExtract` to rebalance the converter.
+> Prefer gentler handling? Set `general.liquidEggHazardsEnabled=false` to suppress the liquid egg status effects, and tune `general.avianFluidConverterCapacity` / `general.avianFluidConverterTransferRate` to balance fluid throughput.
+
+### Avian Fluid Converter
+
+Liquid eggs no longer require hand-placing to deploy their contents. Drop a liquid egg in the Avian Fluid Converter and it automatically cracks the shell, stores the fluid internally, and feeds adjacent tanks or pipes each tick.
+
+- **Discovery**: JEI adds an “Avian Fluid Converter” category that lists every liquid egg and the fluid volume it produces. The converter block is registered as a catalyst, so recipes are only a click away.
+- **Catch ’em all**: Modern Chickens now creates a dedicated chicken for every fluid detected at runtime—if a mod ships a new liquid, you get a matching bird and egg automatically.
+- **Monitoring**: WTHIT and Jade overlays mirror the in-block gauge with the current fluid name, stored amount, and tank capacity. You can check the converter’s status without opening the GUI.
+- **Balancing**: Server owners can adjust `general.avianFluidConverterCapacity`, `general.avianFluidConverterTransferRate`, and `general.liquidEggHazardsEnabled` in `config/chickens.cfg` to match the rest of their tech progression.
+
+Pair the converter with standard fluid transport (pipes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
 
 ### Custom Chicken Definitions
 

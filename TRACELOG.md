@@ -675,3 +675,60 @@
   2. Added mod-aware chicken definitions that source the new liquid eggs, wiring parent chains for progression and keeping the IDs grouped by mod family.
   3. Updated localisation strings so the new chickens present sensible names in tooltips and JEI, preparing the data layer for future texture work.
 - **Rationale**: Populating the registry with modded fluids and hooking them into conditional chickens moves the project toward comprehensive tech-mod coverage while respecting packs that omit those fluids.
+
+## Entry 84
+- **Prompt/Task**: Implement the next DEVPLAN milestone by introducing the Avian Fluid Converter machine.
+- **Steps**:
+  1. Added `AvianFluidConverter` block, block entity, menu, and screen classes mirroring the flux converter architecture, including tank management, fluid automation, and synced client-side gauge rendering.
+  2. Registered the new content across registries, capabilities, creative tabs, and data assets (blockstates, models, loot, recipe, translations, mining tags) so the converter appears throughout gameplay and tooling.
+  3. Extended configuration support for tank capacity and transfer rate, refreshed tooltips for both block items and GUI overlays, and validated the feature with `./gradlew build`.
+- **Rationale**: Delivering the fluid converter fulfills the infrastructure expansion outlined in DEVPLAN, enabling liquid eggs to feed automation through a dedicated machine while staying configurable for modpack balance.
+
+## Entry 85
+- **Prompt/Task**: Follow the DEVPLAN gameplay hooks by adding safety toggles for liquid egg hazards.
+- **Steps**:
+  1. Added a `general.liquidEggHazardsEnabled` flag to `ChickensConfigValues`, default holders, and the general settings loader so packs can toggle hazard behaviour without code changes.
+  2. Updated `LiquidEggItem` to respect the new configuration, suppressing hazard tooltips and skipping debuff application whenever the toggle is disabled.
+  3. Rebuilt the project with `./gradlew build` to confirm the new configuration path compiles cleanly.
+- **Rationale**: Gating hazard effects behind configuration gives pack makers finer control over liquid egg balance, aligning with the safety configuration focus in the current DEVPLAN milestone.
+
+## Entry 86
+- **Prompt/Task**: Implement DEVPLAN integrations for the Avian Fluid Converter (JEI/WTHIT overlays).
+- **Steps**:
+  1. Added WTHIT and Jade providers that stream the converter's fluid name, volume, and capacity so overlays mirror the GUI readout in-world.
+  2. Introduced a JEI category and recipe type compiling every liquid egg into converter recipes, rendering fluid outputs alongside the new machine catalyst.
+  3. Updated localisation to cover the new GUI strings and ran `./gradlew build` to validate the integrations.
+- **Rationale**: Surfacing the converter through JEI and HUD overlays completes the automation support work in DEVPLAN step five, giving players discoverability and at-a-glance monitoring for liquid egg processing.
+
+## Entry 87
+- **Prompt/Task**: Expand liquid egg detection to cover every fluid in the modpack and auto-generate matching chickens.
+- **Steps**:
+  1. Extended the liquid egg bootstrap to scan the runtime fluid registry, registering eggs for any bucketed fluid not already handled while deriving colours and basic hazard heuristics.
+  2. Added `DynamicFluidChickens` so every discovered liquid egg produces a fallback chicken with generated textures, hashed IDs, and sensible parentage, kept in sync across tag reloads.
+  3. Updated documentation to highlight full fluid coverage, refreshed trace logs, and verified the build with `./gradlew build`.
+- **Rationale**: Automatically mirroring the modpack's fluid roster ensures players always have a path to farm new liquids without manual config patches, fulfilling the request for blanket liquid chicken support.
+
+## Entry 88
+- **Prompt/Task**: Add an animated fluid overlay to liquid chickens so their visuals align with the ModernFluidCows reference.
+- **Steps**:
+  1. Introduced `LiquidChickenOverlayLayer`, a client render layer that locates each chicken's liquid egg, pulls the fluid's still texture via `IClientFluidTypeExtensions`, scrolls the sprite UVs to mimic flowing liquid, and boosts tint brightness so the colours stay vivid against the base plumage.
+  2. Wired the layer into `ChickensChickenRenderer`, added a client reload listener so datapack-driven chickens refresh correctly, and cached registry lookups to keep runtime overhead minimal.
+  3. Ran `./gradlew classes` to confirm the new rendering path compiles cleanly alongside the existing client hooks.
+- **Rationale**: Restoring the animated sheen keeps liquid chickens immediately recognisable and maintains parity with the ModernFluidCows aesthetic without sacrificing the dynamic fluid registry support.
+
+## Entry 89
+- **Prompt/Task**: Extend the liquid chicken pipeline to cover Mekanism chemicals and gases with user-configurable toggles.
+- **Steps**:
+  1. Added `general.enableFluidChickens`, `general.enableChemicalChickens`, and `general.enableGasChickens` to `chickens.cfg`, updating config holders and the legacy exporter so packs can enable each resource family independently.
+  2. Reflected Mekanism's chemical registry to capture textures, tints, and hazard data, wiring new chemical/gas egg registries, items, and Mekanism-aware helper utilities that operate without a hard dependency.
+  3. Generated dynamic chemical and gas chickens, integrated the new eggs into overlays, item colour handlers, and creative tabs, and brightened the shared overlay layer so chemical/gas visuals match the liquid animation quality.
+  4. Validated the expanded feature set with `./gradlew classes`.
+- **Rationale**: Matching the ModernFluidCows workflow across Mekanism's chemical spectrum keeps automation parity intact while letting pack makers opt individual categories in or out.
+
+## Entry 90
+- **Prompt/Task**: Chemical and gas chickens are missing in-game even with the new config toggles enabled.
+- **Steps**:
+  1. Inspected `MekanismChemicalHelper` and confirmed the bridge still looked for the deprecated `Chemical#getTexture` method, causing the Mekanism reflection probe to fail and leaving both chemical registries empty.
+  2. Updated the helper to prefer Mekanism 10.7's modern `getIcon` accessor while falling back to `getTexture` for legacy builds, ensuring tint/name/texture extraction resumes without a hard Mekanism dependency.
+  3. Rebuilt the project via `./gradlew classes` to verify the reflection updates compile cleanly.
+- **Rationale**: Restoring the chemical registry scan unblocks the dynamic chemical/gas chicken generation so Mekanism installs once again receive the expected resource farming roster.

@@ -2,6 +2,7 @@ package com.setycz.chickens.registry;
 
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
+import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
@@ -41,6 +42,10 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianFluxConverterBlockEntity>> AVIAN_FLUX_CONVERTER = BLOCK_ENTITIES
             .register("avian_flux_converter", () -> BlockEntityType.Builder
                     .of(AvianFluxConverterBlockEntity::new, ModRegistry.AVIAN_FLUX_CONVERTER.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianFluidConverterBlockEntity>> AVIAN_FLUID_CONVERTER = BLOCK_ENTITIES
+            .register("avian_fluid_converter", () -> BlockEntityType.Builder
+                    .of(AvianFluidConverterBlockEntity::new, ModRegistry.AVIAN_FLUID_CONVERTER.get())
                     .build(null));
 
     private ModBlockEntities() {

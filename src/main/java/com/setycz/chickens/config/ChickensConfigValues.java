@@ -22,13 +22,23 @@ public final class ChickensConfigValues {
     private final int avianFluxCapacity;
     private final int avianFluxMaxReceive;
     private final int avianFluxMaxExtract;
+    private final int avianFluidCapacity;
+    private final int avianFluidTransferRate;
+    private final boolean avianFluidEffectsEnabled;
+    private final boolean liquidEggHazardsEnabled;
+    private final boolean fluidChickensEnabled;
+    private final boolean chemicalChickensEnabled;
+    private final boolean gasChickensEnabled;
 
     public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
             float netherSpawnChanceMultiplier, boolean alwaysShowStats,
             double roostSpeedMultiplier, double breederSpeedMultiplier,
             boolean disableVanillaEggLaying, int collectorScanRange,
             boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
-            int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract) {
+            int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
+            int avianFluidCapacity, int avianFluidTransferRate, boolean avianFluidEffectsEnabled,
+            boolean liquidEggHazardsEnabled, boolean fluidChickensEnabled,
+            boolean chemicalChickensEnabled, boolean gasChickensEnabled) {
         this.spawnProbability = spawnProbability;
         this.minBroodSize = minBroodSize;
         this.maxBroodSize = maxBroodSize;
@@ -43,6 +53,13 @@ public final class ChickensConfigValues {
         this.avianFluxCapacity = avianFluxCapacity;
         this.avianFluxMaxReceive = avianFluxMaxReceive;
         this.avianFluxMaxExtract = avianFluxMaxExtract;
+        this.avianFluidCapacity = avianFluidCapacity;
+        this.avianFluidTransferRate = avianFluidTransferRate;
+        this.avianFluidEffectsEnabled = avianFluidEffectsEnabled;
+        this.liquidEggHazardsEnabled = liquidEggHazardsEnabled;
+        this.fluidChickensEnabled = fluidChickensEnabled;
+        this.chemicalChickensEnabled = chemicalChickensEnabled;
+        this.gasChickensEnabled = gasChickensEnabled;
     }
 
     public int getSpawnProbability() {
@@ -99,5 +116,33 @@ public final class ChickensConfigValues {
 
     public int getAvianFluxMaxExtract() {
         return avianFluxMaxExtract;
+    }
+
+    public int getAvianFluidConverterCapacity(int fallback) {
+        return avianFluidCapacity > 0 ? avianFluidCapacity : fallback;
+    }
+
+    public int getAvianFluidConverterTransfer(int fallback) {
+        return avianFluidTransferRate > 0 ? avianFluidTransferRate : fallback;
+    }
+
+    public boolean isAvianFluidConverterEffectsEnabled() {
+        return avianFluidEffectsEnabled;
+    }
+
+    public boolean isLiquidEggHazardsEnabled() {
+        return liquidEggHazardsEnabled;
+    }
+
+    public boolean isFluidChickensEnabled() {
+        return fluidChickensEnabled;
+    }
+
+    public boolean isChemicalChickensEnabled() {
+        return chemicalChickensEnabled;
+    }
+
+    public boolean isGasChickensEnabled() {
+        return gasChickensEnabled;
     }
 }

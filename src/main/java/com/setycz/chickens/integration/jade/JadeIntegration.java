@@ -1,6 +1,7 @@
 package com.setycz.chickens.integration.jade;
 
 import com.setycz.chickens.blockentity.AbstractChickenContainerBlockEntity;
+import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
@@ -8,8 +9,11 @@ import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.entity.ChickensChicken;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +81,8 @@ public final class JadeIntegration {
             registerNbt.invoke(registrar, blockProvider, RoostBlockEntity.class);
             registerNbt.invoke(registrar, blockProvider, BreederBlockEntity.class);
             registerNbt.invoke(registrar, blockProvider, CollectorBlockEntity.class);
+            registerTail.invoke(registrar, blockProvider, AvianFluidConverterBlockEntity.class);
+            registerNbt.invoke(registrar, blockProvider, AvianFluidConverterBlockEntity.class);
         } catch (ClassNotFoundException ex) {
             LOGGER.warn("{} advertised Waila compatibility but the API was missing", target);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
@@ -175,18 +181,47 @@ public final class JadeIntegration {
             Method getNbt = accessor.getClass().getMethod("getNBTData");
             Object tile = getTileEntity.invoke(accessor);
             Object nbtObj = getNbt.invoke(accessor);
-            if (!(tile instanceof AbstractChickenContainerBlockEntity container) || !(list instanceof List<?>)) {
+            if (!(list instanceof List<?>)) {
                 return tooltipObject;
             }
-            CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
-            List<Component> components = new java.util.ArrayList<>();
-            container.appendTooltip(components, tag);
-            @SuppressWarnings("unchecked")
-            List<String> tooltip = (List<String>) list;
-            for (Component component : components) {
-                tooltip.add(component.getString());
+            if (tile instanceof AbstractChickenContainerBlockEntity container) {
+                CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
+                List<Component> components = new java.util.ArrayList<>();
+                container.appendTooltip(components, tag);
+                @SuppressWarnings("unchecked")
+                List<String> tooltip = (List<String>) list;
+                for (Component component : components) {
+                    tooltip.add(component.getString());
+                }
+                return tooltip;
             }
-            return tooltip;
+            if (tile instanceof AvianFluidConverterBlockEntity) {
+                CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
+                int amount = Math.max(tag.getInt("FluidAmount"), 0);
+                int capacity = Math.max(tag.getInt("FluidCapacity"), 0);
+                Component fluidName;
+                if (!tag.contains("FluidName") || amount <= 0) {
+                    fluidName = Component.translatable("tooltip.chickens.avian_fluid_converter.empty");
+                } else {
+                    ResourceLocation id = ResourceLocation.tryParse(tag.getString("FluidName"));
+                    FluidStack stack = id != null && BuiltInRegistries.FLUID.containsKey(id)
+                            ? new FluidStack(BuiltInRegistries.FLUID.get(id), amount)
+                            : FluidStack.EMPTY;
+                    fluidName = stack.isEmpty()
+                            ? Component.literal(tag.getString("FluidName"))
+                            : stack.getHoverName();
+                }
+                Component line = Component.translatable("tooltip.chickens.avian_fluid_converter.level",
+                        fluidName, amount, capacity);
+                @SuppressWarnings("unchecked")
+                List<String> tooltip = (List<String>) list;
+                tooltip.add(line.getString());
+                return tooltip;
+            }
+            if (!(tile instanceof AbstractChickenContainerBlockEntity) || !(list instanceof List<?>)) {
+                return tooltipObject;
+            }
+            return tooltipObject;
         }
 
         private Object handleNbt(Object[] args) {
@@ -195,13 +230,23 @@ public final class JadeIntegration {
             }
             Object tile = args[1];
             Object tagObject = args[2];
-            if (!(tile instanceof AbstractChickenContainerBlockEntity container)) {
-                return tagObject;
+            if (tile instanceof AbstractChickenContainerBlockEntity container) {
+                CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
+                container.storeTooltipData(tag);
+                return tag;
             }
-            CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
-            container.storeTooltipData(tag);
-            return tag;
+            if (tile instanceof AvianFluidConverterBlockEntity converter) {
+                CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
+                tag.putInt("FluidAmount", converter.getFluidAmount());
+                tag.putInt("FluidCapacity", converter.getTankCapacity());
+                FluidStack stack = converter.getFluid();
+                ResourceLocation id = stack.isEmpty() ? null : BuiltInRegistries.FLUID.getKey(stack.getFluid());
+                if (id != null) {
+                    tag.putString("FluidName", id.toString());
+                }
+                return tag;
+            }
+            return tagObject;
         }
     }
 }
-
