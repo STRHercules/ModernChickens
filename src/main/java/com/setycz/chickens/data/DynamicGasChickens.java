@@ -72,7 +72,7 @@ final class DynamicGasChickens {
                 continue;
             }
 
-            String entityName = buildEntityName(entry.getChemicalId());
+            String entityName = buildEntityName(entry.getChemicalId(), byName);
             String nameKey = entityName.toLowerCase(Locale.ROOT);
             if (byName.containsKey(nameKey)) {
                 continue;
@@ -158,7 +158,7 @@ final class DynamicGasChickens {
     }
 
     private static Component buildDisplayName(ChemicalEggRegistryItem entry) {
-        return entry.getDisplayName().copy().append(Component.literal(" Chicken"));
+        return entry.getDisplayName().copy().append(Component.literal(" Gas Chicken"));
     }
 
     @Nullable
@@ -181,11 +181,17 @@ final class DynamicGasChickens {
         return candidate;
     }
 
-    private static String buildEntityName(ResourceLocation chemicalId) {
+    private static String buildEntityName(ResourceLocation chemicalId,
+                                          Map<String, ChickensRegistryItem> byName) {
+        String baseName = buildBaseName(chemicalId);
+        return resolveUniqueName(baseName, "Gas", byName);
+    }
+
+    private static String buildBaseName(ResourceLocation chemicalId) {
         String combined = chemicalId.getNamespace() + "_" + chemicalId.getPath();
         String[] parts = combined.split("[^a-z0-9]+");
         if (parts.length == 0) {
-            return "gasChicken";
+            return "gas";
         }
         StringBuilder builder = new StringBuilder(parts[0]);
         for (int i = 1; i < parts.length; i++) {
@@ -198,8 +204,35 @@ final class DynamicGasChickens {
                 builder.append(part.substring(1));
             }
         }
-        builder.append("Chicken");
         return builder.toString();
+    }
+
+    private static String resolveUniqueName(String baseName,
+                                            String variantSuffix,
+                                            Map<String, ChickensRegistryItem> byName) {
+        String candidate = baseName + "Chicken";
+        if (isNameAvailable(candidate, byName)) {
+            return candidate;
+        }
+
+        // Gas chickens can overlap with fluid or chemical variants; suffix keeps entity ids stable.
+        String variant = baseName + variantSuffix + "Chicken";
+        if (isNameAvailable(variant, byName)) {
+            return variant;
+        }
+
+        int counter = 2;
+        while (true) {
+            String numbered = baseName + variantSuffix + counter + "Chicken";
+            if (isNameAvailable(numbered, byName)) {
+                return numbered;
+            }
+            counter++;
+        }
+    }
+
+    private static boolean isNameAvailable(String candidate, Map<String, ChickensRegistryItem> byName) {
+        return !byName.containsKey(candidate.toLowerCase(Locale.ROOT));
     }
 
     private static int accentColor(int base) {

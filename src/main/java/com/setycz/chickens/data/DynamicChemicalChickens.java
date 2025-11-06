@@ -69,7 +69,7 @@ final class DynamicChemicalChickens {
                 continue;
             }
 
-            String entityName = buildEntityName(entry.getChemicalId());
+            String entityName = buildEntityName(entry.getChemicalId(), byName);
             String nameKey = entityName.toLowerCase(Locale.ROOT);
             if (byName.containsKey(nameKey)) {
                 continue;
@@ -150,7 +150,7 @@ final class DynamicChemicalChickens {
     }
 
     private static Component buildDisplayName(ChemicalEggRegistryItem entry) {
-        return entry.getDisplayName().copy().append(Component.literal(" Chicken"));
+        return entry.getDisplayName().copy().append(Component.literal(" Chemical Chicken"));
     }
 
     private static int allocateId(ResourceLocation chemicalId, Set<Integer> usedIds) {
@@ -163,11 +163,17 @@ final class DynamicChemicalChickens {
         return candidate;
     }
 
-    private static String buildEntityName(ResourceLocation chemicalId) {
+    private static String buildEntityName(ResourceLocation chemicalId,
+                                          Map<String, ChickensRegistryItem> byName) {
+        String baseName = buildBaseName(chemicalId);
+        return resolveUniqueName(baseName, "Chemical", byName);
+    }
+
+    private static String buildBaseName(ResourceLocation chemicalId) {
         String combined = chemicalId.getNamespace() + "_" + chemicalId.getPath();
         String[] parts = combined.split("[^a-z0-9]+");
         if (parts.length == 0) {
-            return "chemicalChicken";
+            return "chemical";
         }
         StringBuilder builder = new StringBuilder(parts[0]);
         for (int i = 1; i < parts.length; i++) {
@@ -180,8 +186,35 @@ final class DynamicChemicalChickens {
                 builder.append(part.substring(1));
             }
         }
-        builder.append("Chicken");
         return builder.toString();
+    }
+
+    private static String resolveUniqueName(String baseName,
+                                            String variantSuffix,
+                                            Map<String, ChickensRegistryItem> byName) {
+        String candidate = baseName + "Chicken";
+        if (isNameAvailable(candidate, byName)) {
+            return candidate;
+        }
+
+        // Mekanism commonly exposes both liquid and chemical variants; prefer a semantic suffix before numbering.
+        String variant = baseName + variantSuffix + "Chicken";
+        if (isNameAvailable(variant, byName)) {
+            return variant;
+        }
+
+        int counter = 2;
+        while (true) {
+            String numbered = baseName + variantSuffix + counter + "Chicken";
+            if (isNameAvailable(numbered, byName)) {
+                return numbered;
+            }
+            counter++;
+        }
+    }
+
+    private static boolean isNameAvailable(String candidate, Map<String, ChickensRegistryItem> byName) {
+        return !byName.containsKey(candidate.toLowerCase(Locale.ROOT));
     }
 
     private static int accentColor(int base) {
