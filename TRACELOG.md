@@ -748,3 +748,11 @@
   2. Embedded chicken ids into each recipe result via the new data component format so coloured eggs spawn the intended breed immediately and render with the correct custom model.
   3. Updated repository suggestions to note future tag support for dye inputs and prepared the build for validation.
 - **Rationale**: Restoring dye-and-egg crafting restores the early-game path to white, yellow, red, and blue chickens, letting players bootstrap breeding without waiting on random world spawns while keeping visuals and metadata in sync with the modern item system.
+
+## Entry 93
+- **Prompt/Task**: Ensure that all 'dye' or color chickens have funcitoning crafting or breeding recipes
+- **Steps**:
+  1. Mirrored the existing dye-and-egg shapeless recipe pattern for the remaining base colours, producing `green_chicken.json` and `black_chicken.json` so both dyes now unlock their chickens directly.
+  2. Set each recipe's `ChickenType` and `minecraft:custom_model_data` identifiers to the corresponding dye ids to guarantee the crafted coloured eggs spawn and render as the intended breeds immediately.
+  3. Refreshed repository suggestions and prepared to validate the updated data pack.
+- **Rationale**: Filling in the missing dye chicken recipes restores parity across the colour set, ensuring every base dye chicken can be crafted without waiting on random world spawns or undiscoverable breeding chains.

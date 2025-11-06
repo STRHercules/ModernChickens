@@ -72,3 +72,5 @@
 - Expose client-side controls for the liquid overlay (opacity, scroll speed, optional disable) so accessibility-focused packs and resource pack authors can tune the new animation without editing code.
 - Add a Mekanism-focused tooltip or JEI info page that outlines how the Avian Chemical Converter routes chemical and gas outputs, so players understand side configuration and transfer rates at a glance.
 - Surface a startup warning or diagnostics command when the Mekanism reflection bridge fails (e.g., future method renames) so pack makers notice registries that could not initialise instead of silently losing chemical/gas chickens.
+
+- Add an in-game advancement hint that highlights dye-and-egg crafting for colour chickens so players discover the mechanic without consulting external guides.
