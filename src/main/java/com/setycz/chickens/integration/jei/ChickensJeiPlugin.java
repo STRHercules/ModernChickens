@@ -9,6 +9,7 @@ import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.integration.jei.category.AvianChemicalConverterCategory;
+import com.setycz.chickens.integration.jei.category.AvianDousingCategory;
 import com.setycz.chickens.integration.jei.category.AvianFluidConverterCategory;
 import com.setycz.chickens.integration.jei.category.BreederCategory;
 import com.setycz.chickens.integration.jei.category.BreedingCategory;
@@ -41,6 +42,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.fluids.FluidStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -89,7 +91,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new RoostingCategory(guiHelper),
                 new CatchingCategory(guiHelper),
                 new AvianFluidConverterCategory(guiHelper),
-                new AvianChemicalConverterCategory(guiHelper)
+                new AvianChemicalConverterCategory(guiHelper),
+                new AvianDousingCategory(guiHelper)
         );
     }
 
@@ -105,6 +108,7 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.BREEDER, buildBreederRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER, buildAvianFluidConverterRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER, buildAvianChemicalConverterRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_DOUSING, buildAvianDousingRecipes());
     }
 
     @Override
@@ -122,6 +126,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_CHEMICAL_CONVERTER_ITEM.get()),
                 ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_DOUSING_MACHINE_ITEM.get()),
+                ChickensJeiRecipeTypes.AVIAN_DOUSING);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -236,6 +242,41 @@ public class ChickensJeiPlugin implements IModPlugin {
                         .map(entry -> new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(
                                 GasEggItem.createFor(entry), entry)))
                 .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianDousingRecipe> buildAvianDousingRecipes() {
+        ChickensRegistryItem smartChicken = ChickensRegistry.getSmartChicken();
+        if (smartChicken == null) {
+            return List.of();
+        }
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        ItemStack smartEgg = ChickensSpawnEggItem.createFor(smartChicken);
+        ItemStack smartChickenStack = chickenItem.createFor(smartChicken);
+        return ChickensRegistry.getItems().stream()
+                .map(chicken -> createDousingRecipe(chicken, smartEgg, smartChickenStack))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Nullable
+    private static ChickensJeiRecipeTypes.AvianDousingRecipe createDousingRecipe(ChickensRegistryItem chicken,
+            ItemStack smartEgg, ItemStack smartChicken) {
+        ItemStack layItem = chicken.createLayItem();
+        if (layItem.isEmpty() || layItem.getItem() != ModRegistry.CHEMICAL_EGG.get()) {
+            return null;
+        }
+        ChemicalEggRegistryItem entry = ChemicalEggRegistry.findById(ChickenItemHelper.getChickenType(layItem));
+        if (entry == null || entry.getVolume() <= 0) {
+            return null;
+        }
+        ItemStack reagent = ChemicalEggItem.createFor(entry);
+        ItemStack result = ChickensSpawnEggItem.createFor(chicken);
+        return new ChickensJeiRecipeTypes.AvianDousingRecipe(
+                smartEgg.copy(),
+                smartChicken.copy(),
+                reagent,
+                result,
+                entry);
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

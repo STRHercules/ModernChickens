@@ -840,3 +840,11 @@
   2. Pointed the screen at the new RF gauge texture slice and nudged the Smart Chicken and output slots to the requested coordinates to align with the updated artwork.
   3. Ran .\gradlew.bat build to verify the refactor compiles cleanly.
 - **Rationale**: Spending RF via the wrapped storage keeps the persisted buffer accurate while the UI tweaks mirror the revised art, preventing visual desyncs during automation builds.
+
+## Entry 103
+- **Prompt/Task**: Construct jei recipes for creating chemical chicken spawn eggs via the dousing machine.
+- **Steps**:
+  1. Added an Avian Dousing recipe type, data factory, and catalyst registration so the JEI plugin can enumerate chemical infusions sourced from the live registries.
+  2. Implemented the dousing JEI category, layout, and translations to showcase the Smart Chicken input, reagent egg, output spawn egg, and the RF/volume costs per recipe.
+  3. Restored the missing WTHIT dousing provider so the build succeeds and the overlay mirrors the GUI’s chemical, fluid, energy, and progress tooltips before running `./gradlew build`.
+- **Rationale**: Surfacing the dousing machine in JEI (and WTHIT) gives players a quick reference for which chemicals forge each spawn egg and the resources they must buffer, smoothing late-game automation planning.

@@ -1,6 +1,7 @@
 # Suggestions
 
 - Add tiered upgrades for the Avian Dousing Machine (e.g., faster infusion, extra buffer capacity, recipe selection UI) so mid-to-late game automation feels more rewarding than the baseline machine.
+- Teach the new JEI dousing entry a transfer handler so players can push the layout into the machine and get inventory assistance when reagents are missing.
 - Flesh out the placeholder registry scaffolding by porting entity, block, GUI, and integration classes from the legacy project using the new NeoForge data-driven patterns.
 - Ship a small migration helper that purges legacy `layItemMeta=0` entries or rewrites them to the detected chicken id so existing `chickens.cfg` files stop overriding typed egg metadata on next launch.
 - Audit any remaining runtime recipe and loot registrations and migrate them to JSON data packs compatible with 1.21.1.
