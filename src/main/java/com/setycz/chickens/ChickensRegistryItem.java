@@ -35,6 +35,7 @@ public class ChickensRegistryItem {
     private boolean generatedTexture;
     private boolean tintItem = true;
     private boolean custom;
+    private boolean naturalSpawnOverride;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -176,7 +177,8 @@ public class ChickensRegistryItem {
     }
 
     public boolean canSpawn() {
-        return getTier() == 1 && spawnType != SpawnType.NONE;
+        boolean tierEligible = naturalSpawnOverride || getTier() == 1;
+        return tierEligible && spawnType != SpawnType.NONE;
     }
 
     public int getMinLayTime() {
@@ -215,6 +217,11 @@ public class ChickensRegistryItem {
     public ChickensRegistryItem setParentsNew(ChickensRegistryItem newParent1, ChickensRegistryItem newParent2) {
         parent1 = newParent1;
         parent2 = newParent2;
+        return this;
+    }
+
+    public ChickensRegistryItem allowNaturalSpawn() {
+        naturalSpawnOverride = true;
         return this;
     }
 

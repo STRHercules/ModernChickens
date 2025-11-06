@@ -756,3 +756,11 @@
   2. Set each recipe's `ChickenType` and `minecraft:custom_model_data` identifiers to the corresponding dye ids to guarantee the crafted coloured eggs spawn and render as the intended breeds immediately.
   3. Refreshed repository suggestions and prepared to validate the updated data pack.
 - **Rationale**: Filling in the missing dye chicken recipes restores parity across the colour set, ensuring every base dye chicken can be crafted without waiting on random world spawns or undiscoverable breeding chains.
+
+## Entry 94
+- **Prompt/Task**: Chemical chickens lay base eggs, certain core chickens are missing from natural spawns, and coloured eggs sometimes spawn vanilla chickens.
+- **Steps**:
+  1. Extended the configuration stack reader to detect chicken-typed items (liquid, chemical, gas, spawn, coloured, and chicken-in-a-item) so overrides keep their `ChickenType` metadata and chemical eggs retain their variant identity.
+  2. Added a natural spawn override flag to `ChickensRegistryItem` and enabled it for the Flint, Snowball, Gunpowder, Quartz, Lava, and Log chickens so they spawn in their intended dimensions even when assigned parents.
+  3. Replaced the vanilla `ThrownEgg` impact path with custom handling that preserves encoded chicken ids, preventing coloured eggs from producing vanilla chickens, and verified the changes with `./gradlew build`.
+- **Rationale**: Preserving typed egg metadata, restoring critical natural spawns, and eliminating vanilla egg fallbacks keeps Mekanism chemical chickens functional while ensuring core progression breeds remain discoverable and coloured eggs stay consistent.

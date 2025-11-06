@@ -74,3 +74,4 @@
 - Surface a startup warning or diagnostics command when the Mekanism reflection bridge fails (e.g., future method renames) so pack makers notice registries that could not initialise instead of silently losing chemical/gas chickens.
 
 - Add an in-game advancement hint that highlights dye-and-egg crafting for colour chickens so players discover the mechanic without consulting external guides.
+- Surface the new natural spawn override as per-chicken configuration so datapacks or `chickens.cfg` entries can opt additional breeds into forced spawning without requiring code updates.
