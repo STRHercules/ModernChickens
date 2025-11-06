@@ -764,3 +764,19 @@
   2. Added a natural spawn override flag to `ChickensRegistryItem` and enabled it for the Flint, Snowball, Gunpowder, Quartz, Lava, and Log chickens so they spawn in their intended dimensions even when assigned parents.
   3. Replaced the vanilla `ThrownEgg` impact path with custom handling that preserves encoded chicken ids, preventing coloured eggs from producing vanilla chickens, and verified the changes with `./gradlew build`.
 - **Rationale**: Preserving typed egg metadata, restoring critical natural spawns, and eliminating vanilla egg fallbacks keeps Mekanism chemical chickens functional while ensuring core progression breeds remain discoverable and coloured eggs stay consistent.
+
+## Entry 95
+- **Prompt/Task**: Chemical chickens are still laying base empty Chemical Eggs.
+- **Steps**:
+  1. Traced the legacy configuration bridge and confirmed `layItemMeta` imports overwrote dynamically assigned chemical egg ids with zero, resetting chicken-laid eggs to the base variant.
+  2. Updated `ChickensDataLoader.readItemType` to ignore legacy metadata values of zero when a non-zero default exists, so Mekanism-sourced chemical and gas eggs keep their encoded registry ids.
+  3. Executed `.\gradlew.bat build` to validate the adjusted configuration reader.
+- **Rationale**: Preventing legacy metadata from clobbering chemical egg identifiers ensures chemical chickens lay their correct variant eggs while keeping configuration exports in sync with the modern data model.
+
+## Entry 96
+- **Prompt/Task**: Chemical chickens still lay blank eggs when `eggType=0` is present in the modern config.
+- **Steps**:
+  1. Revisited `ChickensDataLoader.readItemType` and identified that the modern `eggType` property still treated the value `0` as explicit rather than a sentinel, recreating the blank egg override.
+  2. Normalised both the modern and legacy keys to treat `0` as "use the default chicken id" when a non-zero default exists, ensuring chickens retain their dynamically assigned chemical ids.
+  3. Rebuilt the project with `.\gradlew.bat build` to confirm the fix compiles cleanly.
+- **Rationale**: Harmonising the sentinel handling across legacy and modern config keys keeps chemical chicken drops stable even if older config files still contain zeroed type fields.

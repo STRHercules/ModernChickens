@@ -556,13 +556,26 @@ public final class ChickensDataLoader {
     private static int readItemType(Properties props, String itemKey, String typeKey, int defaultType) {
         // Honour both the modern "type" key and the legacy metadata entry so
         // existing configuration files retain their liquid egg variants.
-        String legacyKey = itemKey + "Meta";
         String value = props.getProperty(typeKey);
-        if (value == null) {
-            value = props.getProperty(legacyKey);
+        if (value != null) {
+            int parsed = parseInt(value, defaultType);
+            if (parsed == 0 && defaultType != 0) {
+                return defaultType;
+            }
+            return Math.max(parsed, 0);
         }
-        int type = parseInt(value, defaultType);
-        return Math.max(type, 0);
+
+        String legacyKey = itemKey + "Meta";
+        String legacyValue = props.getProperty(legacyKey);
+        if (legacyValue != null) {
+            int parsed = parseInt(legacyValue, defaultType);
+            if (parsed == 0 && defaultType != 0) {
+                return defaultType;
+            }
+            return Math.max(parsed, 0);
+        }
+
+        return defaultType;
     }
 
     private static int parseInt(String raw, int defaultValue) {

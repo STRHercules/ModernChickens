@@ -1,6 +1,7 @@
 # Suggestions
 
 - Flesh out the placeholder registry scaffolding by porting entity, block, GUI, and integration classes from the legacy project using the new NeoForge data-driven patterns.
+- Ship a small migration helper that purges legacy `layItemMeta=0` entries or rewrites them to the detected chicken id so existing `chickens.cfg` files stop overriding typed egg metadata on next launch.
 - Audit any remaining runtime recipe and loot registrations and migrate them to JSON data packs compatible with 1.21.1.
 - Replace the temporary debug item with the real Chickens content and add automated tests (e.g., data generators or unit tests) to guard the future porting work.
 - Restore the bespoke behaviours for the analyzer, spawn egg, colored egg, and liquid egg items so the placeholders regain their legacy functionality.
