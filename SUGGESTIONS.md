@@ -28,6 +28,7 @@
 - Add a Gradle validation step that warns when the legacy Roost texture folder is absent so developers notice missing art before packaging builds.
 - Automate the chicken item model overrides from the registry so future breeds stay sorted without manual JSON edits.
 - Expand the catcher recipe to accept shared egg/feather tags when Forge publishes them, preserving the old ore dictionary flexibility for modpack integrations.
+- Add shapeless recipe variants that accept Forge dye tags for base chickens so modpacks with alternative dye items still unlock early progression without manual datapack edits.
 - Add an in-game reload command for `chickens_custom.json` so dedicated servers can iterate on bespoke breeds without restarting between tweaks.
 - Publish a JSON Schema for `chickens_custom.json` so pack makers can validate entries in their editors and avoid typos before launching the game.
 - Teach the custom chicken loader to recognise friendly spawn-type aliases (e.g., `nether`) so legacy configs port cleanly without forcing manual enum renames.

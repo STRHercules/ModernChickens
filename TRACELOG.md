@@ -740,3 +740,11 @@
   2. Localised the converter's tooltips, menu, and JEI copy while tagging the block as axe-mineable so every UI surface references the new machine correctly.
   3. Updated project suggestions, refreshed trace logs, and executed `./gradlew build` to confirm the expanded registry compiles and passes validation.
 - **Rationale**: Documenting the chemical converter alongside functional translations ensures players can discover and automate the new machine without guesswork while keeping repository guidance up to date.
+
+## Entry 92
+- **Prompt/Task**: there is no crafting recipe for yellow, red, white, or blue chickens
+- **Steps**:
+  1. Added shapeless crafting recipes that pair eggs with the matching vanilla dye to recreate the legacy coloured chicken egg unlocks for the four base breeds.
+  2. Embedded chicken ids into each recipe result via the new data component format so coloured eggs spawn the intended breed immediately and render with the correct custom model.
+  3. Updated repository suggestions to note future tag support for dye inputs and prepared the build for validation.
+- **Rationale**: Restoring dye-and-egg crafting restores the early-game path to white, yellow, red, and blue chickens, letting players bootstrap breeding without waiting on random world spawns while keeping visuals and metadata in sync with the modern item system.
