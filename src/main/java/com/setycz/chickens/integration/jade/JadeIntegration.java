@@ -1,6 +1,10 @@
 package com.setycz.chickens.integration.jade;
 
+import com.setycz.chickens.ChemicalEggRegistry;
+import com.setycz.chickens.ChemicalEggRegistryItem;
+import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.blockentity.AbstractChickenContainerBlockEntity;
+import com.setycz.chickens.blockentity.AvianChemicalConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
@@ -83,6 +87,8 @@ public final class JadeIntegration {
             registerNbt.invoke(registrar, blockProvider, CollectorBlockEntity.class);
             registerTail.invoke(registrar, blockProvider, AvianFluidConverterBlockEntity.class);
             registerNbt.invoke(registrar, blockProvider, AvianFluidConverterBlockEntity.class);
+            registerTail.invoke(registrar, blockProvider, AvianChemicalConverterBlockEntity.class);
+            registerNbt.invoke(registrar, blockProvider, AvianChemicalConverterBlockEntity.class);
         } catch (ClassNotFoundException ex) {
             LOGGER.warn("{} advertised Waila compatibility but the API was missing", target);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
@@ -218,6 +224,28 @@ public final class JadeIntegration {
                 tooltip.add(line.getString());
                 return tooltip;
             }
+            if (tile instanceof AvianChemicalConverterBlockEntity) {
+                CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
+                int amount = Math.max(tag.getInt("ChemicalAmount"), 0);
+                int capacity = Math.max(tag.getInt("ChemicalCapacity"), 0);
+                Component chemicalName;
+                if (!tag.contains("ChemicalName") || amount <= 0) {
+                    chemicalName = Component.translatable("tooltip.chickens.avian_chemical_converter.empty");
+                } else {
+                    ResourceLocation id = ResourceLocation.tryParse(tag.getString("ChemicalName"));
+                    ChemicalEggRegistryItem entry = id != null ? ChemicalEggRegistry.findByChemical(id) : null;
+                    if (entry == null && id != null) {
+                        entry = GasEggRegistry.findByChemical(id);
+                    }
+                    chemicalName = entry != null ? entry.getDisplayName() : Component.literal(tag.getString("ChemicalName"));
+                }
+                Component line = Component.translatable("tooltip.chickens.avian_chemical_converter.level",
+                        chemicalName, amount, capacity);
+                @SuppressWarnings("unchecked")
+                List<String> tooltip = (List<String>) list;
+                tooltip.add(line.getString());
+                return tooltip;
+            }
             if (!(tile instanceof AbstractChickenContainerBlockEntity) || !(list instanceof List<?>)) {
                 return tooltipObject;
             }
@@ -243,6 +271,16 @@ public final class JadeIntegration {
                 ResourceLocation id = stack.isEmpty() ? null : BuiltInRegistries.FLUID.getKey(stack.getFluid());
                 if (id != null) {
                     tag.putString("FluidName", id.toString());
+                }
+                return tag;
+            }
+            if (tile instanceof AvianChemicalConverterBlockEntity converter) {
+                CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
+                tag.putInt("ChemicalAmount", converter.getChemicalAmount());
+                tag.putInt("ChemicalCapacity", converter.getTankCapacity());
+                ResourceLocation id = converter.getChemicalId();
+                if (id != null) {
+                    tag.putString("ChemicalName", id.toString());
                 }
                 return tag;
             }

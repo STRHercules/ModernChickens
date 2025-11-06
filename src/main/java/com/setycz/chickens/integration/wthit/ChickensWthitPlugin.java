@@ -1,5 +1,6 @@
 package com.setycz.chickens.integration.wthit;
 
+import com.setycz.chickens.blockentity.AvianChemicalConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
@@ -26,6 +27,10 @@ public final class ChickensWthitPlugin implements IWailaPlugin {
         AvianFluidConverterProvider fluidProvider = new AvianFluidConverterProvider();
         registrar.addBlockData(fluidProvider, AvianFluidConverterBlockEntity.class);
         registrar.addComponent(fluidProvider, TooltipPosition.BODY, AvianFluidConverterBlockEntity.class);
+
+        AvianChemicalConverterProvider chemicalProvider = new AvianChemicalConverterProvider();
+        registrar.addBlockData(chemicalProvider, AvianChemicalConverterBlockEntity.class);
+        registrar.addComponent(chemicalProvider, TooltipPosition.BODY, AvianChemicalConverterBlockEntity.class);
 
         ChickenContainerProvider<RoostBlockEntity> roostProvider = new ChickenContainerProvider<>();
         registrar.addBlockData(roostProvider, RoostBlockEntity.class);

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "010",
+    "232",
+    "454"
+  ],
+  "key": {
+    "0": { "item": "minecraft:glass" },
+    "1": { "item": "chickens:chemical_egg" },
+    "2": { "item": "minecraft:bucket" },
+    "3": { "item": "chickens:collector" },
+    "4": { "item": "minecraft:iron_block" },
+    "5": { "item": "chickens:gas_egg" }
+  },
+  "result": {
+    "id": "chickens:avian_chemical_converter",
+    "count": 1
+  }
+}

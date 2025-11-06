@@ -1,10 +1,14 @@
 package com.setycz.chickens.integration.jei;
 
+import com.setycz.chickens.ChemicalEggRegistry;
+import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.integration.jei.category.AvianChemicalConverterCategory;
 import com.setycz.chickens.integration.jei.category.AvianFluidConverterCategory;
 import com.setycz.chickens.integration.jei.category.BreederCategory;
 import com.setycz.chickens.integration.jei.category.BreedingCategory;
@@ -16,9 +20,11 @@ import com.setycz.chickens.integration.jei.category.RoostingCategory;
 import com.setycz.chickens.integration.jei.category.ThrowingCategory;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
 import com.setycz.chickens.item.ColoredEggItem;
+import com.setycz.chickens.item.ChemicalEggItem;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.item.ChickenStats;
+import com.setycz.chickens.item.GasEggItem;
 import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.registry.ModRegistry;
 import mezz.jei.api.IModPlugin;
@@ -38,6 +44,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Registers the Chickens JEI plugin so the modern port exposes the same recipe
@@ -81,7 +88,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new HenhousingCategory(guiHelper),
                 new RoostingCategory(guiHelper),
                 new CatchingCategory(guiHelper),
-                new AvianFluidConverterCategory(guiHelper)
+                new AvianFluidConverterCategory(guiHelper),
+                new AvianChemicalConverterCategory(guiHelper)
         );
     }
 
@@ -96,6 +104,7 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.CATCHING, buildCatchingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.BREEDER, buildBreederRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER, buildAvianFluidConverterRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER, buildAvianChemicalConverterRecipes());
     }
 
     @Override
@@ -111,6 +120,8 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.CATCHER.get()), ChickensJeiRecipeTypes.CATCHING);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_FLUID_CONVERTER_ITEM.get()),
                 ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_CHEMICAL_CONVERTER_ITEM.get()),
+                ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -211,6 +222,19 @@ public class ChickensJeiPlugin implements IModPlugin {
                             fluid);
                 })
                 .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianChemicalConverterRecipe> buildAvianChemicalConverterRecipes() {
+        return Stream.concat(
+                ChemicalEggRegistry.getAll().stream()
+                        .filter(entry -> entry.getVolume() > 0)
+                        .map(entry -> new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(
+                                ChemicalEggItem.createFor(entry), entry)),
+                GasEggRegistry.getAll().stream()
+                        .filter(entry -> entry.getVolume() > 0)
+                        .map(entry -> new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(
+                                GasEggItem.createFor(entry), entry)))
                 .toList();
     }
 

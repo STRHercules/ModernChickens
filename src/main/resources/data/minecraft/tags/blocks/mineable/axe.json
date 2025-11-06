@@ -11,6 +11,7 @@
     "chickens:henhouse_acacia",
     "chickens:henhouse_dark_oak",
     "chickens:avian_flux_converter",
-    "chickens:avian_fluid_converter"
+    "chickens:avian_fluid_converter",
+    "chickens:avian_chemical_converter"
   ]
 }

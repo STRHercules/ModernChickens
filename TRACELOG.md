@@ -732,3 +732,11 @@
   2. Updated the helper to prefer Mekanism 10.7's modern `getIcon` accessor while falling back to `getTexture` for legacy builds, ensuring tint/name/texture extraction resumes without a hard Mekanism dependency.
   3. Rebuilt the project via `./gradlew classes` to verify the reflection updates compile cleanly.
 - **Rationale**: Restoring the chemical registry scan unblocks the dynamic chemical/gas chicken generation so Mekanism installs once again receive the expected resource farming roster.
+
+## Entry 91
+- **Prompt/Task**: Chemical/Gas chickens need a working chemical egg texture and Avian Chemical Converter JEI integration.
+- **Steps**:
+  1. Added a dedicated JEI recipe type and category for the Avian Chemical Converter, compiling chemical and gas egg outputs and registering the block as a catalyst.
+  2. Localised the converter's tooltips, menu, and JEI copy while tagging the block as axe-mineable so every UI surface references the new machine correctly.
+  3. Updated project suggestions, refreshed trace logs, and executed `./gradlew build` to confirm the expanded registry compiles and passes validation.
+- **Rationale**: Documenting the chemical converter alongside functional translations ensures players can discover and automate the new machine without guesswork while keeping repository guidance up to date.

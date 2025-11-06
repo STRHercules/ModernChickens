@@ -1,6 +1,7 @@
 package com.setycz.chickens.integration.jei;
 
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.ChemicalEggRegistryItem;
 import mezz.jei.api.recipe.RecipeType;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +22,8 @@ public final class ChickensJeiRecipeTypes {
     public static final RecipeType<BreederRecipe> BREEDER = RecipeType.create(ChickensMod.MOD_ID, "breeder", BreederRecipe.class);
     public static final RecipeType<AvianFluidConverterRecipe> AVIAN_FLUID_CONVERTER = RecipeType.create(
             ChickensMod.MOD_ID, "avian_fluid_converter", AvianFluidConverterRecipe.class);
+    public static final RecipeType<AvianChemicalConverterRecipe> AVIAN_CHEMICAL_CONVERTER = RecipeType.create(
+            ChickensMod.MOD_ID, "avian_chemical_converter", AvianChemicalConverterRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -50,5 +53,8 @@ public final class ChickensJeiRecipeTypes {
     }
 
     public record AvianFluidConverterRecipe(ItemStack egg, FluidStack fluid) {
+    }
+
+    public record AvianChemicalConverterRecipe(ItemStack egg, ChemicalEggRegistryItem entry) {
     }
 }

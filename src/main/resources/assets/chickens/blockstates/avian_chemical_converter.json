@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,lit=false": { "model": "chickens:block/avian_chemical_converter" },
+    "facing=south,lit=false": { "model": "chickens:block/avian_chemical_converter", "y": 180 },
+    "facing=west,lit=false": { "model": "chickens:block/avian_chemical_converter", "y": 270 },
+    "facing=east,lit=false": { "model": "chickens:block/avian_chemical_converter", "y": 90 },
+    "facing=north,lit=true": { "model": "chickens:block/avian_chemical_converter" },
+    "facing=south,lit=true": { "model": "chickens:block/avian_chemical_converter", "y": 180 },
+    "facing=west,lit=true": { "model": "chickens:block/avian_chemical_converter", "y": 270 },
+    "facing=east,lit=true": { "model": "chickens:block/avian_chemical_converter", "y": 90 }
+  }
+}

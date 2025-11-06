@@ -1,5 +1,6 @@
 package com.setycz.chickens.registry;
 
+import com.setycz.chickens.integration.mekanism.MekanismChemicalHelper;
 import com.setycz.chickens.liquidegg.LiquidEggFluidWrapper;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -36,6 +37,7 @@ public final class ModCapabilities {
         registerContainerCapability(event, ModBlockEntities.HENHOUSE.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUX_CONVERTER.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUID_CONVERTER.get());
+        registerContainerCapability(event, ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get());
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
@@ -45,6 +47,14 @@ public final class ModCapabilities {
                 Capabilities.FluidHandler.BLOCK,
                 ModBlockEntities.AVIAN_FLUID_CONVERTER.get(),
                 (blockEntity, direction) -> blockEntity.getFluidTank(direction));
+
+        var chemicalCapability = MekanismChemicalHelper.getChemicalBlockCapability();
+        if (chemicalCapability != null) {
+            event.registerBlockEntity(
+                    chemicalCapability,
+                    ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get(),
+                    (blockEntity, direction) -> blockEntity.getChemicalHandler(direction));
+        }
     }
 
     private static <T extends BlockEntity & WorldlyContainer> void registerContainerCapability(

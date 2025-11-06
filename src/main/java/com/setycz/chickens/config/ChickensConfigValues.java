@@ -25,6 +25,9 @@ public final class ChickensConfigValues {
     private final int avianFluidCapacity;
     private final int avianFluidTransferRate;
     private final boolean avianFluidEffectsEnabled;
+    private final int avianChemicalCapacity;
+    private final int avianChemicalTransferRate;
+    private final boolean avianChemicalEffectsEnabled;
     private final boolean liquidEggHazardsEnabled;
     private final boolean fluidChickensEnabled;
     private final boolean chemicalChickensEnabled;
@@ -37,6 +40,7 @@ public final class ChickensConfigValues {
             boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
             int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
             int avianFluidCapacity, int avianFluidTransferRate, boolean avianFluidEffectsEnabled,
+            int avianChemicalCapacity, int avianChemicalTransferRate, boolean avianChemicalEffectsEnabled,
             boolean liquidEggHazardsEnabled, boolean fluidChickensEnabled,
             boolean chemicalChickensEnabled, boolean gasChickensEnabled) {
         this.spawnProbability = spawnProbability;
@@ -56,6 +60,9 @@ public final class ChickensConfigValues {
         this.avianFluidCapacity = avianFluidCapacity;
         this.avianFluidTransferRate = avianFluidTransferRate;
         this.avianFluidEffectsEnabled = avianFluidEffectsEnabled;
+        this.avianChemicalCapacity = avianChemicalCapacity;
+        this.avianChemicalTransferRate = avianChemicalTransferRate;
+        this.avianChemicalEffectsEnabled = avianChemicalEffectsEnabled;
         this.liquidEggHazardsEnabled = liquidEggHazardsEnabled;
         this.fluidChickensEnabled = fluidChickensEnabled;
         this.chemicalChickensEnabled = chemicalChickensEnabled;
@@ -128,6 +135,18 @@ public final class ChickensConfigValues {
 
     public boolean isAvianFluidConverterEffectsEnabled() {
         return avianFluidEffectsEnabled;
+    }
+
+    public int getAvianChemicalConverterCapacity(int fallback) {
+        return avianChemicalCapacity > 0 ? avianChemicalCapacity : fallback;
+    }
+
+    public int getAvianChemicalConverterTransfer(int fallback) {
+        return avianChemicalTransferRate > 0 ? avianChemicalTransferRate : fallback;
+    }
+
+    public boolean isAvianChemicalConverterEffectsEnabled() {
+        return avianChemicalEffectsEnabled;
     }
 
     public boolean isLiquidEggHazardsEnabled() {

@@ -607,6 +607,11 @@ public final class ChickensDataLoader {
         int avianFluidTransfer = ensureNonNegative(props, "general.avianFluidConverterTransferRate",
                 readInt(props, "general.avianFluidConverterTransferRate", 2_000));
         boolean avianFluidEffects = readBoolean(props, "general.avianFluidConverterEffectsEnabled", true);
+        int avianChemicalCapacity = ensurePositive(props, "general.avianChemicalConverterCapacity",
+                readInt(props, "general.avianChemicalConverterCapacity", 8_000), 1);
+        int avianChemicalTransfer = ensureNonNegative(props, "general.avianChemicalConverterTransferRate",
+                readInt(props, "general.avianChemicalConverterTransferRate", 2_000));
+        boolean avianChemicalEffects = readBoolean(props, "general.avianChemicalConverterEffectsEnabled", true);
         boolean liquidEggHazards = readBoolean(props, "general.liquidEggHazardsEnabled", true);
         boolean fluidChickensEnabled = readBoolean(props, "general.enableFluidChickens", true);
         boolean chemicalChickensEnabled = readBoolean(props, "general.enableChemicalChickens", true);
@@ -614,7 +619,9 @@ public final class ChickensDataLoader {
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
                 roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
                 Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract,
-                avianFluidCapacity, avianFluidTransfer, avianFluidEffects, liquidEggHazards,
+                avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
+                avianChemicalCapacity, avianChemicalTransfer, avianChemicalEffects,
+                liquidEggHazards,
                 fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled);
     }
 
