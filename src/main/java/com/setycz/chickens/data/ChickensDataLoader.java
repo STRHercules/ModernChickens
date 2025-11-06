@@ -496,9 +496,11 @@ public final class ChickensDataLoader {
             return fallback.copy();
         }
 
-        if (stack.is(ModRegistry.LIQUID_EGG.get())) {
+        if (typeKey != null && isVariantEgg(stack)) {
             int defaultType = readDefaultType(fallback);
             int type = readItemType(props, itemKey, typeKey, defaultType);
+            // Preserve the variant id so dynamically generated eggs (liquid, chemical, gas)
+            // keep pointing at their registry entries when read from configuration.
             ChickenItemHelper.setChickenType(stack, type);
             props.setProperty(typeKey, Integer.toString(type));
         } else if (typeKey != null) {
@@ -511,7 +513,13 @@ public final class ChickensDataLoader {
     }
 
     private static int readDefaultType(ItemStack fallback) {
-        return fallback.is(ModRegistry.LIQUID_EGG.get()) ? ChickenItemHelper.getChickenType(fallback) : 0;
+        return isVariantEgg(fallback) ? ChickenItemHelper.getChickenType(fallback) : 0;
+    }
+
+    private static boolean isVariantEgg(ItemStack stack) {
+        return stack.is(ModRegistry.LIQUID_EGG.get())
+                || stack.is(ModRegistry.CHEMICAL_EGG.get())
+                || stack.is(ModRegistry.GAS_EGG.get());
     }
 
     private static String readItemId(Properties props, String itemKey, String defaultItemId) {

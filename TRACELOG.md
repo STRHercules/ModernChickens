@@ -740,3 +740,11 @@
   2. Localised the converter's tooltips, menu, and JEI copy while tagging the block as axe-mineable so every UI surface references the new machine correctly.
   3. Updated project suggestions, refreshed trace logs, and executed `./gradlew build` to confirm the expanded registry compiles and passes validation.
 - **Rationale**: Documenting the chemical converter alongside functional translations ensures players can discover and automate the new machine without guesswork while keeping repository guidance up to date.
+
+## Entry 92
+- **Prompt/Task**: Fix chemical egg variants so chemical chickens lay and render their proper eggs, repair the converter recipe, and refresh the flux egg visuals.
+- **Steps**:
+  1. Updated `ChickensDataLoader` to retain variant IDs for liquid, chemical, and gas eggs when applying configuration overrides, ensuring chemical chickens drop stacks tagged with their Mekanism entry.
+  2. Added the `data/chickens/tags/items/chemical_egg.json` helper so crafting ingredients can target any chemical egg item variant without listing individual IDs.
+  3. Swapped the flux egg model to the new `textures/item/flux_egg.png` while preserving the RF bar overlay, then confirmed the project still builds with `gradlew build`.
+- **Rationale**: Preserving egg metadata restores the intended coloured eggs, henhouse automation, and entity overlays for chemical chickens while keeping recipes and assets aligned with the latest art drop.
