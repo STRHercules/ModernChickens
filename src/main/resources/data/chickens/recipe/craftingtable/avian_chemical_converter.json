@@ -7,11 +7,11 @@
   ],
   "key": {
     "0": { "item": "minecraft:glass" },
-    "1": { "item": "chickens:chemical_egg" },
+    "1": { "tag": "chickens:chemical_egg" },
     "2": { "item": "minecraft:bucket" },
     "3": { "item": "chickens:collector" },
     "4": { "item": "minecraft:iron_block" },
-    "5": { "item": "chickens:gas_egg" }
+    "5": { "tag": "chickens:chemical_egg" }
   },
   "result": {
     "id": "chickens:avian_chemical_converter",
