@@ -5,6 +5,7 @@
 - Ship a small migration helper that purges legacy `layItemMeta=0` entries or rewrites them to the detected chicken id so existing `chickens.cfg` files stop overriding typed egg metadata on next launch.
 - Audit any remaining runtime recipe and loot registrations and migrate them to JSON data packs compatible with 1.21.1.
 - Surface a JEI entry for the Avian Dousing Machine that lists reagent costs and RF usage so players can confirm requirements without hovering over the GUI.
+- Add a lightweight automated regression that snapshots the dousing machine's NBT, reloads it, and asserts the RF buffer persists so future refactors cannot reintroduce zeroed energy.
 - Replace the temporary debug item with the real Chickens content and add automated tests (e.g., data generators or unit tests) to guard the future porting work.
 - Restore the bespoke behaviours for the analyzer, spawn egg, colored egg, and liquid egg items so the placeholders regain their legacy functionality.
 - Once the custom chicken entity is settled, wire up dedicated spawn placement registration and biome modifiers so natural spawning matches the original mod instead of relying solely on spawn eggs.

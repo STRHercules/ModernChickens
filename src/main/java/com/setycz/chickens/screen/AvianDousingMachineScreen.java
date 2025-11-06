@@ -253,26 +253,10 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
     }
 
     private int getDisplayedEnergy() {
-        return menu.getAccess().evaluate((level, pos) -> {
-            if (!level.isClientSide) {
-                var be = level.getBlockEntity(pos);
-                if (be instanceof AvianDousingMachineBlockEntity machine) {
-                    return machine.getEnergyStored();
-                }
-            }
-            return menu.getEnergyStored();
-        }, menu.getEnergyStored());
+        return menu.getEnergyStored();
     }
 
     private int getDisplayedCapacity() {
-        return menu.getAccess().evaluate((level, pos) -> {
-            if (!level.isClientSide) {
-                var be = level.getBlockEntity(pos);
-                if (be instanceof AvianDousingMachineBlockEntity machine) {
-                    return machine.getEnergyCapacity();
-                }
-            }
-            return menu.getEnergyCapacity();
-        }, menu.getEnergyCapacity());
+        return menu.getEnergyCapacity();
     }
 }

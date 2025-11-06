@@ -100,43 +100,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             markLiquidDirty();
         }
     };
-    private final EnergyStorage energyStorage = new EnergyStorage(ENERGY_CAPACITY, ENERGY_MAX_RECEIVE, 0) {
-        @Override
-        public int receiveEnergy(int amount, boolean simulate) {
-            int space = ENERGY_CAPACITY - energy;
-            if (space <= 0) {
-                return 0;
-            }
-            int accepted = Math.min(space, Math.min(amount, maxReceive));
-            if (accepted <= 0) {
-                return 0;
-            }
-            if (!simulate) {
-                energy += accepted;
-                markEnergyDirty();
-            }
-            return accepted;
-        }
-
-        @Override
-        public int extractEnergy(int amount, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public int getEnergyStored() {
-            return energy;
-        }
-
-        @Override
-        public int getMaxEnergyStored() {
-            return ENERGY_CAPACITY;
-        }
-    };
+    private final MachineEnergyStorage energyStorage = new MachineEnergyStorage();
 
     private final Map<Direction, Object> chemicalHandlers = new EnumMap<>(Direction.class);
 
-    private int energy;
     private int maxReceive = ENERGY_MAX_RECEIVE;
     private int chemicalAmount;
     @Nullable
@@ -231,10 +198,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private boolean hasResourcesFor(OperationPlan plan) {
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            return energy >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
+            return energyStorage.getEnergyStored() >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
         }
         if (plan.mode() == InfusionMode.LIQUID) {
-            return energy >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= LIQUID_COST;
+            return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= LIQUID_COST;
         }
         return false;
     }
@@ -259,7 +226,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
 
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            energy -= CHEMICAL_ENERGY_COST;
+            energyStorage.extractEnergy(CHEMICAL_ENERGY_COST, false);
             chemicalAmount -= CHEMICAL_COST;
             if (chemicalAmount <= 0) {
                 clearChemical();
@@ -267,7 +234,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             invalidateChemicalHandlers();
             markChemicalDirty();
         } else if (plan.mode() == InfusionMode.LIQUID) {
-            energy -= LIQUID_ENERGY_COST;
+            energyStorage.extractEnergy(LIQUID_ENERGY_COST, false);
             liquidTank.drain(LIQUID_COST, IFluidHandler.FluidAction.EXECUTE);
         }
 
@@ -324,12 +291,12 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private boolean pullEnergyFromNeighbors(Level level) {
-        if (energy >= ENERGY_CAPACITY) {
+        if (energyStorage.getEnergyStored() >= ENERGY_CAPACITY) {
             return false;
         }
         boolean changed = false;
         for (Direction direction : Direction.values()) {
-            if (energy >= ENERGY_CAPACITY) {
+            if (energyStorage.getEnergyStored() >= ENERGY_CAPACITY) {
                 break;
             }
             IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
@@ -337,7 +304,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (neighbor == null) {
                 continue;
             }
-            int space = Math.min(maxReceive, ENERGY_CAPACITY - energy);
+            int space = Math.min(maxReceive, ENERGY_CAPACITY - energyStorage.getEnergyStored());
             if (space <= 0) {
                 break;
             }
@@ -354,7 +321,6 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 continue;
             }
             energyStorage.receiveEnergy(drained, false);
-            markEnergyDirty();
             changed = true;
         }
         return changed;
@@ -496,7 +462,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     public int getEnergyStored() {
-        return energy;
+        return energyStorage.getEnergyStored();
     }
 
     public int getEnergyCapacity() {
@@ -543,7 +509,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (ENERGY_CAPACITY <= 0) {
             return 0;
         }
-        return Math.round(15.0F * energy / (float) ENERGY_CAPACITY);
+        return Math.round(15.0F * energyStorage.getEnergyStored() / (float) ENERGY_CAPACITY);
     }
 
     @Override
@@ -577,7 +543,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         ContainerHelper.saveAllItems(tag, items, provider);
-        tag.putInt("Energy", energy);
+        tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("Progress", progress);
         tag.putString("Mode", mode.name());
 
@@ -602,7 +568,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
-        energy = Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY);
+        energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY));
         progress = Mth.clamp(tag.getInt("Progress"), 0, MAX_PROGRESS);
         mode = parseMode(tag.getString("Mode"));
 
@@ -944,6 +910,40 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 }
                 return MekanismChemicalHelper.emptyStack();
             }
+        }
+    }
+
+    private final class MachineEnergyStorage extends EnergyStorage {
+        MachineEnergyStorage() {
+            super(ENERGY_CAPACITY, ENERGY_MAX_RECEIVE, 0);
+        }
+
+        @Override
+        public int receiveEnergy(int amount, boolean simulate) {
+            if (AvianDousingMachineBlockEntity.this.maxReceive <= 0) {
+                return 0;
+            }
+            int previousMax = this.maxReceive;
+            this.maxReceive = AvianDousingMachineBlockEntity.this.maxReceive;
+            int received = super.receiveEnergy(amount, simulate);
+            this.maxReceive = previousMax;
+            if (received > 0 && !simulate) {
+                markEnergyDirty();
+            }
+            return received;
+        }
+
+        @Override
+        public int extractEnergy(int amount, boolean simulate) {
+            int extracted = super.extractEnergy(amount, simulate);
+            if (extracted > 0 && !simulate) {
+                markEnergyDirty();
+            }
+            return extracted;
+        }
+
+        void setEnergy(int energy) {
+            this.energy = Mth.clamp(energy, 0, getMaxEnergyStored());
         }
     }
 }

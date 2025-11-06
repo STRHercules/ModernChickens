@@ -821,5 +821,14 @@
 - **Steps**:
   1. Raised the GUI battery calculation to use floating-point scaling so even small charge levels render at least one pixel, mirroring the flux converter's behaviour.
   2. Added a dedicated WTHIT provider that streams the dousing machine's stored RF, letting the overlay reuse the existing energy tooltip string.
-  3. Ran `.\gradlew.bat build` to confirm the synchronization tweaks compile.
+  3. Simplified the screen's energy accessor to rely exclusively on the menu's synced counters so container data drives every client render tick.
+  4. Ran `.\gradlew.bat build` to confirm the synchronization tweaks compile.
 - **Rationale**: Matching the flux converter tooling ensures players can verify at a glance that the douser has power, both in the GUI and through HUD overlays.
+
+## Entry 101
+- **Prompt/Task**: Dousing Machine RF buffer still fails to persist across reloads and never surfaces in WTHIT/GUI.
+- **Steps**:
+  1. Replaced the ad-hoc integer tracking with a dedicated `MachineEnergyStorage` wrapper so all energy mutations funnel through a single source of truth.
+  2. Taught the storage to clamp against the configurable receive limit, fire `markEnergyDirty()` on both inserts and extracts, and expose a setter for NBT hydration so save/load keeps the internal counter aligned.
+  3. Updated dousing logic to consult the new storage for resource checks, progress costs, comparator output, and neighbour pulls before validating via `.\gradlew.bat build`.
+- **Rationale**: Centralising charge management prevents the buffer from resetting to zero after world saves and guarantees every client sync path (menu, WTHIT, block updates) reads the same persisted energy total.
