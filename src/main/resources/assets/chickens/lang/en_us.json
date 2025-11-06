@@ -38,7 +38,7 @@
   "item.chickens.flux_egg.tooltip": "Stores %s / %s RF.",
   "item.chickens.analyzer": "Chicken Analyzer",
   "item.chickens.analyzer.tooltip1": "Use it on chickens to determine their stats.",
-  "item.chickens.analyzer.tooltip2": "- \"Which day of the week do chickens hate most? Fry-day!\"",
+  "item.chickens.analyzer.tooltip2": "- \"Can be turned always on in the config!\"",
   "item.chickens.chicken": "Chicken",
   "item.chickens.chicken.type": "Type: %s",
   "item.chickens.chicken.stats": "Stats: Gain %s / Growth %s / Strength %s",
