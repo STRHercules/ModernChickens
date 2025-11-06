@@ -1,8 +1,10 @@
 # Suggestions
 
+- Add tiered upgrades for the Avian Dousing Machine (e.g., faster infusion, extra buffer capacity, recipe selection UI) so mid-to-late game automation feels more rewarding than the baseline machine.
 - Flesh out the placeholder registry scaffolding by porting entity, block, GUI, and integration classes from the legacy project using the new NeoForge data-driven patterns.
 - Ship a small migration helper that purges legacy `layItemMeta=0` entries or rewrites them to the detected chicken id so existing `chickens.cfg` files stop overriding typed egg metadata on next launch.
 - Audit any remaining runtime recipe and loot registrations and migrate them to JSON data packs compatible with 1.21.1.
+- Surface a JEI entry for the Avian Dousing Machine that lists reagent costs and RF usage so players can confirm requirements without hovering over the GUI.
 - Replace the temporary debug item with the real Chickens content and add automated tests (e.g., data generators or unit tests) to guard the future porting work.
 - Restore the bespoke behaviours for the analyzer, spawn egg, colored egg, and liquid egg items so the placeholders regain their legacy functionality.
 - Once the custom chicken entity is settled, wire up dedicated spawn placement registration and biome modifiers so natural spawning matches the original mod instead of relying solely on spawn eggs.
@@ -76,3 +78,4 @@
 
 - Add an in-game advancement hint that highlights dye-and-egg crafting for colour chickens so players discover the mechanic without consulting external guides.
 - Surface the new natural spawn override as per-chicken configuration so datapacks or `chickens.cfg` entries can opt additional breeds into forced spawning without requiring code updates.
+- Surface a Jade/TOP overlay for the Avian Dousing Machine that reports its stored RF, reagent levels, and per-infusion costs so automation builders can confirm resource readiness without opening the GUI.

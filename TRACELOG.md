@@ -780,3 +780,46 @@
   2. Normalised both the modern and legacy keys to treat `0` as "use the default chicken id" when a non-zero default exists, ensuring chickens retain their dynamically assigned chemical ids.
   3. Rebuilt the project with `.\gradlew.bat build` to confirm the fix compiles cleanly.
 - **Rationale**: Harmonising the sentinel handling across legacy and modern config keys keeps chemical chicken drops stable even if older config files still contain zeroed type fields.
+
+## Entry 97
+- **Prompt/Task**: Add an Avian Dousing Machine that converts Smart Chickens into chemical/liquid spawn eggs while keeping chemical and liquid breeds unbreedable.
+- **Steps**:
+  1. Implemented the Avian Dousing Machine block, block entity, menu, and screen with 1M RF, 100 bucket liquid/chemical buffers, Smart Chicken infusion logic, sided automation hooks, and Mekanism/NeoForge capability exposure.
+  2. Registered the new content across registries and data: block/item definitions, block entity, menu type, screen binding, capability wiring, blockstate/models/loot/recipe assets, localisation strings, creative tab inclusion, and mineable tags.
+  3. Updated dynamic chemical and liquid chicken generation to strip parent assignments, documented follow-up upgrade ideas in `SUGGESTIONS.md`, and validated the build via `.\gradlew.bat build`.
+- **Rationale**: Delivering the dedicated dousing machine gives players a deterministic late-game path to chemical and liquid chickens while enforcing the design requirement that those breeds originate exclusively from resource infusion instead of breeding chains.
+
+## Entry 98
+- **Prompt/Task**: The Avian Dousing Machine UI does not display reagent names, shows stray coloured pixels, and appears to ignore incoming RF.
+- **Steps**:
+  1. Restricted the liquid tank to a single fluid type so buffers cannot mix, keeping stored reagents stable for automation and progress calculations.
+  2. Reworked the screen rendering: bars now tint themselves with the active chemical or fluid colour, hover tooltips include the reagent display name, and the off-texture “readiness” overlay was removed to eliminate the floating magenta/blue artefacts.
+  3. Added localisation for empty buffers and reconfirmed the project builds with `.\gradlew.bat build`.
+  4. Added an active RF pull pass so the douser will siphon power from adjacent energy stores each tick, ensuring it charges even when neighbours expect consumers to request energy.
+  5. Synced the container data slot caching so the client energy gauge updates with every RF transfer, keeping the GUI in step with the internal buffer.
+  6. Mirrored the Avian Flux Converter’s 32-bit energy DataSlot wiring and taught the menu to read directly from the synced block entity so the RF buffer displays in real time on the client.
+  7. Enabled block entity data packets for the douser so the client copy of the machine stays aligned with the server-side energy buffer even outside the container.
+  8. Synced the menu getters with the refreshed client block entity so the RF tooltip now reflects live energy levels while the screen is open.
+  9. Queried the block entity directly from the screen each frame so the energy bar reflects the live client-side state even if menu synchronisation lags behind.
+- **Rationale**: Clear, accurate GUI feedback lets players confirm the douser is holding the intended resource and accumulating power before committing Smart Chickens, while the cleaned-up texture removes distracting artefacts during gameplay.
+
+
+
+
+
+
+## Entry 99
+- **Prompt/Task**: Dousing machine takes power but does not display it in the GUI at all.
+- **Steps**:
+  1. Updated `AvianDousingMachineMenu#getEnergyStored` and `#getEnergyCapacity` to reuse the synced client counters instead of reading the unsynchronised block entity on the client.
+  2. Taught `AvianDousingMachineScreen` to default to the menu's RF values on the client so the energy bar and tooltip stay aligned with the container data even when the local block entity lags.
+  3. Ran `.\gradlew.bat build` to verify the synchronisation fix compiles cleanly.
+- **Rationale**: Aligning the douser UI with the synced menu data restores the RF bar and tooltip, matching the Avian Flux Converter's behaviour so players can confirm the machine is charged.
+
+## Entry 100
+- **Prompt/Task**: The Avian Dousing Machine RF gauge is not displaying stored power and WTHIT lacks the energy readout.
+- **Steps**:
+  1. Raised the GUI battery calculation to use floating-point scaling so even small charge levels render at least one pixel, mirroring the flux converter's behaviour.
+  2. Added a dedicated WTHIT provider that streams the dousing machine's stored RF, letting the overlay reuse the existing energy tooltip string.
+  3. Ran `.\gradlew.bat build` to confirm the synchronization tweaks compile.
+- **Rationale**: Matching the flux converter tooling ensures players can verify at a glance that the douser has power, both in the GUI and through HUD overlays.

@@ -19,6 +19,7 @@ import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.registry.ModMenuTypes;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.screen.AvianChemicalConverterScreen;
+import com.setycz.chickens.screen.AvianDousingMachineScreen;
 import com.setycz.chickens.screen.AvianFluxConverterScreen;
 import com.setycz.chickens.screen.AvianFluidConverterScreen;
 import com.setycz.chickens.screen.BreederScreen;
@@ -83,6 +84,7 @@ public final class ChickensClient {
         event.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
         event.register(ModMenuTypes.AVIAN_FLUID_CONVERTER.get(), AvianFluidConverterScreen::new);
         event.register(ModMenuTypes.AVIAN_CHEMICAL_CONVERTER.get(), AvianChemicalConverterScreen::new);
+        event.register(ModMenuTypes.AVIAN_DOUSING_MACHINE.get(), AvianDousingMachineScreen::new);
     }
 
     @SubscribeEvent

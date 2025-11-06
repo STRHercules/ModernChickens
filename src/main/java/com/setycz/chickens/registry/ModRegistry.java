@@ -10,6 +10,7 @@ import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.block.AvianChemicalConverterBlock;
 import com.setycz.chickens.block.AvianFluxConverterBlock;
+import com.setycz.chickens.block.AvianDousingMachineBlock;
 import com.setycz.chickens.block.AvianFluidConverterBlock;
 import com.setycz.chickens.block.BreederBlock;
 import com.setycz.chickens.block.CollectorBlock;
@@ -85,6 +86,8 @@ public final class ModRegistry {
     public static final DeferredBlock<AvianFluxConverterBlock> AVIAN_FLUX_CONVERTER = BLOCKS.register("avian_flux_converter", () -> new AvianFluxConverterBlock());
     public static final DeferredBlock<AvianFluidConverterBlock> AVIAN_FLUID_CONVERTER = BLOCKS.register("avian_fluid_converter", () -> new AvianFluidConverterBlock());
     public static final DeferredBlock<AvianChemicalConverterBlock> AVIAN_CHEMICAL_CONVERTER = BLOCKS.register("avian_chemical_converter", () -> new AvianChemicalConverterBlock());
+    public static final DeferredBlock<AvianDousingMachineBlock> AVIAN_DOUSING_MACHINE = BLOCKS.register("avian_dousing_machine",
+            () -> new AvianDousingMachineBlock());
     // Register the henhouse block and its item form so players can place the storage structure.
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
@@ -114,6 +117,8 @@ public final class ModRegistry {
             () -> new BlockItem(AVIAN_FLUID_CONVERTER.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> AVIAN_CHEMICAL_CONVERTER_ITEM = ITEMS.register("avian_chemical_converter",
             () -> new BlockItem(AVIAN_CHEMICAL_CONVERTER.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> AVIAN_DOUSING_MACHINE_ITEM = ITEMS.register("avian_dousing_machine",
+            () -> new BlockItem(AVIAN_DOUSING_MACHINE.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
@@ -152,6 +157,7 @@ public final class ModRegistry {
             event.accept(AVIAN_FLUX_CONVERTER_ITEM.get());
             event.accept(AVIAN_FLUID_CONVERTER_ITEM.get());
             event.accept(AVIAN_CHEMICAL_CONVERTER_ITEM.get());
+            event.accept(AVIAN_DOUSING_MACHINE_ITEM.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(FLUX_EGG.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {

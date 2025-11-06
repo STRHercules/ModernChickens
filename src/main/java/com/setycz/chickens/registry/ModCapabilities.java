@@ -38,14 +38,23 @@ public final class ModCapabilities {
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUX_CONVERTER.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUID_CONVERTER.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get());
+        registerContainerCapability(event, ModBlockEntities.AVIAN_DOUSING_MACHINE.get());
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.AVIAN_FLUX_CONVERTER.get(),
                 (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
         event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.AVIAN_DOUSING_MACHINE.get(),
+                (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
+        event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ModBlockEntities.AVIAN_FLUID_CONVERTER.get(),
+                (blockEntity, direction) -> blockEntity.getFluidTank(direction));
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.AVIAN_DOUSING_MACHINE.get(),
                 (blockEntity, direction) -> blockEntity.getFluidTank(direction));
 
         var chemicalCapability = MekanismChemicalHelper.getChemicalBlockCapability();
@@ -53,6 +62,10 @@ public final class ModCapabilities {
             event.registerBlockEntity(
                     chemicalCapability,
                     ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get(),
+                    (blockEntity, direction) -> blockEntity.getChemicalHandler(direction));
+            event.registerBlockEntity(
+                    chemicalCapability,
+                    ModBlockEntities.AVIAN_DOUSING_MACHINE.get(),
                     (blockEntity, direction) -> blockEntity.getChemicalHandler(direction));
         }
     }

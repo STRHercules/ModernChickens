@@ -8,7 +8,6 @@ import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.item.ChemicalEggItem;
-import com.setycz.chickens.LiquidEggRegistryItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -57,10 +56,6 @@ final class DynamicChemicalChickens {
                                             Map<String, ChickensRegistryItem> byName,
                                             boolean registerImmediately) {
         Set<Integer> usedIds = collectUsedIds(collector, byName);
-        ChickensRegistryItem smartChicken = byName.get("smartchicken");
-        ChickensRegistryItem waterChicken = byName.get("waterchicken");
-        ChickensRegistryItem lavaChicken = byName.get("lavachicken");
-
         int created = 0;
         Set<String> registeredKeys = new HashSet<>();
         for (ChemicalEggRegistryItem entry : ChemicalEggRegistry.getAll()) {
@@ -93,12 +88,7 @@ final class DynamicChemicalChickens {
             chicken.setGeneratedTexture(true);
             chicken.setSpawnType(SpawnType.NONE);
             chicken.setDisplayName(buildDisplayName(entry));
-
-            ChickensRegistryItem parentA = choosePrimaryParent(entry, waterChicken, lavaChicken);
-            ChickensRegistryItem parentB = smartChicken != null ? smartChicken : parentA;
-            if (parentA != null && parentB != null) {
-                chicken.setParentsNew(parentA, parentB);
-            }
+            chicken.setNoParents();
 
             byName.put(nameKey, chicken);
             if (collector != null) {
@@ -161,16 +151,6 @@ final class DynamicChemicalChickens {
 
     private static Component buildDisplayName(ChemicalEggRegistryItem entry) {
         return entry.getDisplayName().copy().append(Component.literal(" Chicken"));
-    }
-
-    @Nullable
-    private static ChickensRegistryItem choosePrimaryParent(ChemicalEggRegistryItem entry,
-                                                            @Nullable ChickensRegistryItem waterChicken,
-                                                            @Nullable ChickensRegistryItem lavaChicken) {
-        if (entry.hasHazard(LiquidEggRegistryItem.HazardFlag.HOT) && lavaChicken != null) {
-            return lavaChicken;
-        }
-        return waterChicken != null ? waterChicken : lavaChicken;
     }
 
     private static int allocateId(ResourceLocation chemicalId, Set<Integer> usedIds) {

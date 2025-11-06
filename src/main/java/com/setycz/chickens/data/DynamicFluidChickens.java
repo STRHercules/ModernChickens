@@ -54,10 +54,6 @@ final class DynamicFluidChickens {
                                             Map<String, ChickensRegistryItem> byName,
                                             boolean registerImmediately) {
         Set<Integer> usedIds = collectUsedIds(collector, byName);
-        ChickensRegistryItem smartChicken = byName.get("smartchicken");
-        ChickensRegistryItem waterChicken = byName.get("waterchicken");
-        ChickensRegistryItem lavaChicken = byName.get("lavachicken");
-
         int created = 0;
         Set<String> registeredKeys = new HashSet<>();
         for (LiquidEggRegistryItem entry : LiquidEggRegistry.getAll()) {
@@ -95,12 +91,7 @@ final class DynamicFluidChickens {
             chicken.setGeneratedTexture(true);
             chicken.setSpawnType(SpawnType.NONE);
             chicken.setDisplayName(buildDisplayName(entry));
-
-            ChickensRegistryItem parentA = choosePrimaryParent(entry, waterChicken, lavaChicken);
-            ChickensRegistryItem parentB = smartChicken != null ? smartChicken : parentA;
-            if (parentA != null && parentB != null) {
-                chicken.setParentsNew(parentA, parentB);
-            }
+            chicken.setNoParents();
 
             byName.put(nameKey, chicken);
             if (collector != null) {
@@ -164,16 +155,6 @@ final class DynamicFluidChickens {
     private static Component buildDisplayName(LiquidEggRegistryItem entry) {
         Component fluidName = entry.getDisplayName();
         return fluidName.copy().append(Component.literal(" Chicken"));
-    }
-
-    @Nullable
-    private static ChickensRegistryItem choosePrimaryParent(LiquidEggRegistryItem entry,
-                                                            @Nullable ChickensRegistryItem waterChicken,
-                                                            @Nullable ChickensRegistryItem lavaChicken) {
-        if (entry.hasHazard(LiquidEggRegistryItem.HazardFlag.HOT) && lavaChicken != null) {
-            return lavaChicken;
-        }
-        return waterChicken;
     }
 
     private static int allocateId(ResourceLocation fluidId, Set<Integer> usedIds) {
