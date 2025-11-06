@@ -12,6 +12,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Variant of the vanilla thrown egg that spawns the chicken type encoded in the
@@ -75,13 +78,18 @@ public class ColoredEgg extends ThrownEgg {
     }
 
     @Override
-    protected void onHitEntity(net.minecraft.world.phys.EntityHitResult result) {
+    protected void onHitEntity(EntityHitResult result) {
         result.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
     }
 
     @Override
-    protected void onHit(net.minecraft.world.phys.HitResult result) {
-        super.onHit(result);
+    protected void onHit(HitResult result) {
+        HitResult.Type type = result.getType();
+        if (type == HitResult.Type.BLOCK && result instanceof BlockHitResult blockHit) {
+            this.onHitBlock(blockHit);
+        } else if (type == HitResult.Type.ENTITY && result instanceof EntityHitResult entityHit) {
+            this.onHitEntity(entityHit);
+        }
         if (!this.level().isClientSide) {
             if (this.random.nextInt(8) == 0) {
                 int count = 1;

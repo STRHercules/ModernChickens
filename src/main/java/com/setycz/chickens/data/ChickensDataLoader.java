@@ -496,13 +496,13 @@ public final class ChickensDataLoader {
             return fallback.copy();
         }
 
-        if (typeKey != null && isVariantEgg(stack)) {
+        if (requiresChickenType(stack)) {
             int defaultType = readDefaultType(fallback);
-            int type = readItemType(props, itemKey, typeKey, defaultType);
-            // Preserve the variant id so dynamically generated eggs (liquid, chemical, gas)
-            // keep pointing at their registry entries when read from configuration.
+            int type = typeKey != null ? readItemType(props, itemKey, typeKey, defaultType) : defaultType;
             ChickenItemHelper.setChickenType(stack, type);
-            props.setProperty(typeKey, Integer.toString(type));
+            if (typeKey != null) {
+                props.setProperty(typeKey, Integer.toString(type));
+            }
         } else if (typeKey != null) {
             props.remove(typeKey);
         }
@@ -513,13 +513,20 @@ public final class ChickensDataLoader {
     }
 
     private static int readDefaultType(ItemStack fallback) {
-        return isVariantEgg(fallback) ? ChickenItemHelper.getChickenType(fallback) : 0;
+        return requiresChickenType(fallback) ? ChickenItemHelper.getChickenType(fallback) : 0;
     }
 
-    private static boolean isVariantEgg(ItemStack stack) {
-        return stack.is(ModRegistry.LIQUID_EGG.get())
-                || stack.is(ModRegistry.CHEMICAL_EGG.get())
-                || stack.is(ModRegistry.GAS_EGG.get());
+    private static boolean requiresChickenType(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        Item item = stack.getItem();
+        return item == ModRegistry.LIQUID_EGG.get()
+                || item == ModRegistry.CHEMICAL_EGG.get()
+                || item == ModRegistry.GAS_EGG.get()
+                || item == ModRegistry.COLORED_EGG.get()
+                || item == ModRegistry.SPAWN_EGG.get()
+                || item == ModRegistry.CHICKEN_ITEM.get();
     }
 
     private static String readItemId(Properties props, String itemKey, String defaultItemId) {

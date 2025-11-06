@@ -85,19 +85,22 @@ public final class DefaultChickens {
         ChickensRegistryItem flintChicken = new ChickensRegistryItem(
                 101, "FlintChicken", texture("FlintChicken"),
                 new ItemStack(Items.FLINT),
-                0x6b6b47, 0xa3a375);
+                0x6b6b47, 0xa3a375)
+                .allowNaturalSpawn();
         chickens.add(flintChicken);
 
         ChickensRegistryItem quartzChicken = new ChickensRegistryItem(
                 104, "QuartzChicken", texture("QuartzChicken"),
                 new ItemStack(Items.QUARTZ),
-                0x4d0000, 0x1a0000).setSpawnType(SpawnType.HELL);
+                0x4d0000, 0x1a0000).setSpawnType(SpawnType.HELL)
+                .allowNaturalSpawn();
         chickens.add(quartzChicken);
 
         ChickensRegistryItem logChicken = new ChickensRegistryItem(
                 108, "LogChicken", texture("LogChicken"),
                 new ItemStack(Blocks.OAK_LOG),
-                0x98846d, 0x528358);
+                0x98846d, 0x528358)
+                .allowNaturalSpawn();
         chickens.add(logChicken);
 
         ChickensRegistryItem sandChicken = new ChickensRegistryItem(
@@ -125,7 +128,8 @@ public final class DefaultChickens {
                 100, "GunpowderChicken", texture("GunpowderChicken"),
                 new ItemStack(Items.GUNPOWDER),
                 0x999999, 0x404040,
-                sandChicken, flintChicken);
+                sandChicken, flintChicken)
+                .allowNaturalSpawn();
         chickens.add(gunpowderChicken);
 
         ChickensRegistryItem redstoneChicken = new ChickensRegistryItem(
@@ -184,7 +188,8 @@ public final class DefaultChickens {
                 102, "SnowballChicken", texture("SnowballChicken"),
                 new ItemStack(Items.SNOWBALL),
                 0x33bbff, 0x0088cc,
-                blueChicken, logChicken).setSpawnType(SpawnType.SNOW);
+                blueChicken, logChicken).setSpawnType(SpawnType.SNOW)
+                .allowNaturalSpawn();
         chickens.add(snowballChicken);
 
         LiquidEggRegistryItem waterLiquid = LiquidEggRegistry.findById(0);
@@ -209,7 +214,8 @@ public final class DefaultChickens {
                 // The lava variant uses the second registered liquid id.
                 lavaEgg,
                 0xcc3300, 0xffff00,
-                coalChicken, quartzChicken).setSpawnType(SpawnType.HELL);
+                coalChicken, quartzChicken).setSpawnType(SpawnType.HELL)
+                .allowNaturalSpawn();
         chickens.add(lavaChicken);
 
         ChickensRegistryItem clayChicken = new ChickensRegistryItem(

@@ -28,6 +28,7 @@
 - Add a Gradle validation step that warns when the legacy Roost texture folder is absent so developers notice missing art before packaging builds.
 - Automate the chicken item model overrides from the registry so future breeds stay sorted without manual JSON edits.
 - Expand the catcher recipe to accept shared egg/feather tags when Forge publishes them, preserving the old ore dictionary flexibility for modpack integrations.
+- Add shapeless recipe variants that accept Forge dye tags for base chickens so modpacks with alternative dye items still unlock early progression without manual datapack edits.
 - Add an in-game reload command for `chickens_custom.json` so dedicated servers can iterate on bespoke breeds without restarting between tweaks.
 - Publish a JSON Schema for `chickens_custom.json` so pack makers can validate entries in their editors and avoid typos before launching the game.
 - Teach the custom chicken loader to recognise friendly spawn-type aliases (e.g., `nether`) so legacy configs port cleanly without forcing manual enum renames.
@@ -71,4 +72,6 @@
 - Expose client-side controls for the liquid overlay (opacity, scroll speed, optional disable) so accessibility-focused packs and resource pack authors can tune the new animation without editing code.
 - Add a Mekanism-focused tooltip or JEI info page that outlines how the Avian Chemical Converter routes chemical and gas outputs, so players understand side configuration and transfer rates at a glance.
 - Surface a startup warning or diagnostics command when the Mekanism reflection bridge fails (e.g., future method renames) so pack makers notice registries that could not initialise instead of silently losing chemical/gas chickens.
-- Generate chemical and gas egg item tags during data generation so newly discovered variants automatically feed converter recipes without hand-maintaining the static tag file.
+
+- Add an in-game advancement hint that highlights dye-and-egg crafting for colour chickens so players discover the mechanic without consulting external guides.
+- Surface the new natural spawn override as per-chicken configuration so datapacks or `chickens.cfg` entries can opt additional breeds into forced spawning without requiring code updates.

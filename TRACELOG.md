@@ -742,9 +742,25 @@
 - **Rationale**: Documenting the chemical converter alongside functional translations ensures players can discover and automate the new machine without guesswork while keeping repository guidance up to date.
 
 ## Entry 92
-- **Prompt/Task**: Fix chemical egg variants so chemical chickens lay and render their proper eggs, repair the converter recipe, and refresh the flux egg visuals.
+- **Prompt/Task**: there is no crafting recipe for yellow, red, white, or blue chickens
 - **Steps**:
-  1. Updated `ChickensDataLoader` to retain variant IDs for liquid, chemical, and gas eggs when applying configuration overrides, ensuring chemical chickens drop stacks tagged with their Mekanism entry.
-  2. Added the `data/chickens/tags/items/chemical_egg.json` helper so crafting ingredients can target any chemical egg item variant without listing individual IDs.
-  3. Swapped the flux egg model to the new `textures/item/flux_egg.png` while preserving the RF bar overlay, then confirmed the project still builds with `gradlew build`.
-- **Rationale**: Preserving egg metadata restores the intended coloured eggs, henhouse automation, and entity overlays for chemical chickens while keeping recipes and assets aligned with the latest art drop.
+  1. Added shapeless crafting recipes that pair eggs with the matching vanilla dye to recreate the legacy coloured chicken egg unlocks for the four base breeds.
+  2. Embedded chicken ids into each recipe result via the new data component format so coloured eggs spawn the intended breed immediately and render with the correct custom model.
+  3. Updated repository suggestions to note future tag support for dye inputs and prepared the build for validation.
+- **Rationale**: Restoring dye-and-egg crafting restores the early-game path to white, yellow, red, and blue chickens, letting players bootstrap breeding without waiting on random world spawns while keeping visuals and metadata in sync with the modern item system.
+
+## Entry 93
+- **Prompt/Task**: Ensure that all 'dye' or color chickens have funcitoning crafting or breeding recipes
+- **Steps**:
+  1. Mirrored the existing dye-and-egg shapeless recipe pattern for the remaining base colours, producing `green_chicken.json` and `black_chicken.json` so both dyes now unlock their chickens directly.
+  2. Set each recipe's `ChickenType` and `minecraft:custom_model_data` identifiers to the corresponding dye ids to guarantee the crafted coloured eggs spawn and render as the intended breeds immediately.
+  3. Refreshed repository suggestions and prepared to validate the updated data pack.
+- **Rationale**: Filling in the missing dye chicken recipes restores parity across the colour set, ensuring every base dye chicken can be crafted without waiting on random world spawns or undiscoverable breeding chains.
+
+## Entry 94
+- **Prompt/Task**: Chemical chickens lay base eggs, certain core chickens are missing from natural spawns, and coloured eggs sometimes spawn vanilla chickens.
+- **Steps**:
+  1. Extended the configuration stack reader to detect chicken-typed items (liquid, chemical, gas, spawn, coloured, and chicken-in-a-item) so overrides keep their `ChickenType` metadata and chemical eggs retain their variant identity.
+  2. Added a natural spawn override flag to `ChickensRegistryItem` and enabled it for the Flint, Snowball, Gunpowder, Quartz, Lava, and Log chickens so they spawn in their intended dimensions even when assigned parents.
+  3. Replaced the vanilla `ThrownEgg` impact path with custom handling that preserves encoded chicken ids, preventing coloured eggs from producing vanilla chickens, and verified the changes with `./gradlew build`.
+- **Rationale**: Preserving typed egg metadata, restoring critical natural spawns, and eliminating vanilla egg fallbacks keeps Mekanism chemical chickens functional while ensuring core progression breeds remain discoverable and coloured eggs stay consistent.
