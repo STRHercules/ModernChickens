@@ -226,7 +226,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
 
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            energyStorage.extractEnergy(CHEMICAL_ENERGY_COST, false);
+            if (!energyStorage.consumeEnergy(CHEMICAL_ENERGY_COST)) {
+                return;
+            }
             chemicalAmount -= CHEMICAL_COST;
             if (chemicalAmount <= 0) {
                 clearChemical();
@@ -234,7 +236,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             invalidateChemicalHandlers();
             markChemicalDirty();
         } else if (plan.mode() == InfusionMode.LIQUID) {
-            energyStorage.extractEnergy(LIQUID_ENERGY_COST, false);
+            if (!energyStorage.consumeEnergy(LIQUID_ENERGY_COST)) {
+                return;
+            }
             liquidTank.drain(LIQUID_COST, IFluidHandler.FluidAction.EXECUTE);
         }
 
@@ -944,6 +948,18 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
         void setEnergy(int energy) {
             this.energy = Mth.clamp(energy, 0, getMaxEnergyStored());
+        }
+
+        boolean consumeEnergy(int amount) {
+            if (amount <= 0) {
+                return true;
+            }
+            if (this.energy < amount) {
+                return false;
+            }
+            this.energy -= amount;
+            markEnergyDirty();
+            return true;
         }
     }
 }

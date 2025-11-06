@@ -36,6 +36,8 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
     private static final int PROGRESS_HEIGHT = 13;
     private static final int BAR_TEXTURE_X = 195;
     private static final int BAR_TEXTURE_Y = 0;
+    private static final int ENERGY_TEXTURE_X = 208;
+    private static final int ENERGY_TEXTURE_Y = 0;
     private static final int TEXTURE_SIZE = 256;
 
     public AvianDousingMachineScreen(AvianDousingMachineMenu menu, Inventory inventory, Component title) {
@@ -152,8 +154,8 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         graphics.blit(GUI_TEXTURE,
                 originX + ENERGY_BAR_X,
                 originY + ENERGY_BAR_Y + offset,
-                BAR_TEXTURE_X,
-                BAR_TEXTURE_Y + offset,
+                ENERGY_TEXTURE_X,
+                ENERGY_TEXTURE_Y + offset,
                 BAR_WIDTH,
                 filled,
                 TEXTURE_SIZE,

@@ -75,8 +75,8 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.clientChemicalEntryId = machine.getChemicalEntryId();
         this.clientMode = machine.getMode();
 
-        this.addSlot(new SmartChickenSlot(machine, 0, 49, 34));
-        this.addSlot(new OutputSlot(machine, 1, 115, 34));
+        this.addSlot(new SmartChickenSlot(machine, 0, 50, 35));
+        this.addSlot(new OutputSlot(machine, 1, 116, 35));
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {

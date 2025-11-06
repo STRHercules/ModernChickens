@@ -832,3 +832,11 @@
   2. Taught the storage to clamp against the configurable receive limit, fire `markEnergyDirty()` on both inserts and extracts, and expose a setter for NBT hydration so save/load keeps the internal counter aligned.
   3. Updated dousing logic to consult the new storage for resource checks, progress costs, comparator output, and neighbour pulls before validating via `.\gradlew.bat build`.
 - **Rationale**: Centralising charge management prevents the buffer from resetting to zero after world saves and guarantees every client sync path (menu, WTHIT, block updates) reads the same persisted energy total.
+
+## Entry 102
+- **Prompt/Task**: Chemical infusion should drain RF along with reagents, and the GUI needs the refreshed energy bar art and slot layout.
+- **Steps**:
+  1. Added an internal `consumeEnergy` helper to the douser's storage and routed chemical/liquid crafting through it so RF is spent exactly once per spawn egg.
+  2. Pointed the screen at the new RF gauge texture slice and nudged the Smart Chicken and output slots to the requested coordinates to align with the updated artwork.
+  3. Ran .\gradlew.bat build to verify the refactor compiles cleanly.
+- **Rationale**: Spending RF via the wrapped storage keeps the persisted buffer accurate while the UI tweaks mirror the revised art, preventing visual desyncs during automation builds.
