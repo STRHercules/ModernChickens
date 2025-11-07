@@ -6,6 +6,8 @@ import mezz.jei.api.recipe.RecipeType;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 /**
  * Centralises the custom JEI recipe types so every category and the plugin
  * reference the same identifiers. Each nested record mirrors one of the
@@ -61,6 +63,7 @@ public final class ChickensJeiRecipeTypes {
     }
 
     public record AvianDousingRecipe(ItemStack smartEgg, ItemStack smartChicken, ItemStack reagent, ItemStack result,
-                                     ChemicalEggRegistryItem entry) {
+                                     ChemicalEggRegistryItem entry,
+                                     @Nullable MekanismJeiChemicalHelper.JeiChemicalStack chemical) {
     }
 }

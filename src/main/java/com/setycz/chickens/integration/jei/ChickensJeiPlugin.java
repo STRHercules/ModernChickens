@@ -28,6 +28,7 @@ import com.setycz.chickens.item.ChickenStats;
 import com.setycz.chickens.item.GasEggItem;
 import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.registry.ModRegistry;
+import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -271,12 +272,16 @@ public class ChickensJeiPlugin implements IModPlugin {
         }
         ItemStack reagent = ChemicalEggItem.createFor(entry);
         ItemStack result = ChickensSpawnEggItem.createFor(chicken);
+        MekanismJeiChemicalHelper.JeiChemicalStack chemical = MekanismJeiChemicalHelper.createStack(
+                entry,
+                AvianDousingMachineBlockEntity.CHEMICAL_COST);
         return new ChickensJeiRecipeTypes.AvianDousingRecipe(
                 smartEgg.copy(),
                 smartChicken.copy(),
                 reagent,
                 result,
-                entry);
+                entry,
+                chemical);
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

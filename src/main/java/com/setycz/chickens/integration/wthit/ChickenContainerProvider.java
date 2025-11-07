@@ -1,13 +1,11 @@
 package com.setycz.chickens.integration.wthit;
 
 import com.setycz.chickens.blockentity.AbstractChickenContainerBlockEntity;
-import mcp.mobius.waila.api.IBlockAccessor;
-import mcp.mobius.waila.api.IBlockComponentProvider;
+import com.setycz.chickens.integration.wthit.overlay.HudOverlayHelper;
 import mcp.mobius.waila.api.IDataProvider;
 import mcp.mobius.waila.api.IDataWriter;
 import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.IServerAccessor;
-import mcp.mobius.waila.api.ITooltip;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -21,7 +19,7 @@ import java.util.List;
  * users can judge when the next egg or offspring will be produced.
  */
 final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEntity>
-        implements IBlockComponentProvider, IDataProvider<T> {
+        implements IDataProvider<T> {
 
     private static final String ETA_KEY = "ChickensEta";
     private static final String TOTAL_KEY = "ChickensTotal";
@@ -30,30 +28,19 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
     @Override
     public void appendData(IDataWriter writer, IServerAccessor<T> accessor, IPluginConfig config) {
         T container = accessor.getTarget();
-        CompoundTag tag = writer.raw();
+        if (container == null) {
+            return;
+        }
+        CompoundTag tag = new CompoundTag();
         container.storeTooltipData(tag);
         tag.putInt(ETA_KEY, container.getRemainingLayTimeTicks());
         tag.putInt(TOTAL_KEY, container.getTotalLayTimeTicks());
         tag.putInt(STEP_KEY, container.getProgressIncrementPerTick());
-    }
 
-    @Override
-    public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
-        @SuppressWarnings("unchecked")
-        T container = (T) accessor.getBlockEntity();
-        if (container == null) {
-            return;
-        }
-        CompoundTag tag = accessor.getData().raw();
-        if (tag.isEmpty()) {
-            return;
-        }
-
+        HudOverlayHelper helper = new HudOverlayHelper();
         List<Component> lines = new ArrayList<>();
         container.appendTooltip(lines, tag);
-        for (Component line : lines) {
-            tooltip.addLine(line);
-        }
+        lines.forEach(helper::addText);
 
         boolean hasChickens = tag.getBoolean("HasChickens");
         boolean hasSeeds = tag.getBoolean("HasSeeds");
@@ -61,9 +48,10 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
         int etaTicks = tag.getInt(ETA_KEY);
         int step = tag.getInt(STEP_KEY);
         if (hasChickens && hasSeeds && totalTicks > 0 && etaTicks > 0 && step > 0) {
-            tooltip.addLine(Component.translatable("tooltip.chickens.wthit.eta",
+            helper.addText(Component.translatable("tooltip.chickens.wthit.eta",
                     describeEta(normaliseRemainingTicks(etaTicks, step))));
         }
+        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
     }
 
     private static int normaliseRemainingTicks(int remaining, int step) {

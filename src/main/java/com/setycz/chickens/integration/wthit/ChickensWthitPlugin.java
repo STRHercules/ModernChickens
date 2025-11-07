@@ -1,15 +1,22 @@
 package com.setycz.chickens.integration.wthit;
 
-import com.setycz.chickens.blockentity.AvianChemicalConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
+import com.setycz.chickens.integration.wthit.overlay.HudOverlayHelper;
+import com.setycz.chickens.integration.wthit.overlay.HudTooltipRenderer;
 import mcp.mobius.waila.api.IRegistrar;
 import mcp.mobius.waila.api.IWailaPlugin;
 import mcp.mobius.waila.api.TooltipPosition;
+import mcp.mobius.waila.api.IEventListener;
+import mcp.mobius.waila.api.ICommonAccessor;
+import mcp.mobius.waila.api.ITooltip;
+import mcp.mobius.waila.api.IPluginConfig;
+import mcp.mobius.waila.api.data.EnergyData;
+import mcp.mobius.waila.api.data.FluidData;
 
 /**
  * Main entry point that wires Chickens block entities into WTHIT. The plugin
@@ -21,32 +28,43 @@ public final class ChickensWthitPlugin implements IWailaPlugin {
 
     @Override
     public void register(IRegistrar registrar) {
+        registrar.addDataType(HudOverlayHelper.TYPE, HudOverlayHelper.STREAM_CODEC);
+
+        HudTooltipRenderer hudRenderer = new HudTooltipRenderer();
+        registrar.addEventListener(new IEventListener() {
+            @Override
+            public void onHandleTooltip(ITooltip tooltip, ICommonAccessor accessor, IPluginConfig config) {
+                if (tooltip.getLine(FluidData.ID) != null) {
+                    tooltip.setLine(FluidData.ID);
+                }
+                if (tooltip.getLine(HudTooltipRenderer.HUD_TAG) != null && tooltip.getLine(EnergyData.ID) != null) {
+                    tooltip.setLine(EnergyData.ID);
+                }
+            }
+        });
+
         AvianFluxConverterProvider fluxProvider = new AvianFluxConverterProvider();
         registrar.addBlockData(fluxProvider, AvianFluxConverterBlockEntity.class);
-        registrar.addComponent(fluxProvider, TooltipPosition.BODY, AvianFluxConverterBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, AvianFluxConverterBlockEntity.class);
 
         AvianDousingMachineProvider dousingProvider = new AvianDousingMachineProvider();
         registrar.addBlockData(dousingProvider, AvianDousingMachineBlockEntity.class);
-        registrar.addComponent(dousingProvider, TooltipPosition.BODY, AvianDousingMachineBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, AvianDousingMachineBlockEntity.class);
 
         AvianFluidConverterProvider fluidProvider = new AvianFluidConverterProvider();
         registrar.addBlockData(fluidProvider, AvianFluidConverterBlockEntity.class);
-        registrar.addComponent(fluidProvider, TooltipPosition.BODY, AvianFluidConverterBlockEntity.class);
-
-        AvianChemicalConverterProvider chemicalProvider = new AvianChemicalConverterProvider();
-        registrar.addBlockData(chemicalProvider, AvianChemicalConverterBlockEntity.class);
-        registrar.addComponent(chemicalProvider, TooltipPosition.BODY, AvianChemicalConverterBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, AvianFluidConverterBlockEntity.class);
 
         ChickenContainerProvider<RoostBlockEntity> roostProvider = new ChickenContainerProvider<>();
         registrar.addBlockData(roostProvider, RoostBlockEntity.class);
-        registrar.addComponent(roostProvider, TooltipPosition.BODY, RoostBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, RoostBlockEntity.class);
 
         ChickenContainerProvider<BreederBlockEntity> breederProvider = new ChickenContainerProvider<>();
         registrar.addBlockData(breederProvider, BreederBlockEntity.class);
-        registrar.addComponent(breederProvider, TooltipPosition.BODY, BreederBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, BreederBlockEntity.class);
 
         HenhouseProvider henhouseProvider = new HenhouseProvider();
         registrar.addBlockData(henhouseProvider, HenhouseBlockEntity.class);
-        registrar.addComponent(henhouseProvider, TooltipPosition.BODY, HenhouseBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, HenhouseBlockEntity.class);
     }
 }

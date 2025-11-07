@@ -2,8 +2,10 @@ package com.setycz.chickens.integration.jei.category;
 
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.integration.jei.ChickensJeiRecipeTypes;
+import com.setycz.chickens.integration.jei.MekanismJeiChemicalHelper;
 import com.setycz.chickens.registry.ModRegistry;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -51,8 +53,13 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, ChickensJeiRecipeTypes.AvianDousingRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 20, 52)
-                .addItemStack(recipe.reagent());
+        IRecipeSlotBuilder reagentSlot = builder.addSlot(RecipeIngredientRole.INPUT, 20, 52);
+        MekanismJeiChemicalHelper.JeiChemicalStack chemical = recipe.chemical();
+        if (chemical != null) {
+            reagentSlot.addIngredient(chemical.type(), chemical.stack());
+        } else {
+            reagentSlot.addItemStack(recipe.reagent());
+        }
         builder.addSlot(RecipeIngredientRole.INPUT, 58, 52)
                 .addItemStack(recipe.smartEgg())
                 .addItemStack(recipe.smartChicken());
