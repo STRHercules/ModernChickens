@@ -35,7 +35,6 @@ public class ChickensRegistryItem {
     private boolean generatedTexture;
     private boolean tintItem = true;
     private boolean custom;
-    private boolean naturalSpawnOverride;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -49,7 +48,7 @@ public class ChickensRegistryItem {
         this.bgColor = bgColor;
         this.fgColor = fgColor;
         this.texture = texture;
-        this.spawnType = SpawnType.NORMAL;
+        this.spawnType = SpawnType.NONE;
         this.parent1 = parent1;
         this.parent2 = parent2;
     }
@@ -177,8 +176,9 @@ public class ChickensRegistryItem {
     }
 
     public boolean canSpawn() {
-        boolean tierEligible = naturalSpawnOverride || getTier() == 1;
-        return tierEligible && spawnType != SpawnType.NONE;
+        // Natural spawning is a simple opt-in: as soon as a chicken keeps a biome
+        // assignment other than NONE (and stays enabled), it can enter the pool.
+        return spawnType != SpawnType.NONE;
     }
 
     public int getMinLayTime() {
@@ -217,11 +217,6 @@ public class ChickensRegistryItem {
     public ChickensRegistryItem setParentsNew(ChickensRegistryItem newParent1, ChickensRegistryItem newParent2) {
         parent1 = newParent1;
         parent2 = newParent2;
-        return this;
-    }
-
-    public ChickensRegistryItem allowNaturalSpawn() {
-        naturalSpawnOverride = true;
         return this;
     }
 

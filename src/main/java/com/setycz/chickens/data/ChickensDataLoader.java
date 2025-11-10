@@ -440,8 +440,9 @@ public final class ChickensDataLoader {
             String parent2 = readString(props, prefix + "parent2", chicken.getParent2() != null ? chicken.getParent2().getEntityName() : "");
             parentOverrides.put(chicken, new ParentNames(parent1, parent2));
 
-            String spawnTypeName = readString(props, prefix + "spawnType", chicken.getSpawnType().name());
-            SpawnType spawnType = parseSpawnType(spawnTypeName, chicken.getSpawnType());
+            SpawnType defaultSpawnType = chicken.getSpawnType();
+            String spawnTypeName = readString(props, prefix + "spawnType", defaultSpawnType.name());
+            SpawnType spawnType = parseSpawnType(spawnTypeName, defaultSpawnType);
             chicken.setSpawnType(spawnType);
         }
 

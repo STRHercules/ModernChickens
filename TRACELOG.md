@@ -848,3 +848,51 @@
   2. Implemented the dousing JEI category, layout, and translations to showcase the Smart Chicken input, reagent egg, output spawn egg, and the RF/volume costs per recipe.
   3. Restored the missing WTHIT dousing provider so the build succeeds and the overlay mirrors the GUI’s chemical, fluid, energy, and progress tooltips before running `./gradlew build`.
 - **Rationale**: Surfacing the dousing machine in JEI (and WTHIT) gives players a quick reference for which chemicals forge each spawn egg and the resources they must buffer, smoothing late-game automation planning.
+
+## Entry 104
+- **Prompt/Task**: Natural overworld spawning only produces White Chickens after aggressive `chickens.cfg` edits remove other Tier-1 parents.
+- **Steps**:
+  1. Added starter spawn pools to `ChickensRegistry` that mirror the 1.12 Tier-1 birds (White/Yellow/Blue/Red/Green/Black/Sand/Flint/Log/Gunpowder/Snowball for NORMAL, Snowball for SNOW, Quartz/Lava for HELL) and log whenever a biome falls back to that list.
+  2. Introduced a `findByName` helper plus name-driven lookups so fallback entries resolve dynamically even when datapacks or registries shift chicken ids, ensuring the overrides stay resilient.
+  3. Attempted `./gradlew build` to validate the change, but the run was aborted mid-execution, so a clean build still needs to be rerun.
+- **Rationale**: Guaranteeing each biome always has at least the starter flock available prevents user configuration mistakes from soft-locking natural spawns to bones-only drops.
+
+## Entry 105
+- **Prompt/Task**: Even with the fallback roster in place, config files that set `spawnType=NONE` for every chicken still prevent anything except White Chickens from spawning.
+- **Steps**:
+  1. Replaced the fallback string lists with structured entries that record each starter chicken’s canonical spawn type (NORMAL/SNOW/HELL).
+  2. When a biome pool is empty, the registry now forces those chickens back to their canonical spawn type, toggles `allowNaturalSpawn()`, and injects them into the candidate list even if the config disabled their natural spawning.
+  3. Skipped rerunning `./gradlew build` because the previous attempt was interrupted; a clean build is still outstanding.
+- **Rationale**: Overriding the config’s `spawnType=NONE` ensures the safety net actually restocks the spawn pool, so disastrous config edits can’t lock worlds to bone-only drops.
+
+## Entry 106
+- **Prompt/Task**: Despite the fallback roster, biome spawn gates still think no chickens are available, so only legacy White Chickens ever spawn.
+- **Steps**:
+  1. Taught `ChickensRegistry.isAnyIn` to resolve the fallback roster when no configured chickens can spawn so biome spawn checks flip back to “enabled” immediately instead of waiting for a later spawn attempt.
+  2. Refactored the fallback helper so both `isAnyIn` and `getPossibleChickensToSpawn` share the same “enable starter chickens” logic, ensuring spawn types and natural overrides are applied consistently before mobs try to spawn.
+  3. Did not rerun `./gradlew build` yet (still pending due to earlier interruption).
+- **Rationale**: Enabling the fallback flock during the early spawn-gate checks keeps the natural spawn system from short-circuiting, so overworld and nether biomes once again roll the full Tier-1 roster instead of defaulting to White only.
+
+## Entry 107
+- **Prompt/Task**: After the gate fix, players still only see White Chickens because the fallback flock only activates when the spawn list is empty.
+- **Steps**:
+  1. Changed `ChickensRegistry.getPossibleChickensToSpawn` to always merge the starter flock into the result so every Tier-1 bird is eligible even when a single chicken (e.g., White) remains enabled in the config.
+  2. Reworked the logging so we can tell whether chickens were added or already present whenever the safety net runs, simplifying future diagnostics.
+  3. Build remains pending (`./gradlew build` was not rerun yet).
+- **Rationale**: Always merging the starter roster prevents the “only White Chicken” outcome entirely, because the fallback birds re-register themselves every time natural spawning queries the registry, regardless of how many other chickens survive in the config.
+
+## Entry 108
+- **Prompt/Task**: Legacy `chickens.cfg` files force every Tier-1 chicken to `spawnType=NONE`, so even the fallback logic can’t repopulate the spawn list.
+- **Steps**:
+  1. Updated `ChickensDataLoader` to remember each chicken’s default spawn type while applying configuration overrides.
+  2. If a config entry sets `spawnType=NONE` for a base-tier chicken whose default is NORMAL/SNOW/HELL, the loader now logs a warning and restores the default so natural spawning cannot be disabled accidentally by stale configs.
+  3. Build still pending; please rerun `./gradlew build` to produce a fresh jar.
+- **Rationale**: Resetting Tier-1 chickens to their canonical spawn types prevents inheritances from ancient configs (or empty exports) from wiping out every biome pool before the fallback safety net even runs.
+
+## Entry 109
+- **Prompt/Task**: Tier-1 spawning should be governed solely by `enabled` plus `spawnType`, so config authors can safely disable dye chickens without breaking natural spawns.
+- **Steps**:
+  1. Simplified `ChickensRegistryItem.canSpawn()` so it no longer inspects parent tiers or hidden overrides and defaulted every registry item to `SpawnType.NONE`, making the configuration file the lone authority on natural spawning.
+  2. Rebuilt the starter fallback list to include only the intended wilderness birds (Flint, Log, Gunpowder, Snowball, Quartz, Lava) and removed the legacy `allowNaturalSpawn()` path so the safety net simply reuses the resolved spawn types.
+  3. Updated the default chicken definitions and config loader: Tier-1 chickens now explicitly set their spawn type in code, while the loader stops undoing `spawnType=NONE`, ensuring `B:enabled` + biome selection is all that’s required. Build still pending (`./gradlew build` not rerun yet).
+- **Rationale**: Basing natural spawning exclusively on explicit config values lets pack makers remove any dye chicken from the wild without battling hidden tier heuristics, while still guaranteeing the six canonical Tier-1 birds populate their corresponding biomes unless the user turns them off.

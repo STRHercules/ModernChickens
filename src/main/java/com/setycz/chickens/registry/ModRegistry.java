@@ -60,7 +60,6 @@ public final class ModRegistry {
         ModBlockEntities.init(modBus);
         ModMenuTypes.init(modBus);
         ModSpawns.init(modBus);
-        ModBiomeModifiers.init(modBus);
         ModCapabilities.init(modBus);
         ModCreativeTabs.init(modBus);
         modBus.addListener(ModRegistry::onBuildCreativeTabs);

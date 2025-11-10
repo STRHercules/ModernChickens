@@ -11,6 +11,7 @@
 - Restore the bespoke behaviours for the analyzer, spawn egg, colored egg, and liquid egg items so the placeholders regain their legacy functionality.
 - Once the custom chicken entity is settled, wire up dedicated spawn placement registration and biome modifiers so natural spawning matches the original mod instead of relying solely on spawn eggs.
 - Reinstate the fluid capability wrapper for liquid eggs and port the analyzer GUI/henhouse inventories so item interactions can mirror the original mod’s storage and automation features.
+- Add a `general.enableStarterSpawns` toggle so packs that purposefully disable every overworld chicken can stop the safety flock from reintroducing fallback birds during biome spawn resolution.
 - Consider exposing spawn weight overrides per chicken so datapacks or configs can fine-tune how frequently specific breeds appear in different biome categories.
 - Rebuild the Jade integration hooks so in-world overlays recognise the analyzer and henhouse now that the JEI plugin has been modernised.
 - Add simple data generators for henhouse models, loot, and recipes so future variants stay consistent without hand-maintaining dozens of JSON files.
@@ -81,3 +82,4 @@
 - Add an in-game advancement hint that highlights dye-and-egg crafting for colour chickens so players discover the mechanic without consulting external guides.
 - Surface the new natural spawn override as per-chicken configuration so datapacks or `chickens.cfg` entries can opt additional breeds into forced spawning without requiring code updates.
 - Surface a Jade/TOP overlay for the Avian Dousing Machine that reports its stored RF, reagent levels, and per-infusion costs so automation builders can confirm resource readiness without opening the GUI.
+- Expose a config section that lets packs redefine the fallback Tier-1 spawn roster per biome type (NORMAL/SNOW/HELL) so the new safety net stays helpful while still letting curated modpacks select their own starter flocks.
