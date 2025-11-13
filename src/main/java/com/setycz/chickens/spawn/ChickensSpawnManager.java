@@ -30,6 +30,7 @@ import java.util.Optional;
 public final class ChickensSpawnManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensSpawns");
     private static final float SNOW_WEIGHT_MODIFIER = 0.75F;
+    private static final float END_WEIGHT_MODIFIER = 0.5F;
     private static final double OVERWORLD_CHARGE = 0.12D;
     private static final double OVERWORLD_ENERGY = 0.32D;
     private static final double NETHER_CHARGE = 0.18D;
@@ -117,6 +118,8 @@ public final class ChickensSpawnManager {
             weight = Math.round(weight * config.getNetherSpawnChanceMultiplier());
         } else if (type == SpawnType.SNOW) {
             weight = Math.round(weight * SNOW_WEIGHT_MODIFIER);
+        } else if (type == SpawnType.END) {
+            weight = Math.round(weight * END_WEIGHT_MODIFIER);
         }
         return weight;
     }

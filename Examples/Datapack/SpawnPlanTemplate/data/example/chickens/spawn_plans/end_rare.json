@@ -1,0 +1,6 @@
+{
+  "spawn_type": "end",
+  "spawn_weight": 2,
+  "min_brood_size": 1,
+  "max_brood_size": 1
+}

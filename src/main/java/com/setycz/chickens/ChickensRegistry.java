@@ -111,6 +111,9 @@ public final class ChickensRegistry {
         if (biomeHolder.is(Tags.Biomes.IS_NETHER)) {
             return SpawnType.HELL;
         }
+        if (biomeHolder.is(Tags.Biomes.IS_END)) {
+            return SpawnType.END;
+        }
         if (biomeHolder.is(Tags.Biomes.IS_SNOWY)) {
             return SpawnType.SNOW;
         }

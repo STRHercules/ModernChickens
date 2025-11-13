@@ -145,7 +145,7 @@ Example datapack snippet that boosts overworld chicken density while limiting fl
 Reloading datapacks (or restarting the server) automatically reapplies these overrides; removing the JSON restores the configuration defaults.
 
 For on-the-fly testing, `/chickens spawn multiplier <value>` multiplies every biome weight (set back to `1` to restore defaults) and `/chickens spawn debug <true|false>` toggles chat spam that reports each natural chicken spawn with its breed and coordinates.
-When you need an immediate test subject, `/chickens spawn summon <chickenNameOrId>` spawns that breed at your feet and `/chickens spawn summon_random [normal|snow|hell]` picks a random chicken from the requested biome bucket.
+When you need an immediate test subject, `/chickens spawn summon <chickenNameOrId>` spawns that breed at your feet and `/chickens spawn summon_random [normal|snow|end|hell]` picks a random chicken from the requested biome bucket.
 
 ### `chickens_custom.json` Field Reference:
 
@@ -161,7 +161,7 @@ When you need an immediate test subject, `/chickens spawn summon <chickenNameOrI
 | `background_color` | No | String/Integer | Hex string (`#RRGGBB` or `RRGGBB`) or decimal value between `0` and `16777215`. Defaults to white (`0xFFFFFF`). |
 | `foreground_color` | No | String/Integer | Hex string (`#RRGGBB` or `RRGGBB`) or decimal value between `0` and `16777215`. Defaults to yellow (`0xFFFF00`). |
 | `parents` | No | Array[String] | Up to two chicken names that must already exist. Leave empty or omit for Tier 1 chickens. Only the first two entries are used. |
-| `spawn_type` | No | String | Case-insensitive values drawn from `normal`, `snow`, `hell`, or `none`. Defaults to `normal`. |
+| `spawn_type` | No | String | Case-insensitive values drawn from `normal`, `snow`, `end`, `hell`, or `none`. Defaults to `normal`. |
 | `lay_coefficient` | No | Float | Multiplier applied to lay times. Values below `0` are clamped to `0`. Defaults to `1.0`. |
 | `display_name` | No | String | Overrides the in-game display name. Defaults to the translated name derived from `name`. |
 | `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |

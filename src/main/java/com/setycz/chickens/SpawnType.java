@@ -7,6 +7,7 @@ package com.setycz.chickens;
 public enum SpawnType {
     NORMAL,
     SNOW,
+    END,
     NONE,
     HELL;
 

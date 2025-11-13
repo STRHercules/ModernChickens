@@ -8,6 +8,7 @@ import com.setycz.chickens.config.ChickensConfigValues;
 import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.spawn.ChickensSpawnDebug;
 import com.setycz.chickens.spawn.ChickensSpawnManager;
+import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -42,13 +43,21 @@ public final class OverworldPopulationHandler {
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }
-        if (level.dimensionType().ultraWarm() || level.dimensionType().natural() && level.dimensionType().piglinSafe()) {
+        boolean isEnd = level.dimension() == Level.END;
+        if (!isEnd && (level.dimensionType().ultraWarm() || level.dimensionType().natural() && level.dimensionType().piglinSafe())) {
             return;
         }
         boolean normalPlan = ChickensSpawnManager.hasPlan(SpawnType.NORMAL);
         boolean snowPlan = ChickensSpawnManager.hasPlan(SpawnType.SNOW);
-        if (!normalPlan && !snowPlan) {
-            return;
+        boolean endPlan = ChickensSpawnManager.hasPlan(SpawnType.END);
+        if (isEnd) {
+            if (!endPlan) {
+                return;
+            }
+        } else {
+            if (!normalPlan && !snowPlan) {
+                return;
+            }
         }
         if (level.getGameTime() % CHECK_INTERVAL_TICKS != 0) {
             return;
@@ -71,6 +80,9 @@ public final class OverworldPopulationHandler {
             return;
         }
         SpawnType spawnType = ChickensRegistry.getSpawnType(level.getBiome(origin));
+        if (isEnd) {
+            spawnType = SpawnType.END;
+        }
         if (spawnType == SpawnType.NONE || !ChickensSpawnManager.hasPlan(spawnType)) {
             return;
         }
