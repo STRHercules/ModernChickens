@@ -1,0 +1,121 @@
+package net.minecraft.world.level.saveddata.maps;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
+   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.FLAT_CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new);
+   });
+   public static final Codec<List<MapBanner>> LIST_CODEC;
+
+   public MapBanner(BlockPos param1, DyeColor param2, Optional<Component> param3) {
+      super();
+      this.pos = var1;
+      this.color = var2;
+      this.name = var3;
+   }
+
+   @Nullable
+   public static MapBanner fromWorld(BlockGetter var0, BlockPos var1) {
+      BlockEntity var2 = var0.getBlockEntity(var1);
+      if (var2 instanceof BannerBlockEntity) {
+         BannerBlockEntity var3 = (BannerBlockEntity)var2;
+         DyeColor var4 = var3.getBaseColor();
+         Optional var5 = Optional.ofNullable(var3.getCustomName());
+         return new MapBanner(var1, var4, var5);
+      } else {
+         return null;
+      }
+   }
+
+   public Holder<MapDecorationType> getDecoration() {
+      Holder var10000;
+      switch(this.color) {
+      case WHITE:
+         var10000 = MapDecorationTypes.WHITE_BANNER;
+         break;
+      case ORANGE:
+         var10000 = MapDecorationTypes.ORANGE_BANNER;
+         break;
+      case MAGENTA:
+         var10000 = MapDecorationTypes.MAGENTA_BANNER;
+         break;
+      case LIGHT_BLUE:
+         var10000 = MapDecorationTypes.LIGHT_BLUE_BANNER;
+         break;
+      case YELLOW:
+         var10000 = MapDecorationTypes.YELLOW_BANNER;
+         break;
+      case LIME:
+         var10000 = MapDecorationTypes.LIME_BANNER;
+         break;
+      case PINK:
+         var10000 = MapDecorationTypes.PINK_BANNER;
+         break;
+      case GRAY:
+         var10000 = MapDecorationTypes.GRAY_BANNER;
+         break;
+      case LIGHT_GRAY:
+         var10000 = MapDecorationTypes.LIGHT_GRAY_BANNER;
+         break;
+      case CYAN:
+         var10000 = MapDecorationTypes.CYAN_BANNER;
+         break;
+      case PURPLE:
+         var10000 = MapDecorationTypes.PURPLE_BANNER;
+         break;
+      case BLUE:
+         var10000 = MapDecorationTypes.BLUE_BANNER;
+         break;
+      case BROWN:
+         var10000 = MapDecorationTypes.BROWN_BANNER;
+         break;
+      case GREEN:
+         var10000 = MapDecorationTypes.GREEN_BANNER;
+         break;
+      case RED:
+         var10000 = MapDecorationTypes.RED_BANNER;
+         break;
+      case BLACK:
+         var10000 = MapDecorationTypes.BLACK_BANNER;
+         break;
+      default:
+         throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public String getId() {
+      int var10000 = this.pos.getX();
+      return "banner-" + var10000 + "," + this.pos.getY() + "," + this.pos.getZ();
+   }
+
+   public BlockPos pos() {
+      return this.pos;
+   }
+
+   public DyeColor color() {
+      return this.color;
+   }
+
+   public Optional<Component> name() {
+      return this.name;
+   }
+
+   static {
+      LIST_CODEC = CODEC.listOf();
+   }
+}

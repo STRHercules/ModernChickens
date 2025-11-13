@@ -1,0 +1,56 @@
+package net.minecraft.util.random;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+public interface WeightedEntry {
+   Weight getWeight();
+
+   static <T> WeightedEntry.Wrapper<T> wrap(T var0, int var1) {
+      return new WeightedEntry.Wrapper(var0, Weight.of(var1));
+   }
+
+   public static record Wrapper<T>(T data, Weight weight) implements WeightedEntry {
+      public Wrapper(T param1, Weight param2) {
+         super();
+         this.data = var1;
+         this.weight = var2;
+      }
+
+      public Weight getWeight() {
+         return this.weight;
+      }
+
+      public static <E> Codec<WeightedEntry.Wrapper<E>> codec(Codec<E> var0) {
+         return RecordCodecBuilder.create((var1) -> {
+            return var1.group(var0.fieldOf("data").forGetter(WeightedEntry.Wrapper::data), Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.Wrapper::weight)).apply(var1, WeightedEntry.Wrapper::new);
+         });
+      }
+
+      public T data() {
+         return this.data;
+      }
+
+      public Weight weight() {
+         return this.weight;
+      }
+   }
+
+   public static class IntrusiveBase implements WeightedEntry {
+      private final Weight weight;
+
+      public IntrusiveBase(int var1) {
+         super();
+         this.weight = Weight.of(var1);
+      }
+
+      public IntrusiveBase(Weight var1) {
+         super();
+         this.weight = var1;
+      }
+
+      public Weight getWeight() {
+         return this.weight;
+      }
+   }
+}

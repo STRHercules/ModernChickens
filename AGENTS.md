@@ -17,13 +17,18 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ## Directory Policy
 ```
 / (root)
+├─ AdditionalAssets/                  # Unused Assets (INSTRUCTED USE ONLY)
 ├─ ModernChickens/                    # Catalogue of verified Builds
+├─ FluidReferences/                   # Legacy FluidCows and ModernFluidCows Source Code (READ-ONLY)
 ├─ OriginalChickens/                  # Original Chickens mod we are porting. (READ-ONLY)
 ├─ ModDevGradle-main/                 # Gradle Source Code (READ-ONLY)
 ├─ MoreChickens/                      # MoreChickens - Chicken expansion mod Source Code (READ-ONLY)
+├─ NeoForge-1.21.x                    # NeoForge Source Code for Minecraft 1.21.1 (READ-ONLY)
+├─ Minecraft_Client_Source_1.21.1/    # Minecraft 1.21.1 Decompiled Source (READ-ONLY)
 ├─ Hatchery/                          # Hatchery Source Code (READ-ONLY)
 ├─ Roost/                             # Roost Source Code (READ-ONLY)
-└─ src/                               # Modern Chickens Source Code (Only code to edit!)
+├─ src/                               # Modern Chickens Source Code (Only code to edit!)
+└─ UnusedAssets/                      # Unused Assets (INSTRUCTED USE ONLY)
 ```
 
 ### Allowed edits

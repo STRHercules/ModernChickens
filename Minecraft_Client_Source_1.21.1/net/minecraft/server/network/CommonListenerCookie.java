@@ -1,0 +1,34 @@
+package net.minecraft.server.network;
+
+import com.mojang.authlib.GameProfile;
+import net.minecraft.server.level.ClientInformation;
+
+public record CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred) {
+   public CommonListenerCookie(GameProfile param1, int param2, ClientInformation param3, boolean param4) {
+      super();
+      this.gameProfile = var1;
+      this.latency = var2;
+      this.clientInformation = var3;
+      this.transferred = var4;
+   }
+
+   public static CommonListenerCookie createInitial(GameProfile var0, boolean var1) {
+      return new CommonListenerCookie(var0, 0, ClientInformation.createDefault(), var1);
+   }
+
+   public GameProfile gameProfile() {
+      return this.gameProfile;
+   }
+
+   public int latency() {
+      return this.latency;
+   }
+
+   public ClientInformation clientInformation() {
+      return this.clientInformation;
+   }
+
+   public boolean transferred() {
+      return this.transferred;
+   }
+}

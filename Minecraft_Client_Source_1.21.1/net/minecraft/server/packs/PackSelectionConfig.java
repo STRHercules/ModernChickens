@@ -1,0 +1,24 @@
+package net.minecraft.server.packs;
+
+import net.minecraft.server.packs.repository.Pack;
+
+public record PackSelectionConfig(boolean required, Pack.Position defaultPosition, boolean fixedPosition) {
+   public PackSelectionConfig(boolean param1, Pack.Position param2, boolean param3) {
+      super();
+      this.required = var1;
+      this.defaultPosition = var2;
+      this.fixedPosition = var3;
+   }
+
+   public boolean required() {
+      return this.required;
+   }
+
+   public Pack.Position defaultPosition() {
+      return this.defaultPosition;
+   }
+
+   public boolean fixedPosition() {
+      return this.fixedPosition;
+   }
+}

@@ -1,0 +1,30 @@
+package net.minecraft.world.level;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+
+public record BlockEventData(BlockPos pos, Block block, int paramA, int paramB) {
+   public BlockEventData(BlockPos param1, Block param2, int param3, int param4) {
+      super();
+      this.pos = var1;
+      this.block = var2;
+      this.paramA = var3;
+      this.paramB = var4;
+   }
+
+   public BlockPos pos() {
+      return this.pos;
+   }
+
+   public Block block() {
+      return this.block;
+   }
+
+   public int paramA() {
+      return this.paramA;
+   }
+
+   public int paramB() {
+      return this.paramB;
+   }
+}

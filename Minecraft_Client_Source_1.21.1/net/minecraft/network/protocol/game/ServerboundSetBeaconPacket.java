@@ -1,0 +1,40 @@
+package net.minecraft.network.protocol.game;
+
+import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.effect.MobEffect;
+
+public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> primary, Optional<Holder<MobEffect>> secondary) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetBeaconPacket> STREAM_CODEC;
+
+   public ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> param1, Optional<Holder<MobEffect>> param2) {
+      super();
+      this.primary = var1;
+      this.secondary = var2;
+   }
+
+   public PacketType<ServerboundSetBeaconPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_BEACON;
+   }
+
+   public void handle(ServerGamePacketListener var1) {
+      var1.handleSetBeaconPacket(this);
+   }
+
+   public Optional<Holder<MobEffect>> primary() {
+      return this.primary;
+   }
+
+   public Optional<Holder<MobEffect>> secondary() {
+      return this.secondary;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(MobEffect.STREAM_CODEC.apply(ByteBufCodecs::optional), ServerboundSetBeaconPacket::primary, MobEffect.STREAM_CODEC.apply(ByteBufCodecs::optional), ServerboundSetBeaconPacket::secondary, ServerboundSetBeaconPacket::new);
+   }
+}

@@ -1,0 +1,220 @@
+package net.minecraft.nbt;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
+
+public class IntArrayTag extends CollectionTag<IntTag> {
+   private static final int SELF_SIZE_IN_BYTES = 24;
+   public static final TagType<IntArrayTag> TYPE = new TagType.VariableSize<IntArrayTag>() {
+      public IntArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return new IntArrayTag(readAccounted(var1, var2));
+      }
+
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         return var2.visit(readAccounted(var1, var3));
+      }
+
+      private static int[] readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(24L);
+         int var2 = var0.readInt();
+         var1.accountBytes(4L, (long)var2);
+         int[] var3 = new int[var2];
+
+         for(int var4 = 0; var4 < var2; ++var4) {
+            var3[var4] = var0.readInt();
+         }
+
+         return var3;
+      }
+
+      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
+         var1.skipBytes(var1.readInt() * 4);
+      }
+
+      public String getName() {
+         return "INT[]";
+      }
+
+      public String getPrettyName() {
+         return "TAG_Int_Array";
+      }
+
+      // $FF: synthetic method
+      public Tag load(final DataInput param1, final NbtAccounter param2) throws IOException {
+         return this.load(var1, var2);
+      }
+   };
+   private int[] data;
+
+   public IntArrayTag(int[] var1) {
+      super();
+      this.data = var1;
+   }
+
+   public IntArrayTag(List<Integer> var1) {
+      this(toArray(var1));
+   }
+
+   private static int[] toArray(List<Integer> var0) {
+      int[] var1 = new int[var0.size()];
+
+      for(int var2 = 0; var2 < var0.size(); ++var2) {
+         Integer var3 = (Integer)var0.get(var2);
+         var1[var2] = var3 == null ? 0 : var3;
+      }
+
+      return var1;
+   }
+
+   public void write(DataOutput var1) throws IOException {
+      var1.writeInt(this.data.length);
+      int[] var2 = this.data;
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         int var5 = var2[var4];
+         var1.writeInt(var5);
+      }
+
+   }
+
+   public int sizeInBytes() {
+      return 24 + 4 * this.data.length;
+   }
+
+   public byte getId() {
+      return 11;
+   }
+
+   public TagType<IntArrayTag> getType() {
+      return TYPE;
+   }
+
+   public String toString() {
+      return this.getAsString();
+   }
+
+   public IntArrayTag copy() {
+      int[] var1 = new int[this.data.length];
+      System.arraycopy(this.data, 0, var1, 0, this.data.length);
+      return new IntArrayTag(var1);
+   }
+
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else {
+         return var1 instanceof IntArrayTag && Arrays.equals(this.data, ((IntArrayTag)var1).data);
+      }
+   }
+
+   public int hashCode() {
+      return Arrays.hashCode(this.data);
+   }
+
+   public int[] getAsIntArray() {
+      return this.data;
+   }
+
+   public void accept(TagVisitor var1) {
+      var1.visitIntArray(this);
+   }
+
+   public int size() {
+      return this.data.length;
+   }
+
+   public IntTag get(int var1) {
+      return IntTag.valueOf(this.data[var1]);
+   }
+
+   public IntTag set(int var1, IntTag var2) {
+      int var3 = this.data[var1];
+      this.data[var1] = var2.getAsInt();
+      return IntTag.valueOf(var3);
+   }
+
+   public void add(int var1, IntTag var2) {
+      this.data = ArrayUtils.add(this.data, var1, var2.getAsInt());
+   }
+
+   public boolean setTag(int var1, Tag var2) {
+      if (var2 instanceof NumericTag) {
+         this.data[var1] = ((NumericTag)var2).getAsInt();
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public boolean addTag(int var1, Tag var2) {
+      if (var2 instanceof NumericTag) {
+         this.data = ArrayUtils.add(this.data, var1, ((NumericTag)var2).getAsInt());
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public IntTag remove(int var1) {
+      int var2 = this.data[var1];
+      this.data = ArrayUtils.remove(this.data, var1);
+      return IntTag.valueOf(var2);
+   }
+
+   public byte getElementType() {
+      return 3;
+   }
+
+   public void clear() {
+      this.data = new int[0];
+   }
+
+   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
+      return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag remove(final int param1) {
+      return this.remove(var1);
+   }
+
+   // $FF: synthetic method
+   public void add(final int param1, final Tag param2) {
+      this.add(var1, (IntTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Tag set(final int param1, final Tag param2) {
+      return this.set(var1, (IntTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
+   }
+
+   // $FF: synthetic method
+   public Object remove(final int param1) {
+      return this.remove(var1);
+   }
+
+   // $FF: synthetic method
+   public void add(final int param1, final Object param2) {
+      this.add(var1, (IntTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object set(final int param1, final Object param2) {
+      return this.set(var1, (IntTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object get(final int param1) {
+      return this.get(var1);
+   }
+}

@@ -1,0 +1,28 @@
+package net.minecraft.util.profiling.jfr.stats;
+
+import jdk.jfr.consumer.RecordedEvent;
+
+public record CpuLoadStat(double jvm, double userJvm, double system) {
+   public CpuLoadStat(double param1, double param3, double param5) {
+      super();
+      this.jvm = var1;
+      this.userJvm = var3;
+      this.system = var5;
+   }
+
+   public static CpuLoadStat from(RecordedEvent var0) {
+      return new CpuLoadStat((double)var0.getFloat("jvmSystem"), (double)var0.getFloat("jvmUser"), (double)var0.getFloat("machineTotal"));
+   }
+
+   public double jvm() {
+      return this.jvm;
+   }
+
+   public double userJvm() {
+      return this.userJvm;
+   }
+
+   public double system() {
+      return this.system;
+   }
+}
