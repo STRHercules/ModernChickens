@@ -13,6 +13,7 @@ import com.setycz.chickens.config.ChickensConfigValues;
 import com.setycz.chickens.integration.mekanism.MekanismChemicalHelper;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModRegistry;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -95,6 +96,8 @@ public final class ChickensDataLoader {
                 defaults.size(),
                 ChickensRegistry.getItems().size(),
                 ChickensRegistry.getDisabledItems().size());
+
+        ChickensSpawnManager.refreshFromRegistry();
 
         // Export the breeding graph during bootstrap so tooling retains the
         // legacy log output without waiting for command invocation.
@@ -756,6 +759,7 @@ public final class ChickensDataLoader {
             DynamicFluidChickens.refresh();
             DynamicChemicalChickens.refresh();
             DynamicGasChickens.refresh();
+            ChickensSpawnManager.refreshFromRegistry();
         }
     }
 

@@ -117,6 +117,36 @@ Example `chickens_custom.json` entries (place inside the top-level `chickens` ar
 >
 > When `generated_texture` is disabled the renderer expects the texture to exist in a resource pack or datapack. Missing assets trigger a warning and fall back to the tinted bone chicken variant so players never see the purple-and-black placeholder in game.
 
+### Spawn Plan Overrides
+
+Natural spawning now reads tuning data from `ChickensSpawnManager`, and datapacks can override those values without editing configs or code. Place JSON files inside `data/<namespace>/chickens/spawn_plans/` with the following structure:
+
+| Field | Type | Behaviour |
+| --- | --- | --- |
+| `spawn_type` | String (required) | One of `normal`, `snow`, or `hell`. Determines which biome bucket the override applies to. |
+| `spawn_weight` | Integer | Absolute weight for the biome bucket. When omitted, the value derived from `chickens.cfg` is used. |
+| `weight_multiplier` | Float | Multiplies the config-derived weight instead of overriding it. Cannot be combined with `spawn_weight`. |
+| `min_brood_size` | Integer | Overrides the minimum flock size inserted into the biome modifier. |
+| `max_brood_size` | Integer | Overrides the maximum flock size. Automatically clamps to the configured minimum when smaller. |
+| `spawn_charge` | Float | Replaces the mob charge applied to the biome modifier (vanilla uses this to cap spawn density). |
+| `energy_budget` | Float | Overrides the spawn energy budget passed to the biome modifier alongside the mob charge. |
+
+Example datapack snippet that boosts overworld chicken density while limiting flocks to two birds:
+
+```json
+{
+  "spawn_type": "normal",
+  "weight_multiplier": 1.5,
+  "min_brood_size": 1,
+  "max_brood_size": 2
+}
+```
+
+Reloading datapacks (or restarting the server) automatically reapplies these overrides; removing the JSON restores the configuration defaults.
+
+For on-the-fly testing, `/chickens spawn multiplier <value>` multiplies every biome weight (set back to `1` to restore defaults) and `/chickens spawn debug <true|false>` toggles chat spam that reports each natural chicken spawn with its breed and coordinates.
+When you need an immediate test subject, `/chickens spawn summon <chickenNameOrId>` spawns that breed at your feet and `/chickens spawn summon_random [normal|snow|hell]` picks a random chicken from the requested biome bucket.
+
 ### `chickens_custom.json` Field Reference:
 
 | Field | Required | Type | Accepted values and behaviour |

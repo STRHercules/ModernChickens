@@ -848,3 +848,27 @@
   2. Implemented the dousing JEI category, layout, and translations to showcase the Smart Chicken input, reagent egg, output spawn egg, and the RF/volume costs per recipe.
   3. Restored the missing WTHIT dousing provider so the build succeeds and the overlay mirrors the GUI’s chemical, fluid, energy, and progress tooltips before running `./gradlew build`.
 - **Rationale**: Surfacing the dousing machine in JEI (and WTHIT) gives players a quick reference for which chemicals forge each spawn egg and the resources they must buffer, smoothing late-game automation planning.
+
+## Entry 104
+- **Prompt/Task**: Modernize the natural spawn system so ModernChickens can use the latest NeoForge 1.21.1 hooks instead of the unreliable legacy logic.
+- **Steps**:
+  1. Built `ChickensSpawnManager`, which caches per-biome spawn plans, weighted chicken pools, and modern spawn charge metadata derived from the registry/config so every system shares a single source of truth.
+  2. Rewired the biome modifier, chicken entity finalize logic, Nether population handler, and configuration bootstrap/tag refresh paths to consume the new spawn plan API, ensuring overworld and nether spawns pick chickens through the unified manager.
+  3. Executed `./gradlew build` (after requesting permission for the Gradle cache); the compile currently fails because multiple WTHIT providers import the absent `com.setycz.chickens.integration.wthit.overlay.HudOverlayHelper` package.
+- **Rationale**: Centralising spawn weights and biome hooks on NeoForge’s modern APIs keeps chicken spawns consistent across worldgen, runtime spawners, and registries while clearly surfacing the outstanding WTHIT overlay compilation issue.
+
+## Entry 105
+- **Prompt/Task**: Give datapacks a way to retune spawn weights and brood sizes without editing `ChickensSpawnManager`.
+- **Steps**:
+  1. Added `SpawnPlanDataLoader` plus a `SpawnPlanOverride` record so datapacks can drop JSON files under `data/<namespace>/chickens/spawn_plans/` and register them via `AddReloadListenerEvent`.
+  2. Updated `ChickensSpawnManager` to apply the optional overrides (absolute weights, multipliers, brood sizes, mob charges, and energy budgets) whenever it rebuilds plans, then documented the format in the README.
+  3. Ran `./gradlew build` with the existing escalated Gradle cache permissions to verify the datapack loader compiles and the spawn manager still builds successfully.
+- **Rationale**: Moving spawn plan tuning into datapacks lets pack makers rebalance overworld/snow/nether spawns without touching configs or recompiling the mod while keeping the overrides hot-reloadable alongside other data.
+
+## Entry 106
+- **Prompt/Task**: Boost natural spawn rates for testing, surface spawn-debug output, and add a force-spawn command for immediate repro cases.
+- **Steps**:
+  1. Added `ChickensSpawnDebug`, hooked its multiplier into `ChickensSpawnManager`, and exposed `/chickens spawn multiplier <value>` so testers can crank spawn weights (or reset to `1.0`) without editing configs.
+  2. Injected a natural-spawn logger in `ChickensChicken.finalizeSpawn`, wired `/chickens spawn debug <true|false>` to broadcast the chicken type, biome bucket, and coordinates whenever natural spawns fire, and added `/chickens spawn summon …` plus `/chickens spawn summon_random …` to spawn specific or random chickens at the command source while the new `OverworldPopulationHandler` periodically forces additional overworld spawns around players when plans exist.
+  3. Documented the new commands in the README/localisation and ran `./gradlew build` (warnings unchanged: legacy JEI subtype API + FluidStack helpers).
+- **Rationale**: Runtime knobs and force-summon commands let testers confirm spawn behaviour (or immediately spawn target breeds) without editing configs or rebuilding the mod.

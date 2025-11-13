@@ -7,6 +7,8 @@ import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import com.setycz.chickens.item.ChickenStats;
 import com.setycz.chickens.item.FluxEggItem;
 import com.setycz.chickens.registry.ModEntityTypes;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
+import com.setycz.chickens.spawn.ChickensSpawnDebug;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -39,6 +41,7 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Modern NeoForge implementation of the chickens entity. The original mod
@@ -405,17 +408,26 @@ public class ChickensChicken extends Chicken {
         if (spawnData instanceof GroupData groupData) {
             this.setChickenType(groupData.type);
         } else {
-            SpawnType biomeSpawnType = ChickensRegistry.getSpawnType(level.getBiome(this.blockPosition()));
-            List<ChickensRegistryItem> options = ChickensRegistry.getPossibleChickensToSpawn(biomeSpawnType);
-            if (!options.isEmpty()) {
-                ChickensRegistryItem selected = options.get(this.random.nextInt(options.size()));
-                int type = selected.getId();
-                this.setChickenType(type);
-                spawnData = new GroupData(type);
+            if (this.getChickenType() != 0) {
+                spawnData = new GroupData(this.getChickenType());
+            } else {
+                Holder<Biome> biome = level.getBiome(this.blockPosition());
+                Optional<ChickensRegistryItem> selected = ChickensSpawnManager.pickChicken(biome, this.random);
+                if (selected.isPresent()) {
+                    int type = selected.get().getId();
+                    this.setChickenType(type);
+                    spawnData = new GroupData(type);
+                }
             }
         }
         if (this.random.nextInt(5) == 0) {
             this.setAge(-24000);
+        }
+        if (!level.isClientSide() && (spawnType == MobSpawnType.NATURAL || spawnType == MobSpawnType.CHUNK_GENERATION)) {
+            ChickensRegistryItem descriptor = ChickensRegistry.getByType(this.getChickenType());
+            if (descriptor != null) {
+                ChickensSpawnDebug.broadcastSpawn(level, this.blockPosition(), descriptor);
+            }
         }
         return spawnData;
     }
@@ -440,14 +452,14 @@ public class ChickensChicken extends Chicken {
     }
 
     public static boolean checkSpawnRules(net.minecraft.world.entity.EntityType<ChickensChicken> type, LevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
-        boolean netherEnabled = ChickensRegistry.isAnyIn(SpawnType.HELL);
-        boolean overworldEnabled = ChickensRegistry.isAnyIn(SpawnType.NORMAL) || ChickensRegistry.isAnyIn(SpawnType.SNOW);
         Holder<Biome> biome = level.getBiome(pos);
-        boolean isNether = ChickensRegistry.getSpawnType(biome) == SpawnType.HELL;
-        if (isNether && netherEnabled) {
+        SpawnType spawnType = ChickensRegistry.getSpawnType(biome);
+        boolean netherEnabled = ChickensSpawnManager.hasPlan(SpawnType.HELL);
+        boolean overworldEnabled = ChickensSpawnManager.hasPlan(SpawnType.NORMAL) || ChickensSpawnManager.hasPlan(SpawnType.SNOW);
+        if (spawnType == SpawnType.HELL && netherEnabled) {
             return net.minecraft.world.entity.animal.Animal.checkAnimalSpawnRules(type, level, reason, pos, random);
         }
-        if (!isNether && overworldEnabled) {
+        if (spawnType != SpawnType.HELL && overworldEnabled) {
             return net.minecraft.world.entity.animal.Animal.checkAnimalSpawnRules(type, level, reason, pos, random);
         }
         return false;

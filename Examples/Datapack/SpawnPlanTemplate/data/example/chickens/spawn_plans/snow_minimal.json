@@ -1,0 +1,8 @@
+{
+  "spawn_type": "snow",
+  "spawn_weight": 6,
+  "min_brood_size": 1,
+  "max_brood_size": 2,
+  "spawn_charge": 0.08,
+  "energy_budget": 0.2
+}

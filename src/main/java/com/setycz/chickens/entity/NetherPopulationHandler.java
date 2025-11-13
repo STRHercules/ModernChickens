@@ -1,11 +1,11 @@
 package com.setycz.chickens.entity;
 
-import com.setycz.chickens.ChickensRegistry;
-import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
 import com.setycz.chickens.registry.ModEntityTypes;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
+import com.setycz.chickens.ChickensRegistryItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Reintroduces the legacy nether population burst that spawned chicken groups
@@ -48,7 +47,7 @@ public final class NetherPopulationHandler {
         if (!level.dimensionType().ultraWarm()) {
             return;
         }
-        if (!ChickensRegistry.isAnyIn(SpawnType.HELL)) {
+        if (!ChickensSpawnManager.hasPlan(SpawnType.HELL)) {
             return;
         }
         if (level.getGameTime() % CHECK_INTERVAL_TICKS != 0) {
@@ -71,11 +70,10 @@ public final class NetherPopulationHandler {
             return;
         }
 
-        List<ChickensRegistryItem> netherChickens = ChickensRegistry.getPossibleChickensToSpawn(SpawnType.HELL);
-        if (netherChickens.isEmpty()) {
+        ChickensRegistryItem selected = ChickensSpawnManager.pickChicken(SpawnType.HELL, level.random).orElse(null);
+        if (selected == null) {
             return;
         }
-        ChickensRegistryItem selected = netherChickens.get(level.random.nextInt(netherChickens.size()));
 
         int min = Math.max(1, config.getMinBroodSize());
         int max = Math.max(min, config.getMaxBroodSize());

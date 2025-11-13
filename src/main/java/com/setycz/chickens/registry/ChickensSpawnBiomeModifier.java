@@ -1,14 +1,10 @@
 package com.setycz.chickens.registry;
 
 import com.mojang.serialization.MapCodec;
-import com.setycz.chickens.ChickensRegistry;
-import com.setycz.chickens.SpawnType;
-import com.setycz.chickens.config.ChickensConfigHolder;
-import com.setycz.chickens.config.ChickensConfigValues;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
+import com.setycz.chickens.spawn.ChickensSpawnManager.SpawnPlan;
 import net.minecraft.core.Holder;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 
@@ -29,26 +25,12 @@ public final class ChickensSpawnBiomeModifier implements BiomeModifier {
         if (phase != Phase.ADD) {
             return;
         }
-        SpawnType spawnType = ChickensRegistry.getSpawnType(biome);
-        if (spawnType == SpawnType.NONE) {
-            return;
-        }
-        if (ChickensRegistry.getPossibleChickensToSpawn(spawnType).isEmpty()) {
-            return;
-        }
+        ChickensSpawnManager.planFor(biome).ifPresent(plan -> addSpawn(builder, plan));
+    }
 
-        ChickensConfigValues config = ChickensConfigHolder.get();
-        int weight = config.getSpawnProbability();
-        if (spawnType == SpawnType.HELL) {
-            weight = Math.round(weight * config.getNetherSpawnChanceMultiplier());
-        }
-        if (weight <= 0) {
-            return;
-        }
-
-        MobSpawnSettings.SpawnerData entry = new MobSpawnSettings.SpawnerData(
-                ModEntityTypes.CHICKENS_CHICKEN.get(), weight, config.getMinBroodSize(), config.getMaxBroodSize());
-        builder.getMobSpawnSettings().addSpawn(MobCategory.CREATURE, entry);
+    private static void addSpawn(ModifiableBiomeInfo.BiomeInfo.Builder builder, SpawnPlan plan) {
+        builder.getMobSpawnSettings().addSpawn(plan.category(), plan.spawnerData());
+        builder.getMobSpawnSettings().addMobCharge(plan.spawnerData().type, plan.spawnCharge(), plan.energyBudget());
     }
 
     @Override

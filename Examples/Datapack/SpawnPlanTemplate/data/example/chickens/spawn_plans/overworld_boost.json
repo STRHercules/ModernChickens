@@ -1,0 +1,6 @@
+{
+  "spawn_type": "normal",
+  "weight_multiplier": 2.5,
+  "min_brood_size": 3,
+  "max_brood_size": 5
+}
