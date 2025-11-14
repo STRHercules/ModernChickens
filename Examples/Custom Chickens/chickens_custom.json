@@ -1,0 +1,93 @@
+{
+  "_comment": "Add entries to the chickens array. Copy the sample block from _example to get started.",
+  "chickens": [
+    {
+      "name": "Whipped Cream Chicken",
+      "texture": "chickens:textures/entity/gunpowderchicken.png",
+      "item_texture": "chickens:textures/item/chicken/gunpowderchicken.png",
+      "lay_item": {
+        "item": "minecraft:cake"
+      },
+      "drop_item": {
+        "item": "minecraft:cake",
+        "count": 2
+      },
+      "background_color": "#ad2cdb",
+      "foreground_color": "#0bd1e3",
+      "parents": [
+        "SnowballChicken",
+        "SlimeChicken"
+      ],
+      "spawn_type": "none",
+      "lay_coefficient": 1.25,
+      "display_name": "Whipped Cream Chicken",
+      "generated_texture": false,
+      "enabled": true
+    },
+    {
+      "name": "Booger Chicken",
+      "item_texture": "chickens:textures/item/chicken/slimechicken.png",
+      "lay_item": {
+        "item": "minecraft:cake"
+      },
+      "drop_item": {
+        "item": "minecraft:cake",
+        "count": 2
+      },
+      "background_color": "#195e2c",
+      "foreground_color": "#15291a",
+      "parents": [
+        "SnowballChicken",
+        "SlimeChicken"
+      ],
+      "spawn_type": "none",
+      "lay_coefficient": 1.25,
+      "display_name": "Booger Chicken",
+      "generated_texture": true,
+      "enabled": true
+    },
+    {
+      "name": "Burnt Toast Chicken",
+      "texture": "chickens:textures/entity/glasschicken.png",
+      "item_texture": "chickens:textures/item/chicken/glasschicken.png",
+      "lay_item": {
+        "item": "minecraft:cake"
+      },
+      "drop_item": {
+        "item": "minecraft:cake",
+        "count": 2
+      },
+      "background_color": "#1c632f",
+      "foreground_color": "#b86c2e",
+      "parents": [
+        "SnowballChicken",
+        "SlimeChicken"
+      ],
+      "spawn_type": "none",
+      "lay_coefficient": 1.25,
+      "display_name": "Burnt Toast Chicken",
+      "generated_texture": false,
+      "enabled": true
+    }
+  ],
+  "_example": [
+    {
+      "name": "CopperChicken",
+      "texture": "chickens:textures/entity/CopperChicken.png",
+      "item_texture": "chickens:textures/item/chicken/copperchicken.png",
+      "lay_item": {
+        "item": "minecraft:copper_ingot"
+      },
+      "drop_item": {
+        "item": "minecraft:copper_ingot",
+        "count": 2
+      },
+      "background_color": "#b87333",
+      "foreground_color": "#f8cfa9",
+      "parents": ["IronChicken", "WaterChicken"],
+      "spawn_type": "normal",
+      "lay_coefficient": 1.0,
+      "display_name": "Copper Chicken"
+    }
+  ]
+}
