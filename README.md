@@ -34,12 +34,15 @@ _Chickens available in ATM10!_
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
 
 
-> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade.
+> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade. (only if upgrading from an old version)
+
 > Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
+
 > Want different RF pacing? Adjust `general.fluxEggCapacityMultiplier` for Flux Egg storage or tweak `general.avianFluxCapacity`, `general.avianFluxMaxReceive`, and `general.avianFluxMaxExtract` to rebalance the converter.
+
 > Prefer gentler handling? Set `general.liquidEggHazardsEnabled=false` to suppress the liquid egg status effects, and tune `general.avianFluidConverterCapacity` / `general.avianFluidConverterTransferRate` to balance fluid throughput.
 	
-### Avian Fluid Converter
+## Avian Fluid Converter
 	
 Liquid eggs no longer require hand-placing to deploy their contents. Drop a liquid egg in the Avian Fluid Converter and it automatically cracks the shell, stores the fluid internally, and feeds adjacent tanks or pipes each tick.
 	
@@ -50,7 +53,7 @@ Liquid eggs no longer require hand-placing to deploy their contents. Drop a liqu
 	
 Pair the converter with standard fluid transport (pipes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
 
-### Avian Dousing Machine
+## Avian Dousing Machine
 
 The Avian Dousing Machine ties the Smart Chicken lineage into the new fluid and chemical chicken generators. It consumes stored reagents and Redstone Flux to mint spawn eggs for the dynamically generated liquid and chemical chickens, letting you unlock those breeds in survival without commands or JSON edits.
 
@@ -105,7 +108,7 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 | 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈1,315.6 | ≈13,155.6 | ≈26,311.2 | ≈39,466.6 |
 
 	
-### Custom Chicken Definitions
+## Custom Chicken Definitions
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
@@ -261,7 +264,7 @@ git clone https://example.com/ModernChickens.git
 cd ModernChickens
 
 # Run a clean build
-./gradlew --console=plain build
+./gradlew clean build
 ```
 
 The build copies legacy resources from `OriginalChickens`, optionally mirrors Roost textures from `roost`, and produces a distributable JAR in `build/libs/`.
@@ -271,9 +274,8 @@ The build copies legacy resources from `OriginalChickens`, optionally mirrors Ro
 
 ## Support and Contributions
 
-- File gameplay bugs or crash reports through the project issue tracker (link in `neoforge.mods.toml`).
+- File gameplay bugs or crash reports through the project issue tracker.
 - Keep pull requests focused and ensure `./gradlew build` succeeds before submitting.
-- Use `TRACELOG.md` to document development steps, and update `SUGGESTIONS.md` with follow-up ideas or refactors discovered during implementation.
 
 *Modern Chickens inherits the MIT license from the original project. See `LICENSE` (when present) or the mod metadata for details.*
 
