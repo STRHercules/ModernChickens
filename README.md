@@ -13,18 +13,18 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
 2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
 3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
-4. **Scale production.** Tune `chickens.cfg` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
+4. **Scale production.** Tune [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
 
 ## Feature Highlights
 	
-- **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.cfg` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
+- **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
 - **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, the Avian Fluid Converter, the Avian Chemical Converter, and the Avian Dousing Machine ship with their original block entities, menus, and renderers so farms can incubate, store, transmute, and harvest chickens hands-free.
 - **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chemical and gas eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
 - **Fluid and chemical automation** - Liquid eggs can be cracked into configurable fluid stacks with the Avian Fluid Converter, and chemical or gas eggs feed the Avian Chemical Converter to build Mekanism-compatible buffers. Both machines ship tank overlays, JEI recipes, and Jade/WTHIT readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack and chemical chickens for every discovered Mekanism chemical.
 - **JEI and HUD integrations** - Recipe categories, item subtypes, and Jade/WTHIT overlay tooltips surface roost, breeder, converter, dousing, and chicken stats directly in-game when the companion mods are installed.
 - **Server-friendly utilities** - `/chickens export breeding` regenerates the breeding graph on demand, and the mod respects headless server runs out of the box.
-- **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them. You are able to tune the `chicken.properties` to disable duplicate chickens, change their breed 'recipe' and laid resource. 
+- **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them.
 
 _Chickens available in ATM10!_
 
@@ -34,28 +34,59 @@ _Chickens available in ATM10!_
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
 
 
-> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade. (only if upgrading from an old version)
+> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. 
+
 
 > Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
 
 > Want different RF pacing? Adjust `general.fluxEggCapacityMultiplier` for Flux Egg storage or tweak `general.avianFluxCapacity`, `general.avianFluxMaxReceive`, and `general.avianFluxMaxExtract` to rebalance the converter.
 
 > Prefer gentler handling? Set `general.liquidEggHazardsEnabled=false` to suppress the liquid egg status effects, and tune `general.avianFluidConverterCapacity` / `general.avianFluidConverterTransferRate` to balance fluid throughput.
+
+> Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade. (only if upgrading from an old version that used this file)
+
+## New Egg Assets
+
+_Dynamic Fluid Eggs!_
+
+![Dynamic Fluid Eggs](https://i.imgur.com/37OGGEr.png)
+
+_Dynamic Chemical Eggs!_
+
+![Dynamic Chemical Eggs](https://i.imgur.com/jG71Xpp.png)
+
+_New Redstone Flux Egg Asset!_
+
+![Redstone Flux Eggs](https://i.imgur.com/WklUeVL.png)
+
+> Dynamic Fluid and Chemical Eggs will mimic their respective resource's color.
 	
-## Avian Fluid Converter
+## Avian Fluid/Chemical Converters
+
+_Converting Eggs to Fluids and Chemicals!_
+
+![Converters!](https://i.imgur.com/kokLuyI.jpeg)
 	
-Liquid eggs no longer require hand-placing to deploy their contents. Drop a liquid egg in the Avian Fluid Converter and it automatically cracks the shell, stores the fluid internally, and feeds adjacent tanks or pipes each tick.
+Liquid eggs no longer require hand-placing to deploy their contents. Drop a liquid or Chemical egg in the respective Avian Converter and it automatically cracks the shell, stores the fluid/chemical internally, and feeds adjacent tanks or pipes each tick.
 	
-- **Discovery**: JEI adds an “Avian Fluid Converter” category that lists every liquid egg and the fluid volume it produces. The converter block is registered as a catalyst, so recipes are only a click away.
-- **Catch ’em all**: Modern Chickens now creates a dedicated chicken for every fluid detected at runtime—if a mod ships a new liquid, you get a matching bird and egg automatically.
-- **Monitoring**: WTHIT and Jade overlays mirror the in-block gauge with the current fluid name, stored amount, and tank capacity. You can check the converter’s status without opening the GUI.
+- **Discovery**: JEI adds an “Avian Fluid/Chemical Converter” category that lists every liquid/chemical egg and the fluid/chemical volume it produces. The converter block is registered as a catalyst, so recipes are only a click away.
+- **Catch ’em all**: Modern Chickens now creates a dedicated chicken for every fluid and chemical detected at runtime—if a mod ships a new liquid or chemical, you get a matching bird and egg automatically.
+- **Monitoring**: WTHIT and Jade overlays mirror the in-block gauge with the current fluid/chemical name, stored amount, and tank capacity. You can check the converter’s status without opening the GUI.
 - **Balancing**: Server owners can adjust `general.avianFluidConverterCapacity`, `general.avianFluidConverterTransferRate`, and `general.liquidEggHazardsEnabled` in `config/chickens.cfg` to match the rest of their tech progression.
 	
-Pair the converter with standard fluid transport (pipes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
+Pair the converter with standard fluid/chemical transport (pipes, tubes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
 
 ## Avian Dousing Machine
 
 The Avian Dousing Machine ties the Smart Chicken lineage into the new fluid and chemical chicken generators. It consumes stored reagents and Redstone Flux to mint spawn eggs for the dynamically generated liquid and chemical chickens, letting you unlock those breeds in survival without commands or JSON edits.
+
+_Converting Chemicals!_
+
+![Converting Chemicals](https://i.imgur.com/fwZnEtI.jpeg)
+
+_Converting Liquids!_
+
+![Converting Liquids](https://i.imgur.com/Ge7zx4b.jpeg)
 
 - **Inputs**: Place a Smart Chicken spawn egg or captured Smart Chicken in the left slot. The machine only accepts Smart Chickens, treating them as blank templates to be imprinted with a reagent.
 - **Reagents**: Pipe liquids into the built-in fluid tank (often from an Avian Fluid Converter) and feed Mekanism chemicals or gases into the internal chemical buffer directly or via an Avian Chemical Converter. The machine automatically prefers chemicals when both buffers are available.
@@ -67,7 +98,7 @@ Combining the Dousing Machine with the Fluid and Chemical Converters lets you go
 
 ## Redstone Flux
 
-![RF Chicken Generator!](https://i.imgur.com/lkeGThc.png)
+![RF Chicken Generator!](https://i.imgur.com/Djoeb5P.jpeg)
 
 
 Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
@@ -97,7 +128,7 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 | 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
 | 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
 
-> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.cfg`.
+> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg).
 
 ### Same graph in RF/s:
 
@@ -112,9 +143,9 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
-- Custom chickens participate in the existing `chickens.cfg` flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
+- Custom chickens participate in the existing [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
 
-Example `chickens_custom.json` entries (place inside the top-level `chickens` array):
+Example [chickens_custom.json](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Custom%20Chickens/chickens_custom.json) entries (place inside the top-level `chickens` array):
 
 
 ```json
@@ -182,7 +213,7 @@ Natural spawning now reads tuning data from `ChickensSpawnManager`, and datapack
 | Field | Type | Behaviour |
 | --- | --- | --- |
 | `spawn_type` | String (required) | One of `normal`, `snow`, or `hell`. Determines which biome bucket the override applies to. |
-| `spawn_weight` | Integer | Absolute weight for the biome bucket. When omitted, the value derived from `chickens.cfg` is used. |
+| `spawn_weight` | Integer | Absolute weight for the biome bucket. When omitted, the value derived from [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) is used. |
 | `weight_multiplier` | Float | Multiplies the config-derived weight instead of overriding it. Cannot be combined with `spawn_weight`. |
 | `min_brood_size` | Integer | Overrides the minimum flock size inserted into the biome modifier. |
 | `max_brood_size` | Integer | Overrides the maximum flock size. Automatically clamps to the configured minimum when smaller. |
@@ -202,7 +233,7 @@ Example datapack snippet that boosts overworld chicken density while limiting fl
 
 Reloading datapacks (or restarting the server) automatically reapplies these overrides; removing the JSON restores the configuration defaults.
 
-Global spawn helpers are also configurable via `chickens.cfg`:
+Global spawn helpers are also configurable via [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg):
 
 - `general.overworldSpawnChance` (default `0.02`) controls the chance per check that the overworld spawn helper runs.
 - `general.netherSpawnChance` (default `0.05`) works alongside `netherSpawnChanceMultiplier` to determine Nether burst frequency.
@@ -232,7 +263,7 @@ When you need an immediate test subject, `/chickens spawn summon <chickenNameOrI
 | `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
-| *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. Only exposed through `chickens.cfg`; defaults to `false` for breeds with parents. |
+| *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. Only exposed through [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg); defaults to `false` for breeds with parents. |
 
 ## Project layout
 
