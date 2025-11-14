@@ -1,6 +1,6 @@
 # Modern Chickens
 
-Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods. It reintroduces the breeding-driven resource automation gameplay loop while embracing modern Forge-era tooling, data packs, and integrations.
+Modern Chickens is a NeoForge port of the classic Chickens and Roost mods for Minecraft 1.21.1 . It reintroduces the breeding-driven resource automation gameplay loop while embracing modern Forge-era tooling, datapacks, and mod integrations while also introducing new modernized features!
 
 ### Mod Pages: 
 
@@ -14,16 +14,16 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
 3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
 4. **Scale production.** Tune [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
+5. **Avian Domination!**
 
 ## Feature Highlights
 	
-- **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
+- **Comprehensive and Customizable chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
 - **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, the Avian Fluid Converter, the Avian Chemical Converter, and the Avian Dousing Machine ship with their original block entities, menus, and renderers so farms can incubate, store, transmute, and harvest chickens hands-free.
 - **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chemical and gas eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
 - **Fluid and chemical automation** - Liquid eggs can be cracked into configurable fluid stacks with the Avian Fluid Converter, and chemical or gas eggs feed the Avian Chemical Converter to build Mekanism-compatible buffers. Both machines ship tank overlays, JEI recipes, and Jade/WTHIT readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack and chemical chickens for every discovered Mekanism chemical.
 - **JEI and HUD integrations** - Recipe categories, item subtypes, and Jade/WTHIT overlay tooltips surface roost, breeder, converter, dousing, and chicken stats directly in-game when the companion mods are installed.
-- **Server-friendly utilities** - `/chickens export breeding` regenerates the breeding graph on demand, and the mod respects headless server runs out of the box.
 - **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them.
 
 _Chickens available in ATM10!_
@@ -105,7 +105,7 @@ Combining the Dousing Machine with the Fluid and Chemical Converters lets you go
 ![RF Chicken Generator!](https://i.imgur.com/Djoeb5P.jpeg)
 
 
-Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
+Modern Chickens introduces power generation through a dedicated Redstone Flux progression line:
 
 - **Redstone Flux Chicken** – A tier 3 breed unlocked by pairing Redstone and Glowstone chickens. Every drop is a charged Flux Egg so energy farms can start as soon as the bird hatches.
 - **Flux Egg** – Stores Redstone Flux directly on the item stack. Freshly laid eggs hold 1,000 RF and gain another 100 RF for every growth, gain, or strength point above 1 (maxing out at 3,700 RF per egg from a 10/10/10 chicken).
