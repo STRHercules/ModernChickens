@@ -16,13 +16,13 @@ Modern Chickens is a NeoForge 1.21.1 port of the classic Chickens and Roost mods
 4. **Scale production.** Tune `chickens.cfg` to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
 
 ## Feature Highlights
-
+	
 - **Comprehensive chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent `chickens.cfg` configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
-- **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, and the new Avian Fluid Converter ship with their original block entities, menus, and renderers so farms can incubate, store, and harvest chickens hands-free.
-- **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
-- **Fluid automation** - Liquid eggs can now be cracked into configurable fluid stacks with the Avian Fluid Converter, complete with tank overlays, JEI recipes, and WTHIT/Jade readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack.
-- **JEI and Jade integrations** - Recipe categories, item subtypes, and overlay tooltips surface roost, breeder, fluid converter, and chicken stats directly in-game when the companion mods are installed.
+- **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, the Avian Fluid Converter, the Avian Chemical Converter, and the Avian Dousing Machine ship with their original block entities, menus, and renderers so farms can incubate, store, transmute, and harvest chickens hands-free.
+- **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chemical and gas eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
+- **Fluid and chemical automation** - Liquid eggs can be cracked into configurable fluid stacks with the Avian Fluid Converter, and chemical or gas eggs feed the Avian Chemical Converter to build Mekanism-compatible buffers. Both machines ship tank overlays, JEI recipes, and Jade/WTHIT readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack and chemical chickens for every discovered Mekanism chemical.
+- **JEI and HUD integrations** - Recipe categories, item subtypes, and Jade/WTHIT overlay tooltips surface roost, breeder, converter, dousing, and chicken stats directly in-game when the companion mods are installed.
 - **Server-friendly utilities** - `/chickens export breeding` regenerates the breeding graph on demand, and the mod respects headless server runs out of the box.
 - **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them. You are able to tune the `chicken.properties` to disable duplicate chickens, change their breed 'recipe' and laid resource. 
 
@@ -38,18 +38,73 @@ _Chickens available in ATM10!_
 > Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
 > Want different RF pacing? Adjust `general.fluxEggCapacityMultiplier` for Flux Egg storage or tweak `general.avianFluxCapacity`, `general.avianFluxMaxReceive`, and `general.avianFluxMaxExtract` to rebalance the converter.
 > Prefer gentler handling? Set `general.liquidEggHazardsEnabled=false` to suppress the liquid egg status effects, and tune `general.avianFluidConverterCapacity` / `general.avianFluidConverterTransferRate` to balance fluid throughput.
-
+	
 ### Avian Fluid Converter
-
+	
 Liquid eggs no longer require hand-placing to deploy their contents. Drop a liquid egg in the Avian Fluid Converter and it automatically cracks the shell, stores the fluid internally, and feeds adjacent tanks or pipes each tick.
-
+	
 - **Discovery**: JEI adds an “Avian Fluid Converter” category that lists every liquid egg and the fluid volume it produces. The converter block is registered as a catalyst, so recipes are only a click away.
 - **Catch ’em all**: Modern Chickens now creates a dedicated chicken for every fluid detected at runtime—if a mod ships a new liquid, you get a matching bird and egg automatically.
 - **Monitoring**: WTHIT and Jade overlays mirror the in-block gauge with the current fluid name, stored amount, and tank capacity. You can check the converter’s status without opening the GUI.
 - **Balancing**: Server owners can adjust `general.avianFluidConverterCapacity`, `general.avianFluidConverterTransferRate`, and `general.liquidEggHazardsEnabled` in `config/chickens.cfg` to match the rest of their tech progression.
-
+	
 Pair the converter with standard fluid transport (pipes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
 
+### Avian Dousing Machine
+
+The Avian Dousing Machine ties the Smart Chicken lineage into the new fluid and chemical chicken generators. It consumes stored reagents and Redstone Flux to mint spawn eggs for the dynamically generated liquid and chemical chickens, letting you unlock those breeds in survival without commands or JSON edits.
+
+- **Inputs**: Place a Smart Chicken spawn egg or captured Smart Chicken in the left slot. The machine only accepts Smart Chickens, treating them as blank templates to be imprinted with a reagent.
+- **Reagents**: Pipe liquids into the built-in fluid tank (often from an Avian Fluid Converter) and feed Mekanism chemicals or gases into the internal chemical buffer directly or via an Avian Chemical Converter. The machine automatically prefers chemicals when both buffers are available.
+- **Outputs**: When it has enough energy and reagent, the Dousing Machine consumes one Smart Chicken plus a chunk of stored liquid or chemical and creates the corresponding liquid or chemical chicken spawn egg in the output slot. Each egg hatches into a chicken that lays the matching liquid or chemical egg item.
+- **Discovery tools**: With Mekanism and JEI installed, an “Avian Dousing Machine” recipe category lists each supported chemical egg, its Smart Chicken input, reagent cost, RF cost, and the resulting chemical chicken spawn egg so you can plan your automation chain.
+- **Status at a glance**: WTHIT overlays mirror the machine’s stored fluid and energy plus its infusion progress, so you can confirm whether a cycle is about to complete without opening the GUI.
+
+Combining the Dousing Machine with the Fluid and Chemical Converters lets you go from liquids or Mekanism chemicals → eggs → buffered tanks → dedicated chickens entirely inside the Modern Chickens ecosystem.
+
+## Redstone Flux
+
+![RF Chicken Generator!](https://i.imgur.com/lkeGThc.png)
+
+
+Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
+
+- **Redstone Flux Chicken** – A tier 3 breed unlocked by pairing Redstone and Glowstone chickens. Every drop is a charged Flux Egg so energy farms can start as soon as the bird hatches.
+- **Flux Egg** – Stores Redstone Flux directly on the item stack. Freshly laid eggs hold 1,000 RF and gain another 100 RF for every growth, gain, or strength point above 1 (maxing out at 3,700 RF per egg from a 10/10/10 chicken).
+- **Avian Flux Converter** – A single-slot machine that drains Flux Eggs into a 50,000 RF internal buffer while exporting energy to adjacent consumers. Empty shells are discarded automatically once their payload is exhausted.
+
+### Flux Egg charge scaling
+
+Flux Eggs inherit the stats of the chicken that laid them, so every breed and breeding investment matters:
+
+| Chicken stats | Stored RF per egg | Notes |
+| --- | --- | --- |
+| 1/1/1 (base) | 1,000 RF | Entry-level output straight from newly bred birds. |
+| 10/10/10 (max) | 3,700 RF | Gains also triple the stack size, dropping **three** eggs per cycle. |
+
+The Avian Flux Converter converts each egg’s stored energy on a one-to-one basis, so farms can bank or route the full payload without transmission loss.
+
+### Roost throughput examples
+
+Roost production scales with both chicken stats and stack size. Each cycle takes roughly 27,000 server ticks (the midpoint between the Redstone Flux Chicken’s 18,000–36,000 tick lay window) divided by the number of working chickens times their growth stat. The figures below assume default config values, infinite storage, and continuous feeding so every roost stays active.
+
+| Installation | RF/t per roost | 10 roosts | 20 roosts | 30 roosts |
+| --- | ---: | ---: | ---: | ---: |
+| 1× base Redstone Flux Chicken (stats 1/1/1) | ≈0.04 | ≈0.37 | ≈0.74 | ≈1.11 |
+| 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
+| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
+
+> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.cfg`.
+
+### Same graph in RF/s:
+
+| Installation | RF/s per roost | 10 roosts | 20 roosts | 30 roosts |
+|---|---:|---:|---:|---:|
+| 1× base Redstone Flux Chicken (1/1/1) | ≈0.8 | ≈7.4 | ≈14.8 | ≈22.2 |
+| 1× max-stat Redstone Flux Chicken (10/10/10) | ≈82.2 | ≈822.2 | ≈1,644.4 | ≈2,466.6 |
+| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈1,315.6 | ≈13,155.6 | ≈26,311.2 | ≈39,466.6 |
+
+	
 ### Custom Chicken Definitions
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
@@ -175,49 +230,6 @@ When you need an immediate test subject, `/chickens spawn summon <chickenNameOrI
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
 | *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. Only exposed through `chickens.cfg`; defaults to `false` for breeds with parents. |
-
-## Redstone Flux
-
-![RF Chicken Generator!](https://i.imgur.com/lkeGThc.png)
-
-
-Modern Chickens reintroduces power generation through a dedicated Redstone Flux progression line:
-
-- **Redstone Flux Chicken** – A tier 3 breed unlocked by pairing Redstone and Glowstone chickens. Every drop is a charged Flux Egg so energy farms can start as soon as the bird hatches.
-- **Flux Egg** – Stores Redstone Flux directly on the item stack. Freshly laid eggs hold 1,000 RF and gain another 100 RF for every growth, gain, or strength point above 1 (maxing out at 3,700 RF per egg from a 10/10/10 chicken).
-- **Avian Flux Converter** – A single-slot machine that drains Flux Eggs into a 50,000 RF internal buffer while exporting energy to adjacent consumers. Empty shells are discarded automatically once their payload is exhausted.
-
-### Flux Egg charge scaling
-
-Flux Eggs inherit the stats of the chicken that laid them, so every breed and breeding investment matters:
-
-| Chicken stats | Stored RF per egg | Notes |
-| --- | --- | --- |
-| 1/1/1 (base) | 1,000 RF | Entry-level output straight from newly bred birds. |
-| 10/10/10 (max) | 3,700 RF | Gains also triple the stack size, dropping **three** eggs per cycle. |
-
-The Avian Flux Converter converts each egg’s stored energy on a one-to-one basis, so farms can bank or route the full payload without transmission loss.
-
-### Roost throughput examples
-
-Roost production scales with both chicken stats and stack size. Each cycle takes roughly 27,000 server ticks (the midpoint between the Redstone Flux Chicken’s 18,000–36,000 tick lay window) divided by the number of working chickens times their growth stat. The figures below assume default config values, infinite storage, and continuous feeding so every roost stays active.
-
-| Installation | RF/t per roost | 10 roosts | 20 roosts | 30 roosts |
-| --- | ---: | ---: | ---: | ---: |
-| 1× base Redstone Flux Chicken (stats 1/1/1) | ≈0.04 | ≈0.37 | ≈0.74 | ≈1.11 |
-| 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
-| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
-
-> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in `chickens.cfg`.
-
-### Same graph in RF/s:
-
-| Installation | RF/s per roost | 10 roosts | 20 roosts | 30 roosts |
-|---|---:|---:|---:|---:|
-| 1× base Redstone Flux Chicken (1/1/1) | ≈0.8 | ≈7.4 | ≈14.8 | ≈22.2 |
-| 1× max-stat Redstone Flux Chicken (10/10/10) | ≈82.2 | ≈822.2 | ≈1,644.4 | ≈2,466.6 |
-| 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈1,315.6 | ≈13,155.6 | ≈26,311.2 | ≈39,466.6 |
-
 
 ## Project layout
 
