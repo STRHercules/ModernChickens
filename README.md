@@ -28,7 +28,9 @@ Modern Chickens is a NeoForge port of the classic Chickens and Roost mods for Mi
 
 _Chickens available in ATM10!_
 
-![Chickens Available in ATM10](https://i.imgur.com/Eq2NYOr.gif)
+![Chickens Available in ATM10](https://i.imgur.com/YxIPuRC.gif)
+
+![Look at all these CHICKENTHS!](https://media1.tenor.com/m/hRVtp7V06GQAAAAd/look-at.gif)
 
 
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
