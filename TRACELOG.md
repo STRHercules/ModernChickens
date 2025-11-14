@@ -872,3 +872,11 @@
   2. Injected a natural-spawn logger in `ChickensChicken.finalizeSpawn`, wired `/chickens spawn debug <true|false>` to broadcast the chicken type, biome bucket, and coordinates whenever natural spawns fire, and added `/chickens spawn summon …` plus `/chickens spawn summon_random …` to spawn specific or random chickens at the command source while the new `OverworldPopulationHandler` periodically forces additional overworld spawns around players when plans exist.
   3. Documented the new commands in the README/localisation and ran `./gradlew build` (warnings unchanged: legacy JEI subtype API + FluidStack helpers).
 - **Rationale**: Runtime knobs and force-summon commands let testers confirm spawn behaviour (or immediately spawn target breeds) without editing configs or rebuilding the mod.
+
+## Entry 107
+- **Prompt/Task**: Tune spawn rates back down to reasonable levels across overworld, Nether, and End.
+- **Steps**:
+  1. Added `general.overworldSpawnChance`, `general.netherSpawnChance`, and `general.endSpawnChance` config keys (with legacy bridge support) plus a per-chicken `allowNaturalSpawn` toggle so higher-tier breeds can opt into natural spawning explicitly; bundled a default `defaultconfigs/chickens.cfg` that is copied on first launch so the shipped settings match the requested template.
+  2. Updated the overworld/End population helper and Nether burst handler to pull their probabilities from the new config values (respecting the debug multiplier), capped Nether burst Y-search at 100, and imposed per-player cooldowns (3 min overworld, 5 min Nether, 7 min End) with smaller flock sizes to prevent spam.
+  3. Documented the new config knobs in the README and verified the build with `./gradlew build` (warnings unchanged: JEI subtype + FluidStack APIs).
+- **Rationale**: Centralised tuning knobs let pack makers dial spawn density per dimension without hacking the code, while the per-chicken flag lets selective higher-tier breeds (like the Ender Chicken) appear naturally only when explicitly allowed.

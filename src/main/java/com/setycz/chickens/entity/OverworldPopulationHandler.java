@@ -8,7 +8,6 @@ import com.setycz.chickens.config.ChickensConfigValues;
 import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.spawn.ChickensSpawnDebug;
 import com.setycz.chickens.spawn.ChickensSpawnManager;
-import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -17,12 +16,16 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Optional overworld spawn helper that periodically spawns a burst of chickens around random players.
@@ -31,6 +34,8 @@ import javax.annotation.Nullable;
 public final class OverworldPopulationHandler {
     private static final int CHECK_INTERVAL_TICKS = 40;
     private static final int SPAWN_RADIUS = 32;
+    private static final int PLAYER_COOLDOWN_TICKS = 20 * 180;
+    private static final Map<UUID, Long> LAST_SPAWN = new HashMap<>();
 
     private OverworldPopulationHandler() {
     }
@@ -64,14 +69,24 @@ public final class OverworldPopulationHandler {
         }
 
         ChickensConfigValues config = ChickensConfigHolder.get();
-        float probability = Mth.clamp(config.getSpawnProbability() / 20.0F, 0.05F, 1.0F);
-        probability *= Math.max(1.0F, ChickensSpawnDebug.getSpawnWeightMultiplier());
-        if (level.random.nextFloat() >= probability) {
+        float baseChance = isEnd ? config.getEndSpawnChance() : config.getOverworldSpawnChance();
+        if (baseChance <= 0.0F) {
+            return;
+        }
+        baseChance *= Math.max(1.0F, ChickensSpawnDebug.getSpawnWeightMultiplier());
+        baseChance = Math.min(baseChance, 1.0F);
+        if (level.random.nextFloat() >= baseChance) {
             return;
         }
 
         ServerPlayer player = level.getRandomPlayer();
         if (player == null) {
+            return;
+        }
+        long now = level.getGameTime();
+        Long last = LAST_SPAWN.get(player.getUUID());
+        int cooldown = isEnd ? PLAYER_COOLDOWN_TICKS * (7 / 3) : PLAYER_COOLDOWN_TICKS;
+        if (last != null && now - last < cooldown) {
             return;
         }
 
@@ -95,9 +110,16 @@ public final class OverworldPopulationHandler {
         int min = Math.max(1, config.getMinBroodSize());
         int max = Math.max(min, config.getMaxBroodSize());
         int count = Mth.nextInt(level.random, min, max);
+        count = Math.min(count, 2);
+        boolean spawned = false;
         for (int i = 0; i < count; i++) {
             BlockPos attempt = origin.offset(level.random.nextInt(5) - 2, 0, level.random.nextInt(5) - 2);
-            spawnChicken(level, attempt, chicken, level.random);
+            if (spawnChicken(level, attempt, chicken, level.random)) {
+                spawned = true;
+            }
+        }
+        if (spawned) {
+            LAST_SPAWN.put(player.getUUID(), now);
         }
     }
 
@@ -120,17 +142,18 @@ public final class OverworldPopulationHandler {
         return cursor.immutable();
     }
 
-    private static void spawnChicken(ServerLevel level, BlockPos pos, ChickensRegistryItem chicken, RandomSource random) {
+    private static boolean spawnChicken(ServerLevel level, BlockPos pos, ChickensRegistryItem chicken, RandomSource random) {
         if (!ChickensChicken.checkSpawnRules(ModEntityTypes.CHICKENS_CHICKEN.get(), level, MobSpawnType.NATURAL, pos, random)) {
-            return;
+            return false;
         }
         ChickensChicken entity = ModEntityTypes.CHICKENS_CHICKEN.get().create(level);
         if (entity == null) {
-            return;
+            return false;
         }
         entity.setChickenType(chicken.getId());
         entity.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, random.nextFloat() * 360.0F, 0.0F);
         entity.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.NATURAL, null);
         level.addFreshEntity(entity);
+        return true;
     }
 }

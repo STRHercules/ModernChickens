@@ -144,6 +144,13 @@ Example datapack snippet that boosts overworld chicken density while limiting fl
 
 Reloading datapacks (or restarting the server) automatically reapplies these overrides; removing the JSON restores the configuration defaults.
 
+Global spawn helpers are also configurable via `chickens.cfg`:
+
+- `general.overworldSpawnChance` (default `0.02`) controls the chance per check that the overworld spawn helper runs.
+- `general.netherSpawnChance` (default `0.05`) works alongside `netherSpawnChanceMultiplier` to determine Nether burst frequency.
+- `general.endSpawnChance` (default `0.015`) controls the forced spawns used in The End.
+These values accept floats between `0` and `1`; set them lower for rarer spawns or increase them if you want denser testing without relying on the debug multiplier.
+
 For on-the-fly testing, `/chickens spawn multiplier <value>` multiplies every biome weight (set back to `1` to restore defaults) and `/chickens spawn debug <true|false>` toggles chat spam that reports each natural chicken spawn with its breed and coordinates.
 When you need an immediate test subject, `/chickens spawn summon <chickenNameOrId>` spawns that breed at your feet and `/chickens spawn summon_random [normal|snow|end|hell]` picks a random chicken from the requested biome bucket.
 
@@ -167,6 +174,7 @@ When you need an immediate test subject, `/chickens spawn summon <chickenNameOrI
 | `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
+| *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. Only exposed through `chickens.cfg`; defaults to `false` for breeds with parents. |
 
 ## Redstone Flux
 

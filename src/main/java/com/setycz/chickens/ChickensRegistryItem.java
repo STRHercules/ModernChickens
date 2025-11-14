@@ -225,6 +225,14 @@ public class ChickensRegistryItem {
         return this;
     }
 
+    public void setNaturalSpawnOverride(boolean value) {
+        naturalSpawnOverride = value;
+    }
+
+    public boolean hasNaturalSpawnOverride() {
+        return naturalSpawnOverride;
+    }
+
     public boolean isBreedable() {
         return parent1 != null && parent2 != null;
     }

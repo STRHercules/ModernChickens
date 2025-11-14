@@ -106,6 +106,9 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    I:minBroodSize=%d%n", general.getMinBroodSize()));
             writer.write(String.format(Locale.ROOT, "    I:maxBroodSize=%d%n", general.getMaxBroodSize()));
             writer.write(String.format(Locale.ROOT, "    D:netherSpawnChanceMultiplier=%.3f%n", general.getNetherSpawnChanceMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    D:overworldSpawnChance=%.5f%n", general.getOverworldSpawnChance()));
+            writer.write(String.format(Locale.ROOT, "    D:netherSpawnChance=%.5f%n", general.getNetherSpawnChance()));
+            writer.write(String.format(Locale.ROOT, "    D:endSpawnChance=%.5f%n", general.getEndSpawnChance()));
             writer.write(String.format(Locale.ROOT, "    B:alwaysShowStats=%s%n", general.isAlwaysShowStats()));
             writer.write(String.format(Locale.ROOT, "    D:roostSpeed=%.3f%n", general.getRoostSpeedMultiplier()));
             writer.write(String.format(Locale.ROOT, "    D:breederSpeed=%.3f%n", general.getBreederSpeedMultiplier()));
@@ -128,6 +131,7 @@ public final class LegacyConfigBridge {
                 writer.write(String.format(Locale.ROOT, "    B:enabled=%s%n", getBoolean(props, prefix + "enabled", true)));
                 writer.write(String.format(Locale.ROOT, "    D:layCoefficient=%s%n", getString(props, prefix + "layCoefficient", "1.0")));
                 writer.write(String.format(Locale.ROOT, "    S:spawnType=%s%n", getString(props, prefix + "spawnType", chicken.getSpawnType().name())));
+                writer.write(String.format(Locale.ROOT, "    B:allowNaturalSpawn=%s%n", getBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride())));
                 writer.write(String.format(Locale.ROOT, "    S:parent1=%s%n", getString(props, prefix + "parent1", chicken.getParent1() != null ? chicken.getParent1().getEntityName() : "")));
                 writer.write(String.format(Locale.ROOT, "    S:parent2=%s%n", getString(props, prefix + "parent2", chicken.getParent2() != null ? chicken.getParent2().getEntityName() : "")));
 
@@ -147,6 +151,9 @@ public final class LegacyConfigBridge {
             case "minBroodSize" -> props.setProperty("general.minBroodSize", value);
             case "maxBroodSize" -> props.setProperty("general.maxBroodSize", value);
             case "netherSpawnChanceMultiplier" -> props.setProperty("general.netherSpawnChanceMultiplier", value);
+            case "overworldSpawnChance" -> props.setProperty("general.overworldSpawnChance", value);
+            case "netherSpawnChance" -> props.setProperty("general.netherSpawnChance", value);
+            case "endSpawnChance" -> props.setProperty("general.endSpawnChance", value);
             case "alwaysShowStats" -> props.setProperty("general.alwaysShowStats", value);
             case "roostSpeed" -> props.setProperty("general.roostSpeedMultiplier", value);
             case "breederSpeed" -> props.setProperty("general.breederSpeedMultiplier", value);
@@ -171,6 +178,7 @@ public final class LegacyConfigBridge {
             case "enabled" -> props.setProperty(prefix + "enabled", value);
             case "layCoefficient" -> props.setProperty(prefix + "layCoefficient", value);
             case "spawnType" -> props.setProperty(prefix + "spawnType", value);
+            case "allowNaturalSpawn" -> props.setProperty(prefix + "allowNaturalSpawn", value);
             case "parent1" -> props.setProperty(prefix + "parent1", value);
             case "parent2" -> props.setProperty(prefix + "parent2", value);
             case "layItemName" -> props.setProperty(prefix + "eggItem", value);

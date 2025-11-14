@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +63,24 @@ public final class ChickensDataLoader {
     private ChickensDataLoader() {
     }
 
+    private static void ensureDefaultConfig() {
+        Path configPath = FMLPaths.CONFIGDIR.get().resolve("chickens.cfg");
+        if (Files.exists(configPath)) {
+            return;
+        }
+        try (InputStream in = ChickensDataLoader.class.getResourceAsStream("/defaultconfigs/chickens.cfg")) {
+            if (in == null) {
+                return;
+            }
+            Files.createDirectories(configPath.getParent());
+            Files.copy(in, configPath);
+        } catch (IOException ex) {
+            LOGGER.warn("Failed to copy default chickens.cfg", ex);
+        }
+    }
+
     public static void bootstrap() {
+        ensureDefaultConfig();
         Properties props = loadLegacyProperties();
         LegacyConfigBridge.importIfPresent(props, List.of());
 
@@ -446,6 +464,9 @@ public final class ChickensDataLoader {
             String spawnTypeName = readString(props, prefix + "spawnType", chicken.getSpawnType().name());
             SpawnType spawnType = parseSpawnType(spawnTypeName, chicken.getSpawnType());
             chicken.setSpawnType(spawnType);
+
+            boolean allowNatural = readBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride());
+            chicken.setNaturalSpawnOverride(allowNatural);
         }
 
         for (Map.Entry<ChickensRegistryItem, ParentNames> entry : parentOverrides.entrySet()) {
@@ -619,6 +640,9 @@ public final class ChickensDataLoader {
         int minBroodSize = readInt(props, "general.minBroodSize", 3);
         int maxBroodSize = readInt(props, "general.maxBroodSize", 5);
         float multiplier = readFloat(props, "general.netherSpawnChanceMultiplier", 1.0f);
+        float overworldChance = clampChance(props, "general.overworldSpawnChance", readFloat(props, "general.overworldSpawnChance", 0.02f));
+        float netherChance = clampChance(props, "general.netherSpawnChance", readFloat(props, "general.netherSpawnChance", 0.05f));
+        float endChance = clampChance(props, "general.endSpawnChance", readFloat(props, "general.endSpawnChance", 0.015f));
         boolean alwaysShowStats = readBoolean(props, "general.alwaysShowStats", false);
         double roostSpeed = readDouble(props, "general.roostSpeedMultiplier", 1.0D);
         double breederSpeed = readDouble(props, "general.breederSpeedMultiplier", 1.0D);
@@ -647,7 +671,8 @@ public final class ChickensDataLoader {
         boolean fluidChickensEnabled = readBoolean(props, "general.enableFluidChickens", true);
         boolean chemicalChickensEnabled = readBoolean(props, "general.enableChemicalChickens", true);
         boolean gasChickensEnabled = readBoolean(props, "general.enableGasChickens", true);
-        return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier, alwaysShowStats,
+        return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier,
+                overworldChance, netherChance, endChance, alwaysShowStats,
                 roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
                 Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract,
                 avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
@@ -704,6 +729,14 @@ public final class ChickensDataLoader {
             props.setProperty(key, Float.toString(defaultValue));
             return defaultValue;
         }
+    }
+
+    private static float clampChance(Properties props, String key, float value) {
+        float clamped = Math.max(0.0f, Math.min(1.0f, value));
+        if (clamped != value) {
+            props.setProperty(key, Float.toString(clamped));
+        }
+        return clamped;
     }
 
     private static double readDouble(Properties props, String key, double defaultValue) {

@@ -3,9 +3,10 @@ package com.setycz.chickens.entity;
 import com.setycz.chickens.SpawnType;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
-import com.setycz.chickens.registry.ModEntityTypes;
-import com.setycz.chickens.spawn.ChickensSpawnManager;
 import com.setycz.chickens.ChickensRegistryItem;
+import com.setycz.chickens.registry.ModEntityTypes;
+import com.setycz.chickens.spawn.ChickensSpawnDebug;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -21,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Reintroduces the legacy nether population burst that spawned chicken groups
@@ -32,6 +36,8 @@ public final class NetherPopulationHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensNetherPopulate");
     private static final int CHECK_INTERVAL_TICKS = 20;
     private static final int SPAWN_RADIUS = 16;
+    private static final int PLAYER_COOLDOWN_TICKS = 20 * 300;
+    private static final Map<UUID, Long> LAST_SPAWN = new HashMap<>();
 
     private NetherPopulationHandler() {
     }
@@ -55,13 +61,23 @@ public final class NetherPopulationHandler {
         }
 
         ChickensConfigValues config = ChickensConfigHolder.get();
-        float baseChance = 0.1F * config.getNetherSpawnChanceMultiplier();
+        float baseChance = config.getNetherSpawnChance() * config.getNetherSpawnChanceMultiplier();
+        if (baseChance <= 0.0F) {
+            return;
+        }
+        baseChance *= Math.max(1.0F, ChickensSpawnDebug.getSpawnWeightMultiplier());
+        baseChance = Math.min(baseChance, 1.0F);
         if (baseChance <= 0.0F || level.random.nextFloat() >= baseChance) {
             return;
         }
 
         ServerPlayer targetPlayer = level.getRandomPlayer();
         if (targetPlayer == null) {
+            return;
+        }
+        long now = level.getGameTime();
+        Long last = LAST_SPAWN.get(targetPlayer.getUUID());
+        if (last != null && now - last < PLAYER_COOLDOWN_TICKS) {
             return;
         }
 
@@ -78,6 +94,7 @@ public final class NetherPopulationHandler {
         int min = Math.max(1, config.getMinBroodSize());
         int max = Math.max(min, config.getMaxBroodSize());
         int count = Mth.nextInt(level.random, min, max);
+        count = Math.min(count, 3);
 
         int spawned = 0;
         for (int i = 0; i < count; i++) {
@@ -90,6 +107,9 @@ public final class NetherPopulationHandler {
         if (spawned > 0 && LOGGER.isDebugEnabled()) {
             LOGGER.debug("Spawned {} nether chickens around {}", spawned, basePos);
         }
+        if (spawned > 0) {
+            LAST_SPAWN.put(targetPlayer.getUUID(), now);
+        }
     }
 
     @Nullable
@@ -98,6 +118,7 @@ public final class NetherPopulationHandler {
         int z = origin.getZ() + random.nextInt(SPAWN_RADIUS * 2 + 1) - SPAWN_RADIUS;
 
         int topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        topY = Math.min(topY, 100);
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(x, Math.min(topY, level.getMaxBuildHeight() - 1), z);
         while (cursor.getY() > level.getMinBuildHeight() && level.isEmptyBlock(cursor)) {
             cursor.move(Direction.DOWN);

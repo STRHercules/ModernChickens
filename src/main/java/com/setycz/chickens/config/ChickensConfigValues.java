@@ -12,6 +12,9 @@ public final class ChickensConfigValues {
     private final int minBroodSize;
     private final int maxBroodSize;
     private final float netherSpawnChanceMultiplier;
+    private final float overworldSpawnChance;
+    private final float netherSpawnChance;
+    private final float endSpawnChance;
     private final boolean alwaysShowStats;
     private final double roostSpeedMultiplier;
     private final double breederSpeedMultiplier;
@@ -34,7 +37,8 @@ public final class ChickensConfigValues {
     private final boolean gasChickensEnabled;
 
     public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
-            float netherSpawnChanceMultiplier, boolean alwaysShowStats,
+            float netherSpawnChanceMultiplier, float overworldSpawnChance,
+            float netherSpawnChance, float endSpawnChance, boolean alwaysShowStats,
             double roostSpeedMultiplier, double breederSpeedMultiplier,
             boolean disableVanillaEggLaying, int collectorScanRange,
             boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
@@ -47,6 +51,9 @@ public final class ChickensConfigValues {
         this.minBroodSize = minBroodSize;
         this.maxBroodSize = maxBroodSize;
         this.netherSpawnChanceMultiplier = netherSpawnChanceMultiplier;
+        this.overworldSpawnChance = overworldSpawnChance;
+        this.netherSpawnChance = netherSpawnChance;
+        this.endSpawnChance = endSpawnChance;
         this.alwaysShowStats = alwaysShowStats;
         this.roostSpeedMultiplier = roostSpeedMultiplier;
         this.breederSpeedMultiplier = breederSpeedMultiplier;
@@ -83,6 +90,18 @@ public final class ChickensConfigValues {
 
     public float getNetherSpawnChanceMultiplier() {
         return netherSpawnChanceMultiplier;
+    }
+
+    public float getOverworldSpawnChance() {
+        return overworldSpawnChance;
+    }
+
+    public float getNetherSpawnChance() {
+        return netherSpawnChance;
+    }
+
+    public float getEndSpawnChance() {
+        return endSpawnChance;
     }
 
     public boolean isAlwaysShowStats() {

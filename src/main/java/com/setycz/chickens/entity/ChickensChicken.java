@@ -10,6 +10,7 @@ import com.setycz.chickens.registry.ModEntityTypes;
 import com.setycz.chickens.spawn.ChickensSpawnManager;
 import com.setycz.chickens.spawn.ChickensSpawnDebug;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -455,14 +456,24 @@ public class ChickensChicken extends Chicken {
         Holder<Biome> biome = level.getBiome(pos);
         SpawnType spawnType = ChickensRegistry.getSpawnType(biome);
         boolean netherEnabled = ChickensSpawnManager.hasPlan(SpawnType.HELL);
-        boolean overworldEnabled = ChickensSpawnManager.hasPlan(SpawnType.NORMAL) || ChickensSpawnManager.hasPlan(SpawnType.SNOW);
+        boolean overworldEnabled = ChickensSpawnManager.hasPlan(SpawnType.NORMAL) || ChickensSpawnManager.hasPlan(SpawnType.SNOW) || ChickensSpawnManager.hasPlan(SpawnType.END);
         if (spawnType == SpawnType.HELL && netherEnabled) {
-            return net.minecraft.world.entity.animal.Animal.checkAnimalSpawnRules(type, level, reason, pos, random);
+            return canSpawnOnSolid(type, level, pos);
         }
-        if (spawnType != SpawnType.HELL && overworldEnabled) {
+        if (spawnType == SpawnType.END && ChickensSpawnManager.hasPlan(SpawnType.END)) {
+            return canSpawnOnSolid(type, level, pos);
+        }
+        if (spawnType != SpawnType.HELL && spawnType != SpawnType.END && overworldEnabled) {
             return net.minecraft.world.entity.animal.Animal.checkAnimalSpawnRules(type, level, reason, pos, random);
         }
         return false;
+    }
+
+    private static boolean canSpawnOnSolid(net.minecraft.world.entity.EntityType<ChickensChicken> type, LevelAccessor level, BlockPos pos) {
+        BlockPos below = pos.below();
+        return level.getBlockState(pos).isAir()
+                && level.getWorldBorder().isWithinBounds(pos)
+                && level.getBlockState(below).isFaceSturdy(level, below, Direction.UP);
     }
 
     private static final class GroupData implements SpawnGroupData {
