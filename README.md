@@ -96,6 +96,10 @@ _Converting Liquids!_
 
 Combining the Dousing Machine with the Fluid and Chemical Converters lets you go from liquids or Mekanism chemicals → eggs → buffered tanks → dedicated chickens entirely inside the Modern Chickens ecosystem.
 
+![Dousing Process](https://i.imgur.com/kSI861D.gif)
+
+![Dousing WTHIT](https://i.imgur.com/V25C4td.png)
+
 ## Redstone Flux
 
 ![RF Chicken Generator!](https://i.imgur.com/Djoeb5P.jpeg)
