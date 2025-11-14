@@ -880,3 +880,11 @@
   2. Updated the overworld/End population helper and Nether burst handler to pull their probabilities from the new config values (respecting the debug multiplier), capped Nether burst Y-search at 100, and imposed per-player cooldowns (3 min overworld, 5 min Nether, 7 min End) with smaller flock sizes to prevent spam.
   3. Documented the new config knobs in the README and verified the build with `./gradlew build` (warnings unchanged: JEI subtype + FluidStack APIs).
 - **Rationale**: Centralised tuning knobs let pack makers dial spawn density per dimension without hacking the code, while the per-chicken flag lets selective higher-tier breeds (like the Ender Chicken) appear naturally only when explicitly allowed.
+
+## Entry 108
+- **Prompt/Task**: Begin porting the Hatchery rooster asset and behaviour into ModernChickens.
+- **Steps**:
+  1. Inspected the legacy `EntityRooster`, AI goals, renderer, and language entries from the Hatchery sources to understand how roosters stored seeds, avoided egg laying, and interacted with nearby chickens.
+  2. Added a new `Rooster` entity class that extends the vanilla `Chicken`, disables the vanilla egg timer, and introduces a one-slot internal seed inventory plus a synchronised seed-charge counter that slowly converts stored seeds into a simple integer resource.
+  3. Registered the rooster in `ModEntityTypes`, wired a renderer in `ChickensClient` that reuses the existing chicken render pipeline, and added a localisation entry so roosters appear with a proper display name while continuing to render with the vanilla chicken model and texture until bespoke art can be ported.
+- **Rationale**: Establishing a dedicated rooster entity with seed storage and egg suppression lays the groundwork for porting Hatchery’s breeding and GUI behaviour in follow-up work while keeping the current build aligned with ModernChickens’ NeoForge infrastructure.

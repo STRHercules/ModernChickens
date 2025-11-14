@@ -3,6 +3,7 @@ package com.setycz.chickens.registry;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.entity.ChickensChicken;
 import com.setycz.chickens.entity.ColoredEgg;
+import com.setycz.chickens.entity.Rooster;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +27,12 @@ public final class ModEntityTypes {
                     .clientTrackingRange(10)
                     .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chicken").toString()));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<Rooster>> ROOSTER = ENTITY_TYPES.register("rooster",
+            () -> EntityType.Builder.<Rooster>of(Rooster::new, MobCategory.CREATURE)
+                    .sized(0.4F, 0.7F)
+                    .clientTrackingRange(10)
+                    .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "rooster").toString()));
+
     public static final DeferredHolder<EntityType<?>, EntityType<ColoredEgg>> COLORED_EGG = ENTITY_TYPES.register("colored_egg",
             () -> EntityType.Builder.<ColoredEgg>of(ColoredEgg::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
@@ -43,6 +50,7 @@ public final class ModEntityTypes {
 
     private static void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(CHICKENS_CHICKEN.get(), ChickensChicken.createAttributes().build());
+        event.put(ROOSTER.get(), Rooster.createAttributes().build());
     }
 
 }

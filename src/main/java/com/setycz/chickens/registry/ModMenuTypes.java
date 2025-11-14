@@ -9,6 +9,7 @@ import com.setycz.chickens.menu.BreederMenu;
 import com.setycz.chickens.menu.CollectorMenu;
 import com.setycz.chickens.menu.HenhouseMenu;
 import com.setycz.chickens.menu.RoostMenu;
+import com.setycz.chickens.menu.RoosterMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -28,6 +29,8 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(HenhouseMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<RoostMenu>> ROOST = MENU_TYPES.register("roost",
             () -> IMenuTypeExtension.create(RoostMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<RoosterMenu>> ROOSTER = MENU_TYPES.register("rooster",
+            () -> IMenuTypeExtension.create(RoosterMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<BreederMenu>> BREEDER = MENU_TYPES.register("breeder",
             () -> IMenuTypeExtension.create(BreederMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<CollectorMenu>> COLLECTOR = MENU_TYPES.register("collector",

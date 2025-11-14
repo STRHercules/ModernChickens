@@ -235,6 +235,7 @@
   "entity.ChickensChicken.growth": "Growth: %s",
   "entity.ChickensChicken.gain": "Gain: %s",
   "entity.ChickensChicken.strength": "Strength: %s",
+  "entity.chickens.rooster": "Rooster",
   "commands.chickens.export.success": "Exported breeding graph to %s",
   "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs."
 }

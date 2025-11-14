@@ -10,6 +10,7 @@ import com.setycz.chickens.client.render.ChickenItemSpriteModels;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.client.render.DynamicChickenTextures;
 import com.setycz.chickens.client.render.LiquidChickenOverlayLayer;
+import com.setycz.chickens.client.render.RoosterRenderer;
 import com.setycz.chickens.client.render.blockentity.BreederBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.CollectorBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.RoostBlockEntityRenderer;
@@ -26,6 +27,7 @@ import com.setycz.chickens.screen.BreederScreen;
 import com.setycz.chickens.screen.CollectorScreen;
 import com.setycz.chickens.screen.HenhouseScreen;
 import com.setycz.chickens.screen.RoostScreen;
+import com.setycz.chickens.screen.RoosterScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -54,6 +56,7 @@ public final class ChickensClient {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntityTypes.COLORED_EGG.get(), context -> new ThrownItemRenderer<>(context, 1.0F, true));
         event.registerEntityRenderer(ModEntityTypes.CHICKENS_CHICKEN.get(), ChickensChickenRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.ROOSTER.get(), RoosterRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ROOST.get(), RoostBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BREEDER.get(), BreederBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COLLECTOR.get(), CollectorBlockEntityRenderer::new);
@@ -79,6 +82,7 @@ public final class ChickensClient {
         // Bind the container to its screen so the henhouse GUI renders correctly on the client.
         event.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
+        event.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
         event.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
