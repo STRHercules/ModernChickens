@@ -211,7 +211,7 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 	
 ## Custom Chicken Definitions
 
-![Custom Chickens](https://i.imgur.com/zK9b3hf.gif)
+![Custom Chickens](https://i.imgur.com/3jxZfxf.gif)
 
 - After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
 - Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
