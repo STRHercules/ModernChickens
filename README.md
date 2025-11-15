@@ -143,6 +143,8 @@ Nests and roosters together form a flexible tuning knob for roost-based farms: y
 
 ## Incubator
 
+![Incubator](https://i.imgur.com/5pxcUQB.png)
+
 ![Incubator GUI](https://i.imgur.com/a7w4Cdl.png)
 
 ![Incubator WTHIT](https://i.imgur.com/tBZfKtz.png)
