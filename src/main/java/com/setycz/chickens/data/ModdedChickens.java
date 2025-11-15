@@ -513,6 +513,149 @@ final class ModdedChickens {
                 0x5a89a8, 0xa7ffff, SpawnType.NONE,
                 "iridiumChicken", "GoldChicken", null));
 
+        // Specialty resource chickens (Better Mod Integration task). Mapped resources:
+        // Amethyst → minecraft:amethyst_shard | Blood → evilcraft:bucket_blood | Fluorite → mekanism:fluorite_gem/fluorite
+        // Celestigem → justdirethings:celestigem | Time Crystal → justdirethings:time_crystal
+        // Plastic → industrialforegoing:plastic | Rubber → industrialforegoing:dryrubber
+        // Chaos Shard → draconicevolution:chaos_shard
+        // Mystical Agriculture essences → mysticalagriculture:{inferium,prudentium,tertium,imperium,supremium,insanium}_essence
+        // Powah → powah:uraninite | AE2 core set → certus/charged certus/silicon/fluix/sky stone
+        // Extended AE → extendedae:entro_ingot | Advanced AE → advanced_ae:quantum_alloy
+        // Flux Networks → fluxnetworks:flux_dust | Applied Fluix → best-effort registry search for applied_fluix*
+        // Applied Generators → appgen:ember_crystal
+        list.add(new Definition(565, "amethystChicken", "vanilla/amethyst_chicken",
+                () -> Optional.of(new ItemStack(Items.AMETHYST_SHARD)),
+                0x9a5ce0, 0xdab6ff, SpawnType.NONE,
+                "QuartzChicken", "PurpleChicken", null));
+
+        list.add(new Definition(566, "bloodChicken", "evilcraft/blood_chicken",
+                item("evilcraft:bucket_blood", "evilcraft:blood_bucket"),
+                0x5a0b0b, 0xc21d1d, SpawnType.NONE,
+                "NetherwartChicken", "WaterChicken", null));
+
+        list.add(new Definition(567, "fluoriteChicken", "mekanism/fluorite_chicken",
+                combine(tag("c:gems/fluorite", "forge:gems/fluorite"),
+                        item("mekanism:fluorite_gem", "mekanism:fluorite")),
+                0x2f8f7f, 0x8cf1d3, SpawnType.NONE,
+                "UraniumChicken", "QuartzChicken", null));
+
+        list.add(new Definition(568, "celestigemChicken", "just_dire_things/celestigem_chicken",
+                item("justdirethings:celestigem"),
+                0x3ab6f7, 0xa5f0ff, SpawnType.NONE,
+                "DiamondChicken", "GlowstoneChicken", null));
+
+        list.add(new Definition(569, "timeCrystalChicken", "just_dire_things/time_crystal_chicken",
+                item("justdirethings:time_crystal"),
+                0x62f3ff, 0xc0fff6, SpawnType.NONE,
+                "celestigemChicken", "QuartzChicken", null));
+
+        list.add(new Definition(570, "plasticChicken", "industrial_foregoing/plastic_chicken",
+                combine(tag("c:plastics"), item("industrialforegoing:plastic")),
+                0xf2f2f0, 0xc6c6c3, SpawnType.NONE,
+                "latexChicken", "SlimeChicken", null));
+
+        list.add(new Definition(571, "rubberChicken", "industrial_foregoing/rubber_chicken",
+                combine(item("industrialforegoing:dryrubber"),
+                        item(3, "industrialforegoing:tinydryrubber")),
+                0x9a754c, 0xd7b58a, SpawnType.NONE,
+                "latexChicken", "LogChicken", null));
+
+        list.add(new Definition(572, "chaosShardChicken", "draconic/chaos_shard_chicken",
+                item("draconicevolution:chaos_shard"),
+                0x4a004a, 0xff52ff, SpawnType.NONE,
+                "draconiumAwakenedChicken", "EnderChicken", null));
+
+        list.add(new Definition(573, "inferiumChicken", "mystical_agriculture/inferium_chicken",
+                item("mysticalagriculture:inferium_essence"),
+                0x6bd43d, 0xa6ff80, SpawnType.NONE,
+                "SoulSandChicken", "NetherwartChicken", null));
+
+        list.add(new Definition(574, "prudentiumChicken", "mystical_agriculture/prudentium_chicken",
+                item("mysticalagriculture:prudentium_essence"),
+                0x4aa142, 0x91e698, SpawnType.NONE,
+                "inferiumChicken", "QuartzChicken", null));
+
+        list.add(new Definition(575, "tertiumChicken", "mystical_agriculture/tertium_chicken",
+                item("mysticalagriculture:tertium_essence"),
+                0xe5a334, 0xffd86b, SpawnType.NONE,
+                "prudentiumChicken", "RedstoneChicken", null));
+
+        list.add(new Definition(576, "imperiumChicken", "mystical_agriculture/imperium_chicken",
+                item("mysticalagriculture:imperium_essence"),
+                0x5ac1f0, 0xa7e5ff, SpawnType.NONE,
+                "tertiumChicken", "DiamondChicken", null));
+
+        list.add(new Definition(577, "supremiumChicken", "mystical_agriculture/supremium_chicken",
+                item("mysticalagriculture:supremium_essence"),
+                0xe94f2f, 0xffa88b, SpawnType.NONE,
+                "imperiumChicken", "BlazeChicken", null));
+
+        list.add(new Definition(578, "insaniumChicken", "mystical_agriculture/insanium_chicken",
+                item("mysticalagriculture:insanium_essence"),
+                0x5a015e, 0xde75ff, SpawnType.NONE,
+                "supremiumChicken", "EnderChicken", null));
+
+        list.add(new Definition(579, "uraniniteChicken", "powah/uraninite_chicken",
+                combine(item("powah:uraninite"), item("powah:uraninite_raw")),
+                0x3a7d41, 0x9ef08d, SpawnType.NONE,
+                "UraniumChicken", "CoalChicken", null));
+
+        list.add(new Definition(580, "certusQuartzChicken", "ae2/certus_quartz_chicken",
+                combine(tag("c:gems/certus_quartz", "forge:gems/certus_quartz"),
+                        item("ae2:certus_quartz_crystal")),
+                0xaed2ff, 0x6bb2ff, SpawnType.NONE,
+                "QuartzChicken", "GlassChicken", null));
+
+        list.add(new Definition(581, "chargedCertusChicken", "ae2/charged_certus_chicken",
+                item("ae2:charged_certus_quartz_crystal"),
+                0x6699ff, 0xc3e0ff, SpawnType.NONE,
+                "certusQuartzChicken", "RedstoneChicken", null));
+
+        list.add(new Definition(582, "ae2SiliconChicken", "ae2/silicon_chicken",
+                combine(tag("c:silicon", "forge:silicon"),
+                        item("ae2:silicon")),
+                0x7f7f7f, 0xd6d6d6, SpawnType.NONE,
+                "SandChicken", "CoalChicken", null));
+
+        list.add(new Definition(583, "ae2FluixChicken", "ae2/fluix_chicken",
+                combine(tag("c:gems/fluix", "forge:gems/fluix"),
+                        item("ae2:fluix_crystal")),
+                0x6a17ad, 0xc895ff, SpawnType.NONE,
+                "certusQuartzChicken", "GlowstoneChicken", null));
+
+        list.add(new Definition(584, "skyStoneChicken", "ae2/sky_stone_chicken",
+                item("ae2:sky_stone_block", "ae2:sky_stone_brick"),
+                0x1e1e28, 0x68707d, SpawnType.NONE,
+                "ObsidianChicken", "CoalChicken", null));
+
+        list.add(new Definition(585, "entroChicken", "extended_ae/entro_chicken",
+                combine(tag("c:ingots/entro"), item("extendedae:entro_ingot")),
+                0x2c1f40, 0x7d62b8, SpawnType.NONE,
+                "ae2FluixChicken", "certusQuartzChicken", null));
+
+        list.add(new Definition(586, "quantumAlloyChicken", "advanced_ae/quantum_alloy_chicken",
+                combine(tag("c:ingots/quantum_alloy"), item("advanced_ae:quantum_alloy")),
+                0x2f7e9f, 0x8bf0ff, SpawnType.NONE,
+                "ae2FluixChicken", "entroChicken", null));
+
+        list.add(new Definition(587, "fluxNetworkChicken", "fluxnetworks/flux_chicken",
+                combine(tag("c:dusts/flux"), item("fluxnetworks:flux_dust", "fluxnetworks:flux")),
+                0xff3c3c, 0xffc347, SpawnType.NONE,
+                "RedstoneFluxChicken", "ObsidianChicken", null));
+
+        list.add(new Definition(588, "appliedFluixChicken", "applied_fluix/applied_fluix_chicken",
+                combine(item("appliedfluix:fluix_crystal", "applied_fluix:fluix_crystal",
+                                "appliedfluix:applied_fluix", "applied_fluix:applied_fluix"),
+                        searchRegistry(null, "applied_fluix"),
+                        searchRegistry(null, "appliedfluix")),
+                0x8a2be2, 0xdab6ff, SpawnType.NONE,
+                "ae2FluixChicken", "amethystChicken", null));
+
+        list.add(new Definition(589, "emberCrystalChicken", "applied_generators/ember_crystal_chicken",
+                item("appgen:ember_crystal"),
+                0xf27323, 0xffc47f, SpawnType.NONE,
+                "BlazeChicken", "certusQuartzChicken", null));
+
         return list;
     }
 

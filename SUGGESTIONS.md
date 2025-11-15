@@ -84,3 +84,6 @@
 - Surface a Jade/TOP overlay for the Avian Dousing Machine that reports its stored RF, reagent levels, and per-infusion costs so automation builders can confirm resource readiness without opening the GUI.
 - Extend the spawn plan datapack format with optional per-chicken weight tables or biome tag filters so packs can bias specific breeds toward deserts, jungles, or custom dimensions without editing code.
 - Expand the new rooster entity with a dedicated mating goal, simple GUI, and datapack-driven seed consumption rates so Hatchery-style stud behaviour can be toggled and tuned per-pack while reusing ModernChickens' existing breeding graph and config systems.
+- Generate and bundle placeholder textures for the new specialty resource chickens (AE, Powah, Mystical Agriculture, etc.) so JEI and entity renders don't fall back to missing-purple while final art is sourced.
+
+- Added clear display names for the new specialty resource chickens to en_us lang so JEI/tooltips show meaningful names (e.g., Fluorite Chicken, Inferium Essence Chicken, Flux Dust Chicken).

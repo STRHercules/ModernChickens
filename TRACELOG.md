@@ -934,3 +934,13 @@
   2. Updated `RoostBlockEntity.speedMultiplier` to sample the new config values and scan for neighbouring roosts that contain rooster items; when a rooster is found within the configured radius, the block multiplies its normal roost speed by the aura multiplier.
   3. Kept the aura logic lightweight by constraining the vertical search to a small band and short‑circuiting as soon as any rooster‑powered roost is detected, avoiding unnecessary overhead in large automation setups.
 - **Rationale**: Allowing roosters to accelerate nearby roost production recreates Hatchery’s stud‑style utility behaviour in a way that remains configurable and performant in ModernChickens farms.
+
+## Entry 114
+- **Prompt/Task**: Begin work on implementing new resource chickens from TASK.md (Better Mod Integration – Specialty Resource Chickens).
+- **Steps**:
+  1. Mapped target resources to their registry ids using the read-only ResourceInformation folders (AE2, Powah, Mystical Agriculture, Industrial Foregoing, Draconic Evolution, Extended/Advanced AE, Flux Networks, Applied Generators) and annotated the map inline where the new chickens register.
+  2. Added definitions 565–589 in `ModdedChickens` for the new specialty chickens, wiring lay outputs, parent breeding chains, and conditional suppliers that only resolve when the owning mod’s items or tags are present.
+  3. Attempted `./gradlew build`, but the wrapper delegates to `ModDevGradle-main/gradlew` which the shell reports as “cannot execute: required file not found,” so build verification is still outstanding.
+- **Rationale**: Capturing the resource map, breeding graph, and conditional registrations in code brings the specialty chickens online while documenting the remaining build blocker for follow-up.
+- Added missing localisation strings for all specialty resource chickens so their JEI/tooltips display friendly names instead of translation keys.
+- Updated README to document the new specialty resource chicken integrations (EvilCraft, Mekanism, Powah, AE variants, Mystical Agriculture essences, etc.) and clarified that each registers conditionally with its parent mod.
