@@ -102,6 +102,68 @@ Combining the Dousing Machine with the Fluid and Chemical Converters lets you go
 
 ![Dousing WTHIT](https://i.imgur.com/V25C4td.png)
 
+## Roosters
+
+![Rooster](https://i.imgur.com/d49iLC3.png)
+
+Roosters are utility birds inspired by Hatchery’s rooster: they never lay eggs themselves, but they store seeds and power nearby roosts when paired with nests.
+
+- **Behaviour**: Roosters use chicken AI (wandering, following food, panic) but keep their internal egg timer above the lay threshold, so they never produce eggs directly.
+- **Seed storage**: Right-clicking a rooster opens a small inventory where you can feed it seeds (anything tagged as `#minecraft:chicken_food`). Internally the rooster converts pairs of seeds into a lightweight “seed charge” used for GUIs and future breeding logic.
+- **Item form**: Using the Chicken Catcher on a rooster turns it into a specialised chicken item marked as a rooster. That item can be placed back into the world as a rooster, or dropped into a Nest to contribute aura.
+- **Roost synergy**: Roosts scan the area around them for active nests. Each rooster in an active nest adds a production bonus on top of the base roost speed.
+
+Rooster-related configuration entries live in the `general` section of `config/chickens.cfg`:
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `general.roosterAuraMultiplier` | Double | `1.25` | Multiplier applied to roost production when exactly one active rooster is found. Additional roosters scale linearly on top of this (e.g., `1.25` with three roosters yields `1 + 3 × 0.25 = 1.75` times the base rate). Values at or below `1.0` effectively disable the aura bonus. |
+| `general.roosterAuraRange` | Integer | `4` | Horizontal search radius (in blocks) used by roosts to find active nests. `0` disables rooster aura entirely; negative values are treated as `0`. |
+| `general.roostSpeedMultiplier` | Double | `1.0` | Global speed multiplier applied to all roosts before the rooster aura is considered. Use this to fine-tune overall production pacing; roosters then stack on top of the adjusted baseline. |
+
+## Nest
+
+![Nest](https://i.imgur.com/0Pqh6ng.png)
+
+The Nest is a small block that turns captured roosters and seeds into an aura that boosts nearby roosts. It does not produce items on its own; its sole job is to power the rooster aura.
+
+- **Inventory layout**: The GUI exposes two slots – a **seed slot** on the left and a **rooster slot** on the right. The block entity also behaves as a sided inventory so hoppers and item pipes can automate both inputs.
+- **Accepted items**: The seed slot accepts vanilla seeds (`wheat`, `beetroot`, `melon`, `pumpkin`). The rooster slot only accepts rooster-marked chicken items; regular chicken items must go into roosts or breeders instead.
+- **Aura fuel**: When at least one rooster is present and seeds are available, the Nest consumes one seed at a time and converts it into “aura time”. As long as the internal timer has time remaining, the nest is considered active and will be picked up by nearby roosts.
+- **Rooster cap**: Only a limited number of roosters are counted per nest; any extra birds above the configured cap are ignored for aura strength, though they still occupy item space.
+
+Nest behaviour is controlled by these `general` entries in `config/chickens.cfg`:
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `general.nestMaxRoosters` | Integer | `1` | Maximum number of roosters a single nest will count towards aura strength. Values are clamped to the range `1–16` when read from the config, so malformed values cannot create excessively large stacks. |
+| `general.nestSeedDurationTicks` | Integer | `1200` | How long (in ticks) a single consumed seed keeps the nest’s aura active. There are 20 ticks per real-time second, so the default of `1200` equals 60 seconds per seed. Setting this to `0` disables aura production from nests entirely (they will hold roosters but never turn seeds into aura). |
+
+Nests and roosters together form a flexible tuning knob for roost-based farms: you can keep `roostSpeedMultiplier` near `1.0` for baseline balance, then use nests plus roosters to introduce optional “booster stations” for higher-end automation builds.
+
+## Incubator
+
+![Incubator GUI](https://i.imgur.com/a7w4Cdl.png)
+
+![Incubator WTHIT](https://i.imgur.com/tBZfKtz.png)
+
+The Incubator is a compact RF-powered machine that turns chicken spawn eggs into portable chicken items that can be dropped into roosts, breeders, or back into the world as entities.
+
+- **Inputs and outputs**: The left slot accepts chicken spawn eggs from the mod. When fully charged and supplied with an egg, the Incubator consumes RF and the egg to create a matching chicken item in the right slot using default stats for that breed.
+- **Energy system**: The block maintains an internal RF buffer and periodically pulls energy from adjacent blocks using NeoForge’s energy capability. An on-screen energy bar and tooltip show the current and maximum stored RF.
+- **Processing**: Each operation advances over a fixed progress bar (200 ticks by default). Once both the progress bar and the reserved energy meet the configured cost for the current egg, the machine outputs a chicken item and moves on to the next egg.
+- **Automation**: The Incubator exposes a standard sided inventory – eggs can be inserted from the top or sides, and completed chicken items are extracted from the bottom. This makes it easy to chain breeders → incubators → roosts in fully automated setups.
+
+All Incubator tuning lives under `general` in `config/chickens.cfg`:
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `general.incubatorEnergyCost` | Integer | `10000` | RF cost to incubate a single egg into a chicken item. Values less than `1` are treated as `1`. Higher values slow processing unless you also increase capacity and transfer rate. |
+| `general.incubatorCapacity` | Integer | `100000` | Size of the Incubator’s internal RF buffer. This caps how much power the machine can hold at once and therefore how many eggs it can process back to back without recharging. |
+| `general.incubatorMaxReceive` | Integer | `4000` | Maximum RF per tick the Incubator will pull from adjacent blocks. Raising this lets high-end generators refill the internal buffer more quickly; lowering it soft-caps the machine’s throughput even if a large buffer is configured. |
+
+Together, the Incubator, Nests, and Roosters provide a smoother progression from early-game eggs to mid- and late-game automation: you can breed for the chickens you want, incubate their spawn eggs into portable items, and then use roosters and nests to push roost farms far beyond their vanilla throughput.
+
 ## Redstone Flux
 
 ![RF Chicken Generator!](https://i.imgur.com/Djoeb5P.jpeg)
