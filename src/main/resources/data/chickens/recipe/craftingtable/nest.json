@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SPS",
+    "RHR",
+    "PPP"
+  ],
+  "key": {
+    "S": { "item": "minecraft:wheat_seeds" },
+    "P": { "tag": "minecraft:planks" },
+    "R": { "item": "chickens:roost" },
+    "H": { "item": "minecraft:hay_block" }
+  },
+  "result": {
+    "id": "chickens:nest",
+    "count": 1
+  }
+}
