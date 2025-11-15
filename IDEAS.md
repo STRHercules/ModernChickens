@@ -34,6 +34,8 @@ This document is for cataloguing and detailing potential ideas for features.
 
 * Mob Farming/Grinding - Develop a 'Toxic Hen House' where players can house toxic (Radioactive, toxic chemical) chickens and have their toxicity radiate outwards from the Toxic Hen House - killing anything nearby.
 
+* Funny/Gag/Meme Chickens - Use existing unused assets to create joke chickens.
+
 
 ## Far-Out Ideas
 
