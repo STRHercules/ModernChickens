@@ -646,6 +646,19 @@ public final class ChickensDataLoader {
         boolean alwaysShowStats = readBoolean(props, "general.alwaysShowStats", false);
         double roostSpeed = readDouble(props, "general.roostSpeedMultiplier", 1.0D);
         double breederSpeed = readDouble(props, "general.breederSpeedMultiplier", 1.0D);
+        double roosterAuraMultiplier = readDouble(props, "general.roosterAuraMultiplier", 1.25D);
+        int roosterAuraRange = ensureNonNegative(props, "general.roosterAuraRange",
+                readInt(props, "general.roosterAuraRange", 4));
+        // New rooster nest options – default to a single rooster and a
+        // sixty-second seed duration (1200 ticks) when not explicitly set.
+        int nestMaxRoosters = ensurePositive(props, "general.nestMaxRoosters",
+                readInt(props, "general.nestMaxRoosters", 1), 1);
+        if (nestMaxRoosters > 16) {
+            nestMaxRoosters = 16;
+            props.setProperty("general.nestMaxRoosters", Integer.toString(nestMaxRoosters));
+        }
+        int nestSeedDurationTicks = ensureNonNegative(props, "general.nestSeedDurationTicks",
+                readInt(props, "general.nestSeedDurationTicks", 20 * 60));
         boolean disableEggLaying = readBoolean(props, "general.disableVanillaEggLaying", false);
         int collectorRange = readInt(props, "general.collectorScanRange", 4);
         boolean avianFluxEffects = readBoolean(props, "general.avianFluxEffectsEnabled", true);
@@ -679,7 +692,9 @@ public final class ChickensDataLoader {
                 readInt(props, "general.incubatorEnergyCost", 10_000), 1);
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier,
                 overworldChance, netherChance, endChance, alwaysShowStats,
-                roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
+                roostSpeed, breederSpeed, roosterAuraMultiplier, roosterAuraRange,
+                nestMaxRoosters, nestSeedDurationTicks,
+                disableEggLaying, collectorRange, avianFluxEffects,
                 Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract,
                 avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
                 avianChemicalCapacity, avianChemicalTransfer, avianChemicalEffects,

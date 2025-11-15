@@ -17,6 +17,7 @@ import com.setycz.chickens.block.CollectorBlock;
 import com.setycz.chickens.block.IncubatorBlock;
 import com.setycz.chickens.block.HenhouseBlock;
 import com.setycz.chickens.block.RoostBlock;
+import com.setycz.chickens.block.NestBlock;
 import com.setycz.chickens.item.AnalyzerItem;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
 import com.setycz.chickens.item.ColoredEggItem;
@@ -82,6 +83,7 @@ public final class ModRegistry {
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
     public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());
+    public static final DeferredBlock<NestBlock> NEST = BLOCKS.register("nest", () -> new NestBlock());
     public static final DeferredBlock<BreederBlock> BREEDER = BLOCKS.register("breeder", () -> new BreederBlock());
     public static final DeferredBlock<CollectorBlock> COLLECTOR = BLOCKS.register("collector", () -> new CollectorBlock());
     public static final DeferredBlock<AvianFluxConverterBlock> AVIAN_FLUX_CONVERTER = BLOCKS.register("avian_flux_converter", () -> new AvianFluxConverterBlock());
@@ -109,6 +111,8 @@ public final class ModRegistry {
     public static final DeferredItem<BlockItem> HENHOUSE_ACACIA_ITEM = registerHenhouseItem("henhouse_acacia", HENHOUSE_ACACIA);
     public static final DeferredItem<BlockItem> HENHOUSE_DARK_OAK_ITEM = registerHenhouseItem("henhouse_dark_oak", HENHOUSE_DARK_OAK);
     public static final DeferredItem<BlockItem> ROOST_ITEM = ITEMS.register("roost", () -> new BlockItem(ROOST.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> NEST_ITEM = ITEMS.register("nest",
+            () -> new BlockItem(NEST.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> BREEDER_ITEM = ITEMS.register("breeder",
             () -> new BlockItem(BREEDER.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> COLLECTOR_ITEM = ITEMS.register("collector",
@@ -156,6 +160,7 @@ public final class ModRegistry {
                 event.accept(item.get());
             }
             event.accept(ROOST_ITEM.get());
+            event.accept(NEST_ITEM.get());
             event.accept(BREEDER_ITEM.get());
             event.accept(COLLECTOR_ITEM.get());
             event.accept(AVIAN_FLUX_CONVERTER_ITEM.get());

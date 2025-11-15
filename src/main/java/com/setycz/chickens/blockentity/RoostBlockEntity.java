@@ -4,6 +4,7 @@ import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.item.ChickenItemHelper;
+import com.setycz.chickens.blockentity.NestBlockEntity;
 import com.setycz.chickens.item.ChickenStats;
 import com.setycz.chickens.menu.RoostMenu;
 import com.setycz.chickens.registry.ModBlockEntities;
@@ -13,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -56,7 +58,44 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
 
     @Override
     protected double speedMultiplier() {
-        return ChickensConfigHolder.get().getRoostSpeedMultiplier();
+        double base = ChickensConfigHolder.get().getRoostSpeedMultiplier();
+        double auraMultiplier = ChickensConfigHolder.get().getRoosterAuraMultiplier();
+        int auraRange = ChickensConfigHolder.get().getRoosterAuraRange();
+        if (auraRange <= 0 || auraMultiplier <= 1.0D || level == null) {
+            return base;
+        }
+        int activeRoosters = countActiveRoostersInNests(level, worldPosition, auraRange);
+        if (activeRoosters <= 0) {
+            return base;
+        }
+        // Preserve the existing meaning of roosterAuraMultiplier for a single
+        // rooster while scaling linearly with additional birds. For example,
+        // a multiplier of 1.25 and three active roosters yields:
+        // base * (1 + 3 * 0.25) = base * 1.75.
+        double bonusPerRooster = auraMultiplier - 1.0D;
+        double totalMultiplier = 1.0D + activeRoosters * bonusPerRooster;
+        return base * Math.max(totalMultiplier, 0.0D);
+    }
+
+    private static int countActiveRoostersInNests(net.minecraft.world.level.Level level, BlockPos origin, int range) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int total = 0;
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -range; dz <= range; dz++) {
+                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                    BlockEntity blockEntity = level.getBlockEntity(cursor);
+                    if (!(blockEntity instanceof NestBlockEntity nest)) {
+                        continue;
+                    }
+                    if (!nest.hasActiveAura()) {
+                        continue;
+                    }
+                    total += Math.max(0, nest.getRoosterCount());
+                }
+            }
+        }
+        return total;
     }
 
     @Override

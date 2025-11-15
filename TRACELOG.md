@@ -912,3 +912,25 @@
   2. Replaced the ad-hoc RF counter with the shared `MachineEnergyStorage` pattern from the other machines, ensuring the capability, config-driven limits, and menu/WTHIT/Jade sync all pull from the same source of truth (and locking the progress bar so it only advances when the per-tick RF budget is actually consumed).
   3. Rebuilt via `./gradlew build` (still only JEI/FluidStack deprecation warnings) to confirm the Incubator persists and displays stored RF while animating the battery gauge correctly.
 - **Rationale**: Matching the slot coordinates keeps the GUI crisp, while mirroring the proven RF syncing approach guarantees the Incubator’s battery meter and processing logic stay accurate whenever FE is injected from cables or Flux Converters.
+- **Prompt/Task**: Begin porting the Hatchery rooster asset and behaviour into ModernChickens.
+- **Steps**:
+  1. Inspected the legacy `EntityRooster`, AI goals, renderer, and language entries from the Hatchery sources to understand how roosters stored seeds, avoided egg laying, and interacted with nearby chickens.
+  2. Added a new `Rooster` entity class that extends the vanilla `Chicken`, disables the vanilla egg timer, and introduces a one-slot internal seed inventory plus a synchronised seed-charge counter that slowly converts stored seeds into a simple integer resource.
+  3. Registered the rooster in `ModEntityTypes`, wired a renderer in `ChickensClient` that currently reuses the vanilla chicken texture to avoid geometry artefacts with the legacy rooster skin, and added a localisation entry so roosters appear with a proper display name while a dedicated model layer is queued for a future pass.
+- **Rationale**: Establishing a dedicated rooster entity with seed storage and egg suppression lays the groundwork for porting Hatchery’s breeding and GUI behaviour in follow-up work while keeping the current build aligned with ModernChickens’ NeoForge infrastructure.
+
+## Entry 112
+- **Prompt/Task**: Fix rooster GUI crashes and surface the seed gauge in the NeoForge 1.21.1 rooster screen.
+- **Steps**:
+  1. Reworked `RoosterMenu` so both server and client instances bind a real `Container` (the rooster inventory on the server, a one-slot `SimpleContainer` on the client) and added a `DataSlot` that mirrors the rooster’s seed charge to the menu instead of relying on a nullable network buffer.
+  2. Updated `RoosterScreen` to draw the vertical seed bar using `RoosterMenu.getScaledSeeds`, matching the original Hatchery layout (13×58px gauge) and avoiding calls into a null container during slot rendering.
+  3. Adjusted `RoosterRenderer` first to fall back to the vanilla chicken texture, then replaced it with a dedicated `RoosterModel` layer that ports Hatchery’s `ModelRooster` cuboids to 1.21.1 so the legacy rooster texture and geometry render correctly.
+- **Rationale**: Wiring the rooster container through NeoForge’s menu data and drawing the synced seed gauge restores the legacy “feed level” UX without client crashes, while the dedicated model layer keeps the rooster visually faithful to Hatchery without introducing missing faces on the modern renderer.
+
+## Entry 113
+- **Prompt/Task**: Make roosters placed into roost blocks project a configurable production boost aura to nearby roosts.
+- **Steps**:
+  1. Extended `ChickensConfigValues` and the legacy cfg loader to add `general.roosterAuraMultiplier` and `general.roosterAuraRange` so pack makers can tune how strong the aura is and how far it reaches without touching code.
+  2. Updated `RoostBlockEntity.speedMultiplier` to sample the new config values and scan for neighbouring roosts that contain rooster items; when a rooster is found within the configured radius, the block multiplies its normal roost speed by the aura multiplier.
+  3. Kept the aura logic lightweight by constraining the vertical search to a small band and short‑circuiting as soon as any rooster‑powered roost is detected, avoiding unnecessary overhead in large automation setups.
+- **Rationale**: Allowing roosters to accelerate nearby roost production recreates Hatchery’s stud‑style utility behaviour in a way that remains configurable and performant in ModernChickens farms.

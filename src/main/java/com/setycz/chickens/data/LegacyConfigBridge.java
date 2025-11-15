@@ -112,6 +112,10 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    B:alwaysShowStats=%s%n", general.isAlwaysShowStats()));
             writer.write(String.format(Locale.ROOT, "    D:roostSpeed=%.3f%n", general.getRoostSpeedMultiplier()));
             writer.write(String.format(Locale.ROOT, "    D:breederSpeed=%.3f%n", general.getBreederSpeedMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    D:roosterAuraMultiplier=%.3f%n", general.getRoosterAuraMultiplier()));
+            writer.write(String.format(Locale.ROOT, "    I:roosterAuraRange=%d%n", general.getRoosterAuraRange()));
+            writer.write(String.format(Locale.ROOT, "    I:nestMaxRoosters=%d%n", general.getNestMaxRoosters()));
+            writer.write(String.format(Locale.ROOT, "    I:nestSeedDurationTicks=%d%n", general.getNestSeedDurationTicks()));
             writer.write(String.format(Locale.ROOT, "    B:disableEggLaying=%s%n", general.isVanillaEggLayingDisabled()));
             writer.write(String.format(Locale.ROOT, "    I:collectorScanRange=%d%n", general.getCollectorScanRange()));
             writer.write(String.format(Locale.ROOT, "    B:avianFluxEffectsEnabled=%s%n", general.isAvianFluxEffectsEnabled()));
@@ -160,6 +164,10 @@ public final class LegacyConfigBridge {
             case "alwaysShowStats" -> props.setProperty("general.alwaysShowStats", value);
             case "roostSpeed" -> props.setProperty("general.roostSpeedMultiplier", value);
             case "breederSpeed" -> props.setProperty("general.breederSpeedMultiplier", value);
+            case "roosterAuraMultiplier" -> props.setProperty("general.roosterAuraMultiplier", value);
+            case "roosterAuraRange" -> props.setProperty("general.roosterAuraRange", value);
+            case "nestMaxRoosters" -> props.setProperty("general.nestMaxRoosters", value);
+            case "nestSeedDurationTicks" -> props.setProperty("general.nestSeedDurationTicks", value);
             case "disableEggLaying" -> props.setProperty("general.disableVanillaEggLaying", value);
             case "collectorScanRange" -> props.setProperty("general.collectorScanRange", value);
             case "avianFluxEffectsEnabled" -> props.setProperty("general.avianFluxEffectsEnabled", value);

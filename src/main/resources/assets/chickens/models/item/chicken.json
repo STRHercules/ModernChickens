@@ -252,7 +252,7 @@
       "predicate": {
         "custom_model_data": 403
       }
-    }
+    },
   ],
   "textures": {
     "layer0": "minecraft:item/egg"

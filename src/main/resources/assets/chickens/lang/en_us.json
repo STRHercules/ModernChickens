@@ -90,6 +90,7 @@
   "commands.chickens.spawn.none_available": "No chickens available for spawn type %s.",
   "debug.chickens.spawn": "[Chickens] Spawned %s in %s at %s, %s, %s.",
   "block.chickens.roost": "Roost",
+  "block.chickens.nest": "Nest",
   "block.chickens.breeder": "Chicken Breeder",
   "block.chickens.collector": "Roost Collector",
   "block.chickens.avian_flux_converter": "Avian Flux Converter",
@@ -97,6 +98,7 @@
   "block.chickens.avian_fluid_converter": "Avian Fluid Converter",
   "block.chickens.avian_dousing_machine": "Avian Dousing Machine",
   "menu.chickens.roost": "Roost",
+  "menu.chickens.nest": "Nest",
   "menu.chickens.breeder": "Chicken Breeder",
   "menu.chickens.collector": "Roost Collector",
   "menu.chickens.avian_flux_converter": "Avian Flux Converter",
@@ -127,6 +129,7 @@
   "tooltip.chickens.wthit.time.seconds": "%s s",
   "tooltip.chickens.wthit.time.less_than_second": "<1 s",
   "tooltip.chickens.roost.summary": "%s \u00D7%s producing %s (\u00D7%s)",
+  "tooltip.chickens.nest": "Consumes seeds to boost nearby roosts.",
   "tooltip.chickens.breeder.parents": "Parents: %s + %s",
   "tooltip.chickens.collector.slots": "Stored stacks: %s/%s",
   "entity.SmartChicken.name": "Smart Chicken",
@@ -243,6 +246,7 @@
   "entity.ChickensChicken.growth": "Growth: %s",
   "entity.ChickensChicken.gain": "Gain: %s",
   "entity.ChickensChicken.strength": "Strength: %s",
+  "entity.chickens.rooster": "Rooster",
   "commands.chickens.export.success": "Exported breeding graph to %s",
   "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs."
 }
