@@ -4,7 +4,7 @@ This document is for cataloguing and detailing potential ideas for features.
 
 ##  Current
 
-* Better Mod Integration - Create chickens for popular mod resources that are not ingots/liquids/chemicals. (Essence, Alloys, Certus Quartz, Plastic, Magic, Blood, Oils, etc)
+* Better Mod Integration - Create chickens for popular mod resources that are not ingots/liquids/chemicals. (Essence, Alloys, Certus Quartz, Plastic, Magic, Blood, Oils, Flux, etc)
 
 * Chicken Expansion - Create an additional Tier of chickens that are attainable via various methods. Such as an Ender Dragon Chicken that requires Dragon's Breath and/or a Dragon Egg, or a Wither Chicken that requires Nether Stars.
 
