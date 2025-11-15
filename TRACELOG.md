@@ -880,3 +880,35 @@
   2. Updated the overworld/End population helper and Nether burst handler to pull their probabilities from the new config values (respecting the debug multiplier), capped Nether burst Y-search at 100, and imposed per-player cooldowns (3 min overworld, 5 min Nether, 7 min End) with smaller flock sizes to prevent spam.
   3. Documented the new config knobs in the README and verified the build with `./gradlew build` (warnings unchanged: JEI subtype + FluidStack APIs).
 - **Rationale**: Centralised tuning knobs let pack makers dial spawn density per dimension without hacking the code, while the per-chicken flag lets selective higher-tier breeds (like the Ender Chicken) appear naturally only when explicitly allowed.
+
+## Entry 108
+- **Prompt/Task**: Create a powered Incubator machine that converts chicken eggs into their itemised chicken form using Incubator.png and the iron compressor textures.
+- **Steps**:
+  1. Added a configurable `incubatorEnergyCost` to the legacy config bridge, defaults, and `ChickensConfigValues`, then implemented the Incubator block, block entity, menu, and screen with registry, capability, and creative-tab wiring plus a JEI-friendly tooltip/GUI sync loop for energy, progress, and RF cost.
+  2. Copied the requested textures into the mod assets, authored blockstate/models/item files, loot, recipe, pickaxe tag entries, and localisation strings/tooltips, and wired the new GUI art + incubator machine recipe to the registries.
+  3. Logged the follow-up suggestion, ran `./gradlew build` (succeeds with the existing JEI/FluidStack deprecation warnings), and noted the successful build for verification.
+- **Rationale**: The new Incubator lets players automate catching by paying RF instead of manually spawning/capturing chickens, while the config knob, assets, and data/GUI polish keep it consistent with the rest of the Modern Chickens machines.
+
+## Entry 109
+- **Prompt/Task**: Surface Incubator recipes/status in JEI + WTHIT/Jade, and realign the GUI slots/energy displays to match the provided artwork while mirroring other machines' RF behaviour.
+- **Steps**:
+  1. Added the Incubator JEI recipe type/category, generated spawn egg → chicken recipes using the configured RF cost, and registered the Incubator block as a catalyst so players can review the conversion path directly in JEI.
+  2. Extended the WTHIT overlay helper and Jade IMC bridge with a Incubator provider that streams stored RF, progress %, and per-egg cost, plus updated the block tooltip to show persisted RF just like the flux/fluid converters.
+  3. Repositioned the menu slots, energy gauge, and progress animation to the requested coordinates, swapped the GUI overlays to the authored texture regions, and reworked the energy bar drawing while keeping the RF storage/capability logic intact; re-ran `./gradlew build` (still only the known JEI/FluidStack warnings).
+- **Rationale**: Documenting the Incubator workflow in JEI and HUD overlays removes guesswork for automation players, and the corrected GUI layout/GFX ensures the in-game machine matches the supplied art while behaving consistently with existing RF-powered blocks.
+
+## Entry 110
+- **Prompt/Task**: Incubator still does not accept/store RF after the previous pass and must use the specified GUI art/dimensions exactly like the other machines.
+- **Steps**:
+  1. Added `incubatorCapacity` and `incubatorMaxReceive` config keys (plus legacy bridge + default config updates), expanded `ChickensConfigValues`, and synced the Incubator block entity against those values so its RF buffer behaves identically to the Avian converters.
+  2. Reworked the Incubator energy storage to honour the synced limits, clamp persisted energy, expose the capability, and actively pull power from adjacent generators/cables while keeping the GUI/tooltips/WTHIT/Jade overlays in sync with the live buffer.
+  3. Confirmed the GUI continues to blit the supplied `AdditionalAssets/chickens/textures/gui/incubator.png` regions with the documented coordinates and reran `./gradlew build` (only the known JEI/FluidStack warnings remain).
+- **Rationale**: Aligning the Incubator with the shared RF configuration/capability machinery restores FE acceptance from any NeoForge-compatible network and keeps every visual/overlay readout accurate.
+
+## Entry 111
+- **Prompt/Task**: Incubator output slot still misaligned and the RF gauge doesn’t refresh even while energy flows in from external batteries.
+- **Steps**:
+  1. Nudged the output slot to the exact `(100,35)` origin supplied so the rendered slot lines up with the GUI’s item frame.
+  2. Replaced the ad-hoc RF counter with the shared `MachineEnergyStorage` pattern from the other machines, ensuring the capability, config-driven limits, and menu/WTHIT/Jade sync all pull from the same source of truth (and locking the progress bar so it only advances when the per-tick RF budget is actually consumed).
+  3. Rebuilt via `./gradlew build` (still only JEI/FluidStack deprecation warnings) to confirm the Incubator persists and displays stored RF while animating the battery gauge correctly.
+- **Rationale**: Matching the slot coordinates keeps the GUI crisp, while mirroring the proven RF syncing approach guarantees the Incubator’s battery meter and processing logic stay accurate whenever FE is injected from cables or Flux Converters.

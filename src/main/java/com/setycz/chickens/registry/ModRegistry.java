@@ -14,6 +14,7 @@ import com.setycz.chickens.block.AvianDousingMachineBlock;
 import com.setycz.chickens.block.AvianFluidConverterBlock;
 import com.setycz.chickens.block.BreederBlock;
 import com.setycz.chickens.block.CollectorBlock;
+import com.setycz.chickens.block.IncubatorBlock;
 import com.setycz.chickens.block.HenhouseBlock;
 import com.setycz.chickens.block.RoostBlock;
 import com.setycz.chickens.item.AnalyzerItem;
@@ -88,6 +89,7 @@ public final class ModRegistry {
     public static final DeferredBlock<AvianChemicalConverterBlock> AVIAN_CHEMICAL_CONVERTER = BLOCKS.register("avian_chemical_converter", () -> new AvianChemicalConverterBlock());
     public static final DeferredBlock<AvianDousingMachineBlock> AVIAN_DOUSING_MACHINE = BLOCKS.register("avian_dousing_machine",
             () -> new AvianDousingMachineBlock());
+    public static final DeferredBlock<IncubatorBlock> INCUBATOR = BLOCKS.register("incubator", () -> new IncubatorBlock());
     // Register the henhouse block and its item form so players can place the storage structure.
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
@@ -119,6 +121,8 @@ public final class ModRegistry {
             () -> new BlockItem(AVIAN_CHEMICAL_CONVERTER.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> AVIAN_DOUSING_MACHINE_ITEM = ITEMS.register("avian_dousing_machine",
             () -> new BlockItem(AVIAN_DOUSING_MACHINE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> INCUBATOR_ITEM = ITEMS.register("incubator",
+            () -> new BlockItem(INCUBATOR.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,
@@ -158,6 +162,7 @@ public final class ModRegistry {
             event.accept(AVIAN_FLUID_CONVERTER_ITEM.get());
             event.accept(AVIAN_CHEMICAL_CONVERTER_ITEM.get());
             event.accept(AVIAN_DOUSING_MACHINE_ITEM.get());
+            event.accept(INCUBATOR_ITEM.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(FLUX_EGG.get());
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {

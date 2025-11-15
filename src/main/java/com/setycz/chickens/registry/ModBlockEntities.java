@@ -7,6 +7,7 @@ import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
+import com.setycz.chickens.blockentity.IncubatorBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -56,6 +57,10 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianDousingMachineBlockEntity>> AVIAN_DOUSING_MACHINE = BLOCK_ENTITIES
             .register("avian_dousing_machine", () -> BlockEntityType.Builder
                     .of(AvianDousingMachineBlockEntity::new, ModRegistry.AVIAN_DOUSING_MACHINE.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<IncubatorBlockEntity>> INCUBATOR = BLOCK_ENTITIES
+            .register("incubator", () -> BlockEntityType.Builder
+                    .of(IncubatorBlockEntity::new, ModRegistry.INCUBATOR.get())
                     .build(null));
 
     private ModBlockEntities() {

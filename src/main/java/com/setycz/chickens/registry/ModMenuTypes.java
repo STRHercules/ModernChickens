@@ -7,6 +7,7 @@ import com.setycz.chickens.menu.AvianFluxConverterMenu;
 import com.setycz.chickens.menu.AvianFluidConverterMenu;
 import com.setycz.chickens.menu.BreederMenu;
 import com.setycz.chickens.menu.CollectorMenu;
+import com.setycz.chickens.menu.IncubatorMenu;
 import com.setycz.chickens.menu.HenhouseMenu;
 import com.setycz.chickens.menu.RoostMenu;
 import net.minecraft.core.registries.Registries;
@@ -40,6 +41,8 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(AvianChemicalConverterMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<AvianDousingMachineMenu>> AVIAN_DOUSING_MACHINE = MENU_TYPES.register("avian_dousing_machine",
             () -> IMenuTypeExtension.create(AvianDousingMachineMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<IncubatorMenu>> INCUBATOR = MENU_TYPES.register("incubator",
+            () -> IMenuTypeExtension.create(IncubatorMenu::new));
 
     private ModMenuTypes() {
     }

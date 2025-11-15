@@ -24,6 +24,7 @@ import com.setycz.chickens.screen.AvianFluxConverterScreen;
 import com.setycz.chickens.screen.AvianFluidConverterScreen;
 import com.setycz.chickens.screen.BreederScreen;
 import com.setycz.chickens.screen.CollectorScreen;
+import com.setycz.chickens.screen.IncubatorScreen;
 import com.setycz.chickens.screen.HenhouseScreen;
 import com.setycz.chickens.screen.RoostScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -85,6 +86,7 @@ public final class ChickensClient {
         event.register(ModMenuTypes.AVIAN_FLUID_CONVERTER.get(), AvianFluidConverterScreen::new);
         event.register(ModMenuTypes.AVIAN_CHEMICAL_CONVERTER.get(), AvianChemicalConverterScreen::new);
         event.register(ModMenuTypes.AVIAN_DOUSING_MACHINE.get(), AvianDousingMachineScreen::new);
+        event.register(ModMenuTypes.INCUBATOR.get(), IncubatorScreen::new);
     }
 
     @SubscribeEvent

@@ -28,6 +28,8 @@ public final class ChickensJeiRecipeTypes {
             ChickensMod.MOD_ID, "avian_chemical_converter", AvianChemicalConverterRecipe.class);
     public static final RecipeType<AvianDousingRecipe> AVIAN_DOUSING = RecipeType.create(
             ChickensMod.MOD_ID, "avian_dousing", AvianDousingRecipe.class);
+    public static final RecipeType<IncubatorRecipe> INCUBATOR = RecipeType.create(
+            ChickensMod.MOD_ID, "incubator", IncubatorRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -65,5 +67,8 @@ public final class ChickensJeiRecipeTypes {
     public record AvianDousingRecipe(ItemStack smartEgg, ItemStack smartChicken, ItemStack reagent, ItemStack result,
                                      ChemicalEggRegistryItem entry,
                                      @Nullable MekanismJeiChemicalHelper.JeiChemicalStack chemical) {
+    }
+
+    public record IncubatorRecipe(ItemStack spawnEgg, ItemStack chicken, int energyCost) {
     }
 }

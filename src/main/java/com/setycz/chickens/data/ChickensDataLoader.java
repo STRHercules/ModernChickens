@@ -671,6 +671,12 @@ public final class ChickensDataLoader {
         boolean fluidChickensEnabled = readBoolean(props, "general.enableFluidChickens", true);
         boolean chemicalChickensEnabled = readBoolean(props, "general.enableChemicalChickens", true);
         boolean gasChickensEnabled = readBoolean(props, "general.enableGasChickens", true);
+        int incubatorCapacity = ensurePositive(props, "general.incubatorCapacity",
+                readInt(props, "general.incubatorCapacity", 100_000), 1);
+        int incubatorMaxReceive = ensurePositive(props, "general.incubatorMaxReceive",
+                readInt(props, "general.incubatorMaxReceive", 4_000), 1);
+        int incubatorEnergyCost = ensurePositive(props, "general.incubatorEnergyCost",
+                readInt(props, "general.incubatorEnergyCost", 10_000), 1);
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier,
                 overworldChance, netherChance, endChance, alwaysShowStats,
                 roostSpeed, breederSpeed, disableEggLaying, collectorRange, avianFluxEffects,
@@ -678,7 +684,8 @@ public final class ChickensDataLoader {
                 avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
                 avianChemicalCapacity, avianChemicalTransfer, avianChemicalEffects,
                 liquidEggHazards,
-                fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled);
+                fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled, incubatorEnergyCost,
+                incubatorCapacity, incubatorMaxReceive);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {

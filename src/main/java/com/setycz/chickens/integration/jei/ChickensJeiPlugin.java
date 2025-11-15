@@ -8,6 +8,7 @@ import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.integration.jei.category.AvianChemicalConverterCategory;
 import com.setycz.chickens.integration.jei.category.AvianDousingCategory;
 import com.setycz.chickens.integration.jei.category.AvianFluidConverterCategory;
@@ -15,6 +16,7 @@ import com.setycz.chickens.integration.jei.category.BreederCategory;
 import com.setycz.chickens.integration.jei.category.BreedingCategory;
 import com.setycz.chickens.integration.jei.category.CatchingCategory;
 import com.setycz.chickens.integration.jei.category.DropCategory;
+import com.setycz.chickens.integration.jei.category.IncubatorCategory;
 import com.setycz.chickens.integration.jei.category.HenhousingCategory;
 import com.setycz.chickens.integration.jei.category.LayingCategory;
 import com.setycz.chickens.integration.jei.category.RoostingCategory;
@@ -93,7 +95,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new CatchingCategory(guiHelper),
                 new AvianFluidConverterCategory(guiHelper),
                 new AvianChemicalConverterCategory(guiHelper),
-                new AvianDousingCategory(guiHelper)
+                new AvianDousingCategory(guiHelper),
+                new IncubatorCategory(guiHelper)
         );
     }
 
@@ -110,6 +113,7 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_FLUID_CONVERTER, buildAvianFluidConverterRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER, buildAvianChemicalConverterRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_DOUSING, buildAvianDousingRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.INCUBATOR, buildIncubatorRecipes());
     }
 
     @Override
@@ -129,6 +133,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 ChickensJeiRecipeTypes.AVIAN_CHEMICAL_CONVERTER);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.AVIAN_DOUSING_MACHINE_ITEM.get()),
                 ChickensJeiRecipeTypes.AVIAN_DOUSING);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.INCUBATOR_ITEM.get()),
+                ChickensJeiRecipeTypes.INCUBATOR);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -188,6 +194,18 @@ public class ChickensJeiPlugin implements IModPlugin {
                     ItemStack drop = chicken.createDropItem();
                     return new ChickensJeiRecipeTypes.RoostingRecipe(stack, drop, stack.getCount());
                 })
+                .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.IncubatorRecipe> buildIncubatorRecipes() {
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        int energyCost = Math.max(1, ChickensConfigHolder.get().getIncubatorEnergyCost());
+        return ChickensRegistry.getItems().stream()
+                .filter(ChickensRegistryItem::isEnabled)
+                .map(chicken -> new ChickensJeiRecipeTypes.IncubatorRecipe(
+                        ChickensSpawnEggItem.createFor(chicken),
+                        chickenItem.createFor(chicken),
+                        energyCost))
                 .toList();
     }
 

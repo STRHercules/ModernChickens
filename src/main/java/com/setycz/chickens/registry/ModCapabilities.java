@@ -39,6 +39,7 @@ public final class ModCapabilities {
         registerContainerCapability(event, ModBlockEntities.AVIAN_FLUID_CONVERTER.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get());
         registerContainerCapability(event, ModBlockEntities.AVIAN_DOUSING_MACHINE.get());
+        registerContainerCapability(event, ModBlockEntities.INCUBATOR.get());
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
@@ -47,6 +48,10 @@ public final class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.AVIAN_DOUSING_MACHINE.get(),
+                (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.INCUBATOR.get(),
                 (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,

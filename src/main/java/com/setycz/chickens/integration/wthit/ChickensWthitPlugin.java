@@ -4,6 +4,7 @@ import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
+import com.setycz.chickens.blockentity.IncubatorBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
 import com.setycz.chickens.integration.wthit.overlay.HudOverlayHelper;
@@ -66,5 +67,9 @@ public final class ChickensWthitPlugin implements IWailaPlugin {
         HenhouseProvider henhouseProvider = new HenhouseProvider();
         registrar.addBlockData(henhouseProvider, HenhouseBlockEntity.class);
         registrar.addComponent(hudRenderer, TooltipPosition.BODY, HenhouseBlockEntity.class);
+
+        IncubatorProvider incubatorProvider = new IncubatorProvider();
+        registrar.addBlockData(incubatorProvider, IncubatorBlockEntity.class);
+        registrar.addComponent(hudRenderer, TooltipPosition.BODY, IncubatorBlockEntity.class);
     }
 }

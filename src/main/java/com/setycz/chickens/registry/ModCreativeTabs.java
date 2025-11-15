@@ -51,6 +51,7 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.COLLECTOR_ITEM.get());
                         output.accept(ModRegistry.AVIAN_FLUX_CONVERTER_ITEM.get());
                         output.accept(ModRegistry.AVIAN_FLUID_CONVERTER_ITEM.get());
+                        output.accept(ModRegistry.INCUBATOR_ITEM.get());
                         for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {
                             output.accept(item.get());
                         }

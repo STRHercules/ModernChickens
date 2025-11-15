@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "chickens:block/incubator_top",
+    "front": "chickens:block/incubator_front",
+    "side": "chickens:block/incubator_side",
+    "bottom": "chickens:block/incubator_bottom"
+  }
+}

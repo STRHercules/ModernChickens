@@ -35,6 +35,9 @@ public final class ChickensConfigValues {
     private final boolean fluidChickensEnabled;
     private final boolean chemicalChickensEnabled;
     private final boolean gasChickensEnabled;
+    private final int incubatorEnergyCost;
+    private final int incubatorEnergyCapacity;
+    private final int incubatorEnergyMaxReceive;
 
     public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
             float netherSpawnChanceMultiplier, float overworldSpawnChance,
@@ -46,7 +49,8 @@ public final class ChickensConfigValues {
             int avianFluidCapacity, int avianFluidTransferRate, boolean avianFluidEffectsEnabled,
             int avianChemicalCapacity, int avianChemicalTransferRate, boolean avianChemicalEffectsEnabled,
             boolean liquidEggHazardsEnabled, boolean fluidChickensEnabled,
-            boolean chemicalChickensEnabled, boolean gasChickensEnabled) {
+            boolean chemicalChickensEnabled, boolean gasChickensEnabled, int incubatorEnergyCost,
+            int incubatorEnergyCapacity, int incubatorEnergyMaxReceive) {
         this.spawnProbability = spawnProbability;
         this.minBroodSize = minBroodSize;
         this.maxBroodSize = maxBroodSize;
@@ -74,6 +78,9 @@ public final class ChickensConfigValues {
         this.fluidChickensEnabled = fluidChickensEnabled;
         this.chemicalChickensEnabled = chemicalChickensEnabled;
         this.gasChickensEnabled = gasChickensEnabled;
+        this.incubatorEnergyCost = incubatorEnergyCost;
+        this.incubatorEnergyCapacity = incubatorEnergyCapacity;
+        this.incubatorEnergyMaxReceive = incubatorEnergyMaxReceive;
     }
 
     public int getSpawnProbability() {
@@ -182,5 +189,17 @@ public final class ChickensConfigValues {
 
     public boolean isGasChickensEnabled() {
         return gasChickensEnabled;
+    }
+
+    public int getIncubatorEnergyCost() {
+        return incubatorEnergyCost;
+    }
+
+    public int getIncubatorEnergyCapacity() {
+        return incubatorEnergyCapacity;
+    }
+
+    public int getIncubatorEnergyMaxReceive() {
+        return incubatorEnergyMaxReceive;
     }
 }

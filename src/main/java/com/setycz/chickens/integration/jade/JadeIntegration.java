@@ -3,11 +3,13 @@ package com.setycz.chickens.integration.jade;
 import com.setycz.chickens.ChemicalEggRegistry;
 import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.GasEggRegistry;
+import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import com.setycz.chickens.blockentity.AvianChemicalConverterBlockEntity;
 import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
 import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
+import com.setycz.chickens.blockentity.IncubatorBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.entity.ChickensChicken;
@@ -89,6 +91,8 @@ public final class JadeIntegration {
             registerNbt.invoke(registrar, blockProvider, AvianFluidConverterBlockEntity.class);
             registerTail.invoke(registrar, blockProvider, AvianChemicalConverterBlockEntity.class);
             registerNbt.invoke(registrar, blockProvider, AvianChemicalConverterBlockEntity.class);
+            registerTail.invoke(registrar, blockProvider, IncubatorBlockEntity.class);
+            registerNbt.invoke(registrar, blockProvider, IncubatorBlockEntity.class);
         } catch (ClassNotFoundException ex) {
             LOGGER.warn("{} advertised Waila compatibility but the API was missing", target);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
@@ -246,6 +250,21 @@ public final class JadeIntegration {
                 tooltip.add(line.getString());
                 return tooltip;
             }
+            if (tile instanceof IncubatorBlockEntity) {
+                CompoundTag tag = nbtObj instanceof CompoundTag compound ? compound : new CompoundTag();
+                int energy = Math.max(tag.getInt("Energy"), 0);
+                int capacity = Math.max(tag.getInt("EnergyCapacity"), ChickensConfigHolder.get().getIncubatorEnergyCapacity());
+                int cost = Math.max(tag.getInt("EnergyCost"), 1);
+                int progress = Math.max(tag.getInt("Progress"), 0);
+                int maxProgress = Math.max(tag.getInt("MaxProgress"), 1);
+                int percent = Math.min(100, progress * 100 / maxProgress);
+                @SuppressWarnings("unchecked")
+                List<String> tooltip = (List<String>) list;
+                tooltip.add(Component.translatable("tooltip.chickens.incubator.energy", energy, capacity).getString());
+                tooltip.add(Component.translatable("tooltip.chickens.incubator.progress", percent).getString());
+                tooltip.add(Component.translatable("tooltip.chickens.incubator.cost", cost).getString());
+                return tooltip;
+            }
             if (!(tile instanceof AbstractChickenContainerBlockEntity) || !(list instanceof List<?>)) {
                 return tooltipObject;
             }
@@ -282,6 +301,15 @@ public final class JadeIntegration {
                 if (id != null) {
                     tag.putString("ChemicalName", id.toString());
                 }
+                return tag;
+            }
+            if (tile instanceof IncubatorBlockEntity incubator) {
+                CompoundTag tag = tagObject instanceof CompoundTag compound ? compound : new CompoundTag();
+                tag.putInt("Energy", incubator.getEnergyStored());
+                tag.putInt("EnergyCapacity", incubator.getEnergyCapacity());
+                tag.putInt("EnergyCost", incubator.getEnergyCost());
+                tag.putInt("Progress", incubator.getProgress());
+                tag.putInt("MaxProgress", incubator.getMaxProgress());
                 return tag;
             }
             return tagObject;
