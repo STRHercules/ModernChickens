@@ -18,7 +18,11 @@ import javax.annotation.Nullable;
  */
 public final class ChickenItemHelper {
     public static final String TAG_CHICKEN_TYPE = "ChickenType";
+    private static final String TAG_ROOSTER = "IsRooster";
     private static final String TAG_STATS = "ChickenStats";
+    // Reserved custom model id used for rooster stacks so the chicken item
+    // model can swap to the dedicated rooster sprite.
+    public static final int ROOSTER_MODEL_ID = 900000;
 
     private ChickenItemHelper() {
     }
@@ -43,8 +47,33 @@ public final class ChickenItemHelper {
         return 0;
     }
 
+    /**
+     * Marks the provided stack as representing a rooster rather than a standard
+     * ChickensChicken. Rooster stacks use a dedicated custom model id so the
+     * item renderer can swap to textures/item/rooster.png.
+     */
+    public static void setRooster(ItemStack stack, boolean rooster) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (rooster) {
+                tag.putBoolean(TAG_ROOSTER, true);
+            } else {
+                tag.remove(TAG_ROOSTER);
+            }
+        });
+    }
+
+    public static boolean isRooster(ItemStack stack) {
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        return data.contains(TAG_ROOSTER) && data.copyTag().getBoolean(TAG_ROOSTER);
+    }
+
     @Nullable
     public static ChickensRegistryItem resolve(ItemStack stack) {
+        if (isRooster(stack)) {
+            // Rooster stacks do not map to a ChickensRegistryItem; callers that
+            // need rooster data should consult RoosterItemData instead.
+            return null;
+        }
         return ChickensRegistry.getByType(getChickenType(stack));
     }
 

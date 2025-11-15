@@ -18,6 +18,15 @@ public final class ChickensConfigValues {
     private final boolean alwaysShowStats;
     private final double roostSpeedMultiplier;
     private final double breederSpeedMultiplier;
+    private final double roosterAuraMultiplier;
+    private final int roosterAuraRange;
+    /** Maximum number of roosters a single nest can hold. */
+    private final int nestMaxRoosters;
+    /**
+     * Duration, in ticks, that a single seed powers a nest's rooster aura.
+     * A value of 0 disables seed-based consumption and aura from nests.
+     */
+    private final int nestSeedDurationTicks;
     private final boolean disableVanillaEggLaying;
     private final int collectorScanRange;
     private final boolean avianFluxEffectsEnabled;
@@ -40,6 +49,8 @@ public final class ChickensConfigValues {
             float netherSpawnChanceMultiplier, float overworldSpawnChance,
             float netherSpawnChance, float endSpawnChance, boolean alwaysShowStats,
             double roostSpeedMultiplier, double breederSpeedMultiplier,
+            double roosterAuraMultiplier, int roosterAuraRange,
+            int nestMaxRoosters, int nestSeedDurationTicks,
             boolean disableVanillaEggLaying, int collectorScanRange,
             boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
             int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
@@ -57,6 +68,10 @@ public final class ChickensConfigValues {
         this.alwaysShowStats = alwaysShowStats;
         this.roostSpeedMultiplier = roostSpeedMultiplier;
         this.breederSpeedMultiplier = breederSpeedMultiplier;
+        this.roosterAuraMultiplier = roosterAuraMultiplier;
+        this.roosterAuraRange = roosterAuraRange;
+        this.nestMaxRoosters = nestMaxRoosters;
+        this.nestSeedDurationTicks = nestSeedDurationTicks;
         this.disableVanillaEggLaying = disableVanillaEggLaying;
         this.collectorScanRange = collectorScanRange;
         this.avianFluxEffectsEnabled = avianFluxEffectsEnabled;
@@ -114,6 +129,39 @@ public final class ChickensConfigValues {
 
     public double getBreederSpeedMultiplier() {
         return breederSpeedMultiplier;
+    }
+
+    /**
+     * Multiplier applied to roost production speed when a nearby rooster aura
+     * is active. A value of 1.0 disables the boost.
+     */
+    public double getRoosterAuraMultiplier() {
+        return roosterAuraMultiplier;
+    }
+
+    /**
+     * Maximum Manhattan distance (in blocks) at which a rooster placed in a
+     * roost can boost neighbouring roosts. A value of 0 disables the aura.
+     */
+    public int getRoosterAuraRange() {
+        return roosterAuraRange;
+    }
+
+    /**
+     * Maximum number of roosters allowed in a single nest. Values are clamped
+     * to the range [1,16] when read from configuration so malformed configs
+     * cannot create excessively large stacks.
+     */
+    public int getNestMaxRoosters() {
+        return nestMaxRoosters;
+    }
+
+    /**
+     * Returns how many ticks a single seed will keep a nest's rooster aura
+     * active. A value of 0 disables aura production from nests.
+     */
+    public int getNestSeedDurationTicks() {
+        return nestSeedDurationTicks;
     }
 
     public boolean isVanillaEggLayingDisabled() {

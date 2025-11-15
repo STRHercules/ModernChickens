@@ -15,6 +15,14 @@ public class RoosterScreen extends AbstractContainerScreen<RoosterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/gui/rooster.png");
 
+    // Seed bar geometry mirrors the legacy Hatchery rooster GUI: a 13px wide
+    // column rising from the bottom of the gauge with a total height of 58px.
+    private static final int SEED_BAR_X = 75;
+    private static final int SEED_BAR_Y = 72;
+    private static final int SEED_BAR_WIDTH = 13;
+    private static final int SEED_BAR_HEIGHT = 58;
+    private static final int SEED_BAR_U = 195;
+
     public RoosterScreen(RoosterMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 174;
@@ -27,6 +35,17 @@ public class RoosterScreen extends AbstractContainerScreen<RoosterMenu> {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
         graphics.blit(GUI_TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
+
+        int seeds = this.menu.getScaledSeeds(SEED_BAR_HEIGHT);
+        if (seeds > 0) {
+            // Draw from the bottom up so the bar fills vertically while
+            // reusing the original texture coordinates from Hatchery.
+            graphics.blit(GUI_TEXTURE,
+                    x + SEED_BAR_X, y + SEED_BAR_Y - seeds,
+                    SEED_BAR_U, SEED_BAR_HEIGHT - seeds,
+                    SEED_BAR_WIDTH, seeds,
+                    256, 256);
+        }
     }
 
     @Override

@@ -10,10 +10,12 @@ import com.setycz.chickens.client.render.ChickenItemSpriteModels;
 import com.setycz.chickens.client.render.ChickensChickenRenderer;
 import com.setycz.chickens.client.render.DynamicChickenTextures;
 import com.setycz.chickens.client.render.LiquidChickenOverlayLayer;
+import com.setycz.chickens.client.render.RoosterModel;
 import com.setycz.chickens.client.render.RoosterRenderer;
 import com.setycz.chickens.client.render.blockentity.BreederBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.CollectorBlockEntityRenderer;
 import com.setycz.chickens.client.render.blockentity.RoostBlockEntityRenderer;
+import com.setycz.chickens.client.render.blockentity.NestBlockEntityRenderer;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.registry.ModBlockEntities;
 import com.setycz.chickens.registry.ModEntityTypes;
@@ -27,6 +29,7 @@ import com.setycz.chickens.screen.BreederScreen;
 import com.setycz.chickens.screen.CollectorScreen;
 import com.setycz.chickens.screen.HenhouseScreen;
 import com.setycz.chickens.screen.RoostScreen;
+import com.setycz.chickens.screen.NestScreen;
 import com.setycz.chickens.screen.RoosterScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -58,8 +61,14 @@ public final class ChickensClient {
         event.registerEntityRenderer(ModEntityTypes.CHICKENS_CHICKEN.get(), ChickensChickenRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.ROOSTER.get(), RoosterRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ROOST.get(), RoostBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.NEST.get(), NestBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BREEDER.get(), BreederBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COLLECTOR.get(), CollectorBlockEntityRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(RoosterModel.LAYER_LOCATION, RoosterModel::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -82,6 +91,7 @@ public final class ChickensClient {
         // Bind the container to its screen so the henhouse GUI renders correctly on the client.
         event.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
+        event.register(ModMenuTypes.NEST.get(), NestScreen::new);
         event.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);

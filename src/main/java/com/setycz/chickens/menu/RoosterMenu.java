@@ -3,12 +3,13 @@ package com.setycz.chickens.menu;
 import com.setycz.chickens.entity.Rooster;
 import com.setycz.chickens.registry.ModMenuTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 /**
  * Simple container menu for the rooster. It mirrors the legacy Hatchery GUI by
@@ -18,17 +19,20 @@ public class RoosterMenu extends AbstractContainerMenu {
     private static final int SEED_SLOT_INDEX = 0;
 
     private final Rooster rooster;
+    private final Container inventory;
+    private int clientSeeds;
 
     public RoosterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
-        this(id, playerInventory, resolveRooster(playerInventory, buffer));
+        this(id, playerInventory, (Rooster) null);
     }
 
     public RoosterMenu(int id, Inventory playerInventory, Rooster rooster) {
         super(ModMenuTypes.ROOSTER.get(), id);
         this.rooster = rooster;
+        this.inventory = rooster != null ? rooster : new SimpleContainer(1);
 
         // Rooster seed slot
-        this.addSlot(new SeedSlot(rooster, SEED_SLOT_INDEX, 25, 36));
+        this.addSlot(new SeedSlot(inventory, SEED_SLOT_INDEX, 25, 36));
 
         // Player inventory (3x9)
         for (int row = 0; row < 3; ++row) {
@@ -40,23 +44,25 @@ public class RoosterMenu extends AbstractContainerMenu {
         for (int hotbar = 0; hotbar < 9; ++hotbar) {
             this.addSlot(new Slot(playerInventory, hotbar, 7 + hotbar * 18, 141));
         }
-    }
 
-    private static Rooster resolveRooster(Inventory inventory, RegistryFriendlyByteBuf buffer) {
-        // Entities do not have a stable position payload here; instead, we rely on
-        // the entity id encoded by MenuProvider/openMenu. The client side will
-        // already be bound to the correct rooster instance.
-        Level level = inventory.player.level();
-        int entityId = buffer.readVarInt();
-        if (level.getEntity(entityId) instanceof Rooster rooster) {
-            return rooster;
-        }
-        throw new IllegalStateException("Rooster entity not found for id " + entityId);
+        // Sync the rooster's internal seed charge to the client so the GUI can
+        // render a progress bar without directly querying entity data.
+        this.addDataSlot(new net.minecraft.world.inventory.DataSlot() {
+            @Override
+            public int get() {
+                return rooster != null ? rooster.getSeeds() : clientSeeds;
+            }
+
+            @Override
+            public void set(int value) {
+                clientSeeds = value;
+            }
+        });
     }
 
     @Override
     public boolean stillValid(Player player) {
-        return rooster.stillValid(player);
+        return rooster == null || rooster.stillValid(player);
     }
 
     @Override
@@ -91,9 +97,20 @@ public class RoosterMenu extends AbstractContainerMenu {
         return rooster;
     }
 
+    /**
+     * Returns the scaled seed charge for GUI bars. The rooster currently caps
+     * seed storage at 20 points, mirroring the legacy Hatchery behaviour.
+     */
+    public int getScaledSeeds(int scale) {
+        if (clientSeeds <= 0) {
+            return 0;
+        }
+        return clientSeeds * scale / 20;
+    }
+
     private static class SeedSlot extends Slot {
-        public SeedSlot(Rooster rooster, int index, int x, int y) {
-            super(rooster, index, x, y);
+        public SeedSlot(Container container, int index, int x, int y) {
+            super(container, index, x, y);
         }
 
         @Override

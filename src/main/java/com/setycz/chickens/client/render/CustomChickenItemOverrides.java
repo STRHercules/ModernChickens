@@ -1,11 +1,13 @@
 package com.setycz.chickens.client.render;
 
+import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.item.ChickenItemHelper;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
@@ -38,6 +40,28 @@ final class CustomChickenItemOverrides extends ItemOverrides {
     @Override
     public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level,
             @Nullable LivingEntity entity, int seed) {
+        if (ChickenItemHelper.isRooster(stack)) {
+            BakedModel cachedRooster = cache.get(ChickenItemHelper.ROOSTER_MODEL_ID);
+            if (cachedRooster != null) {
+                return cachedRooster;
+            }
+            ChickensRegistryItem stub = new ChickensRegistryItem(
+                    ChickenItemHelper.ROOSTER_MODEL_ID,
+                    "Rooster",
+                    ResourceLocation.withDefaultNamespace("textures/entity/chicken.png"),
+                    ItemStack.EMPTY,
+                    0xFFFFFF,
+                    0xFFFFFF
+            );
+            stub.setItemTexture(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/rooster.png"));
+            BakedModel bakedRooster = ChickenItemSpriteModels.bake(stub, bakery);
+            if (bakedRooster != null) {
+                cache.put(ChickenItemHelper.ROOSTER_MODEL_ID, bakedRooster);
+                return bakedRooster;
+            }
+            return originalModel;
+        }
+
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         boolean hasExplicitTexture = chicken != null && chicken.getItemTexture() != null;
         boolean forceCustomSprite = chicken != null && chicken.isCustom() && hasExplicitTexture;

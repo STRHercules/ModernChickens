@@ -9,6 +9,7 @@ import com.setycz.chickens.blockentity.BreederBlockEntity;
 import com.setycz.chickens.blockentity.CollectorBlockEntity;
 import com.setycz.chickens.blockentity.HenhouseBlockEntity;
 import com.setycz.chickens.blockentity.RoostBlockEntity;
+import com.setycz.chickens.blockentity.NestBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +33,10 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoostBlockEntity>> ROOST = BLOCK_ENTITIES
             .register("roost", () -> BlockEntityType.Builder
                     .of(RoostBlockEntity::new, ModRegistry.ROOST.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NestBlockEntity>> NEST = BLOCK_ENTITIES
+            .register("nest", () -> BlockEntityType.Builder
+                    .of(NestBlockEntity::new, ModRegistry.NEST.get())
                     .build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BreederBlockEntity>> BREEDER = BLOCK_ENTITIES
             .register("breeder", () -> BlockEntityType.Builder

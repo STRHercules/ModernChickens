@@ -335,7 +335,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         setSeeds(tag.getInt(TAG_SEEDS));
-        items.clear();
+        // Rebuild the single-slot inventory so saved seed stacks survive
+        // across world reloads instead of being dropped due to a cleared list.
         for (int i = 0; i < items.size(); i++) {
             items.set(i, ItemStack.EMPTY);
         }

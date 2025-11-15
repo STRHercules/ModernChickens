@@ -1,6 +1,7 @@
 package com.setycz.chickens.item;
 
 import com.setycz.chickens.entity.ChickensChicken;
+import com.setycz.chickens.entity.Rooster;
 import com.setycz.chickens.registry.ModRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -28,11 +29,17 @@ public class ChickenCatcherItem extends Item {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
+        Level level = entity.level();
+        Vec3 position = entity.position();
+
+        if (entity instanceof Rooster rooster) {
+            return catchRooster(stack, player, hand, level, position, rooster);
+        }
+
         if (!(entity instanceof ChickensChicken chicken)) {
             return InteractionResult.PASS;
         }
-        Level level = entity.level();
-        Vec3 position = entity.position();
+
         if (entity.isBaby()) {
             spawnParticles(level, position, true);
             playSound(level, position, SoundEvents.CHICKEN_HURT);
@@ -50,6 +57,30 @@ public class ChickenCatcherItem extends Item {
                     ? EquipmentSlot.MAINHAND
                     : EquipmentSlot.OFFHAND;
             stack.hurtAndBreak(1, player, slot);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult catchRooster(ItemStack catcher, Player player, InteractionHand hand,
+                                           Level level, Vec3 position, Rooster rooster) {
+        if (rooster.isBaby()) {
+            spawnParticles(level, position, true);
+            playSound(level, position, SoundEvents.CHICKEN_HURT);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            ItemStack roosterStack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+            ChickenItemHelper.setRooster(roosterStack, true);
+            RoosterItemData.copyFromEntity(roosterStack, rooster);
+            serverLevel.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(serverLevel,
+                    position.x, position.y + 0.2D, position.z, roosterStack));
+            rooster.discard();
+            spawnParticles(level, position, false);
+            playSound(level, position, SoundEvents.CHICKEN_EGG);
+            EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
+                    ? EquipmentSlot.MAINHAND
+                    : EquipmentSlot.OFFHAND;
+            catcher.hurtAndBreak(1, player, slot);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
