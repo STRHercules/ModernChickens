@@ -64,9 +64,11 @@ public final class ChickensJeiRecipeTypes {
     public record AvianChemicalConverterRecipe(ItemStack egg, ChemicalEggRegistryItem entry) {
     }
 
-    public record AvianDousingRecipe(ItemStack smartEgg, ItemStack smartChicken, ItemStack reagent, ItemStack result,
-                                     ChemicalEggRegistryItem entry,
-                                     @Nullable MekanismJeiChemicalHelper.JeiChemicalStack chemical) {
+    public record AvianDousingRecipe(ItemStack inputEgg, ItemStack inputChicken, ItemStack reagent, ItemStack result,
+                                     @Nullable ChemicalEggRegistryItem entry,
+                                     @Nullable MekanismJeiChemicalHelper.JeiChemicalStack chemical,
+                                     @Nullable net.neoforged.neoforge.fluids.FluidStack fluid,
+                                     int fluidCost, int energyCost) {
     }
 
     public record IncubatorRecipe(ItemStack spawnEgg, ItemStack chicken, int energyCost) {

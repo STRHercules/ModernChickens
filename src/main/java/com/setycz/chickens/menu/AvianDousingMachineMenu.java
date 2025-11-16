@@ -4,6 +4,7 @@ import com.setycz.chickens.ChemicalEggRegistry;
 import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity.InfusionMode;
+import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity.SpecialInfusion;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.item.ChickensSpawnEggItem;
@@ -48,6 +49,8 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
     private int clientChemicalAmount;
     private int clientChemicalCapacity;
     private int clientChemicalEntryId = -1;
+    private int clientSpecialAmount;
+    private int clientSpecialType;
     private InfusionMode clientMode = InfusionMode.NONE;
 
     public AvianDousingMachineMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
@@ -73,6 +76,8 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.clientChemicalAmount = machine.getChemicalAmount();
         this.clientChemicalCapacity = machine.getChemicalCapacity();
         this.clientChemicalEntryId = machine.getChemicalEntryId();
+        this.clientSpecialAmount = machine.getSpecialAmount();
+        this.clientSpecialType = machine.getSpecialInfusion().ordinal();
         this.clientMode = machine.getMode();
 
         this.addSlot(new SmartChickenSlot(machine, 0, 50, 35));
@@ -146,6 +151,25 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.addDataSlot(splitGetter(
                 () -> getServerFluidCapacity() >>> 16,
                 value -> clientFluidCapacity = (clientFluidCapacity & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+
+        // Special infusion amount and type
+        this.addDataSlot(splitGetter(
+                () -> getServerSpecialAmount(),
+                value -> clientSpecialAmount = (clientSpecialAmount & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerSpecialAmount() >>> 16,
+                value -> clientSpecialAmount = (clientSpecialAmount & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return getServerSpecialType();
+            }
+
+            @Override
+            public void set(int value) {
+                clientSpecialType = Math.max(0, Math.min(value, SpecialInfusion.values().length - 1));
+            }
+        });
 
         // Fluid id
         this.addDataSlot(splitGetter(
@@ -264,11 +288,17 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
     }
 
     public int getFluidAmount() {
-        return isServerSide() ? machine.getLiquidAmount() : clientFluidAmount;
+        if (isServerSide()) {
+            return machine.getLiquidAmount();
+        }
+        return hasClientSpecial() ? clientSpecialAmount : clientFluidAmount;
     }
 
     public int getFluidCapacity() {
-        return isServerSide() ? machine.getLiquidCapacity() : clientFluidCapacity;
+        if (isServerSide()) {
+            return machine.getLiquidCapacity();
+        }
+        return hasClientSpecial() ? AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY : clientFluidCapacity;
     }
 
     public int getChemicalAmount() {
@@ -283,6 +313,17 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         return isServerSide() ? machine.getMode() : clientMode;
     }
 
+    public SpecialInfusion getSpecialInfusion() {
+        if (isServerSide()) {
+            return machine.getSpecialInfusion();
+        }
+        return SpecialInfusion.values()[Math.max(0, Math.min(clientSpecialType, SpecialInfusion.values().length - 1))];
+    }
+
+    public int getSpecialAmount() {
+        return isServerSide() ? machine.getSpecialAmount() : clientSpecialAmount;
+    }
+
     public ChemicalEggRegistryItem getStoredChemical() {
         if (isServerSide()) {
             return ChemicalEggRegistry.findById(machine.getChemicalEntryId());
@@ -295,6 +336,10 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
     private boolean isServerSide() {
         return machine != null && machine.getLevel() != null && !machine.getLevel().isClientSide;
+    }
+
+    private boolean hasClientSpecial() {
+        return clientSpecialAmount > 0 && clientSpecialType != SpecialInfusion.NONE.ordinal();
     }
 
     private static DataSlot splitGetter(IntSupplier supplier, IntConsumer consumer) {
@@ -359,6 +404,14 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         return BuiltInRegistries.FLUID.getId(stack.getFluid());
     }
 
+    private int getServerSpecialAmount() {
+        return machine != null ? machine.getSpecialAmount() : 0;
+    }
+
+    private int getServerSpecialType() {
+        return machine != null ? machine.getSpecialInfusion().ordinal() : 0;
+    }
+
     private int getServerChemicalAmount() {
         return machine != null ? machine.getChemicalAmount() : 0;
     }
@@ -384,8 +437,11 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
     }
 
     private static class SmartChickenSlot extends Slot {
+        private final AvianDousingMachineBlockEntity machine;
+
         public SmartChickenSlot(AvianDousingMachineBlockEntity machine, int index, int x, int y) {
             super(machine, index, x, y);
+            this.machine = machine;
         }
 
         @Override
@@ -396,7 +452,7 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
             if (!(stack.getItem() instanceof ChickensSpawnEggItem || stack.getItem() instanceof ChickenItem)) {
                 return false;
             }
-            return ChickenItemHelper.getChickenType(stack) == com.setycz.chickens.ChickensRegistry.SMART_CHICKEN_ID;
+            return machine.isDousableChicken(stack);
         }
 
         @Override

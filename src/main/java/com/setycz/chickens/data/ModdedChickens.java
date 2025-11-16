@@ -656,6 +656,55 @@ final class ModdedChickens {
                 0xf27323, 0xffc47f, SpawnType.NONE,
                 "BlazeChicken", "certusQuartzChicken", null));
 
+        // Boss-tier chickens crafted via the Avian Dousing Machine special infusions.
+        list.add(new Definition(590, "dragonChicken", "boss/dragon_chicken",
+                () -> Optional.of(new ItemStack(Items.DRAGON_EGG)),
+                0x4b2a7c, 0x9f7be0, SpawnType.NONE,
+                null, null, null));
+
+        list.add(new Definition(591, "witherChicken", "boss/wither_chicken",
+                () -> Optional.of(new ItemStack(Items.NETHER_STAR)),
+                0x1b1b1b, 0xababab, SpawnType.NONE,
+                null, null, null));
+
+        // Actually Additions crystal chickens
+        list.add(new Definition(592, "blackQuartzChicken", "actually_additions/black_quartz_chicken",
+                combine(item("actuallyadditions:black_quartz"), tag("c:gems/black_quartz", "forge:gems/black_quartz")),
+                0x1f1a1c, 0x4c4a51, SpawnType.NONE,
+                "QuartzChicken", "CoalChicken", null));
+
+        list.add(new Definition(593, "restoniaCrystalChicken", "actually_additions/restonia_crystal_chicken",
+                item("actuallyadditions:restonia_crystal"),
+                0xff1d2d, 0xff8fa0, SpawnType.NONE,
+                "RedstoneChicken", "QuartzChicken", null));
+
+        list.add(new Definition(594, "diamatineCrystalChicken", "actually_additions/diamatine_crystal_chicken",
+                item("actuallyadditions:diamatine_crystal"),
+                0x4eb5ff, 0x9fd6ff, SpawnType.NONE,
+                "DiamondChicken", "BlueChicken", null));
+
+        list.add(new Definition(595, "emeradicCrystalChicken", "actually_additions/emeradic_crystal_chicken",
+                item("actuallyadditions:emeradic_crystal"),
+                0x1ea35f, 0x74f2b1, SpawnType.NONE,
+                "EmeraldChicken", "restoniaCrystalChicken", null));
+
+        list.add(new Definition(596, "enoriCrystalChicken", "actually_additions/enori_crystal_chicken",
+                item("actuallyadditions:enori_crystal"),
+                0xb9c7d7, 0xffffff, SpawnType.NONE,
+                "QuartzChicken", "IronChicken", null));
+
+        list.add(new Definition(597, "palisCrystalChicken", "actually_additions/palis_crystal_chicken",
+                combine(tag("c:gems/palis_crystal", "forge:gems/palis_crystal"),
+                        item("actuallyadditions:palis_crystal"),
+                        searchRegistryExact("palis_crystal")),
+                0x3c85ff, 0x90c0ff, SpawnType.NONE,
+                "BlueChicken", "WaterChicken", null));
+
+        list.add(new Definition(598, "voidCrystalChicken", "actually_additions/void_crystal_chicken",
+                item("actuallyadditions:void_crystal"),
+                0x0f0f0f, 0x3d3d3d, SpawnType.NONE,
+                "CoalChicken", "BlackChicken", null));
+
         return list;
     }
 

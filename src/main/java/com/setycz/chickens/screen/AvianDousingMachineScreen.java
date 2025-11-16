@@ -4,6 +4,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.setycz.chickens.ChickensMod;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import com.setycz.chickens.menu.AvianDousingMachineMenu;
+import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity.InfusionMode;
+import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity.SpecialInfusion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -117,9 +119,12 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         }
         int offset = BAR_HEIGHT - filled;
         FluidStack stack = menu.getFluid();
-        int color = 0x3FA7FF;
-        if (!stack.isEmpty()) {
-            color = IClientFluidTypeExtensions.of(stack.getFluid()).getTintColor(stack);
+        int color = colorForSpecial(menu);
+        if (color == -1) {
+            color = 0x3FA7FF;
+            if (!stack.isEmpty()) {
+                color = IClientFluidTypeExtensions.of(stack.getFluid()).getTintColor(stack);
+            }
         }
         float r = ((color >> 16) & 0xFF) / 255.0F;
         float g = ((color >> 8) & 0xFF) / 255.0F;
@@ -204,9 +209,17 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
             Component fluidName = stack.isEmpty()
                     ? Component.translatable("tooltip.chickens.avian_dousing_machine.empty")
                     : stack.getHoverName();
+            if (menu.getSpecialInfusion() != SpecialInfusion.NONE && menu.getSpecialAmount() > 0) {
+                fluidName = Component.literal(menu.getSpecialInfusion().getDisplayName());
+            }
+            int useCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
+                    ? AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY
+                    : AvianDousingMachineBlockEntity.LIQUID_COST;
+            int energyCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
+                    ? AvianDousingMachineBlockEntity.SPECIAL_ENERGY_COST
+                    : AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST;
             Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.liquid",
-                    fluidName, amount, capacity, AvianDousingMachineBlockEntity.LIQUID_COST,
-                    AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST);
+                    fluidName, amount, capacity, useCost, energyCost);
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }
@@ -252,6 +265,18 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         int y = (this.height - this.imageHeight) / 2;
         return mouseX >= x + PROGRESS_X && mouseX <= x + PROGRESS_X + PROGRESS_WIDTH
                 && mouseY >= y + PROGRESS_Y && mouseY <= y + PROGRESS_Y + PROGRESS_HEIGHT;
+    }
+
+    private int colorForSpecial(AvianDousingMachineMenu menu) {
+        SpecialInfusion infusion = menu.getSpecialInfusion();
+        if (infusion == SpecialInfusion.NONE || menu.getSpecialAmount() <= 0) {
+            return -1;
+        }
+        return switch (infusion) {
+            case DRAGON_BREATH -> 0xA05CFF;
+            case NETHER_STAR -> 0xE0E0E0;
+            default -> -1;
+        };
     }
 
     private int getDisplayedEnergy() {

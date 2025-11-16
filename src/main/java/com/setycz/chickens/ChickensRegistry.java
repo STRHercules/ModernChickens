@@ -41,6 +41,19 @@ public final class ChickensRegistry {
         return ITEMS.get(type);
     }
 
+    @Nullable
+    public static ChickensRegistryItem getByEntityName(String name) {
+        if (name == null) {
+            return null;
+        }
+        for (ChickensRegistryItem item : ITEMS.values()) {
+            if (item.getEntityName().equalsIgnoreCase(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public static Collection<ChickensRegistryItem> getItems() {
         List<ChickensRegistryItem> result = new ArrayList<>();
         for (ChickensRegistryItem chicken : ITEMS.values()) {

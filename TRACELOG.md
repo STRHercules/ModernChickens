@@ -944,3 +944,20 @@
 - **Rationale**: Capturing the resource map, breeding graph, and conditional registrations in code brings the specialty chickens online while documenting the remaining build blocker for follow-up.
 - Added missing localisation strings for all specialty resource chickens so their JEI/tooltips display friendly names instead of translation keys.
 - Updated README to document the new specialty resource chicken integrations (EvilCraft, Mekanism, Powah, AE variants, Mystical Agriculture essences, etc.) and clarified that each registers conditionally with its parent mod.
+- Added Dragon/Wither infusion path: the Avian Dousing Machine now ingests Dragon's Breath bottles or Nether Stars (100mb stored in the liquid buffer) and consumes the full buffer to convert an Obsidian or Soul Sand chicken into Dragon/Wither spawn eggs; updated GUI coloring/tooltips and sync for the new special infusion gauge.
+- Registered Dragon Chicken (lays Dragon Eggs) and Wither Chicken (lays Nether Stars) with localisation.
+- Fixed dousing validation so Obsidian/Soul Sand chickens are accepted for the new recipes, corrected Wither chicken parents to existing breeds, and aligned the special buffer checks to stop accidental duplicate dragon entries.
+- Updated boss infusion balance: special buffer now holds 1000 mB and fills by 100 mB per Dragon's Breath bottle or Nether Star, requiring 10 items per Dragon/Wither chicken as requested.
+- Fixed Dousing input validation so Obsidian and Soul Sand chickens (alongside Smart Chickens) are accepted for special infusions; previously name mismatches blocked insertion.
+- Adjusted Dousing input slot to accept Obsidian and Soul Sand chickens (and Smart Chickens) by delegating validation to the block entity; exposed the helper so slots no longer hard-require Smart Chicken eggs.
+- Fixed the dousing completion check to allow Obsidian and Soul Sand chickens (not just Smart Chickens) so Dragon/Wither conversions now finish instead of looping at 100%.
+- Added Actually Additions integration chickens (Black Quartz, Restonia, Diamatine, Emeradic, Enori, Palis, Void) using provided textures and correct item ids; registered names and breeding chains.
+- Tweaked Palis Crystal Chicken registration to fall back to gem tags and direct registry search (`palis_crystal`) so it no longer fails when the item tag or id is resolved differently at runtime.
+- Corrected Palis Crystal Chicken breeding parents to existing breeds (BlueChicken + WaterChicken) so registration no longer stalls when parents are missing.
+- JEI: added Avian Dousing entries for Dragon/Wither infusions (shows base chicken + 10x Dragon's Breath / Nether Star, special costs) and broadened category to accept non-chemical reagents.
+- Removed breeding parents from Dragon/Wither chickens to enforce dousing-only acquisition.
+- JEI: added dousing recipes for all liquid chickens (fluid-based infusions) and special-cased Dragon/Wither; category now renders fluid stacks and generic reagents, not just chemicals. Avian Dousing remains visible for every chemical/liquid chicken.
+- JEI: switched liquid dousing reagents to the liquid egg items so JEI “Uses” on liquid/chemical eggs now shows Avian Dousing recipes; fluid still shown separately.
+- Added missing dousing liquid translation so JEI no longer shows raw key; liquid recipes now label ‘Liquid: <fluid> (cost mB)’.
+- Refreshed JEI dousing UI copy and added an energy bar; dousing recipes now show reagent/cost/energy clearly instead of raw translation keys for liquids.
+- Swapped Avian Dousing JEI layout to the new `douse_jei.png` background and aligned slots/tooltips to the provided coordinates; liquid bar now renders over the tank area and text sits in the data band.

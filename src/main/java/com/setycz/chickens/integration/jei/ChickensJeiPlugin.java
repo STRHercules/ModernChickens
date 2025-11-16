@@ -271,8 +271,21 @@ public class ChickensJeiPlugin implements IModPlugin {
         ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
         ItemStack smartEgg = ChickensSpawnEggItem.createFor(smartChicken);
         ItemStack smartChickenStack = chickenItem.createFor(smartChicken);
-        return ChickensRegistry.getItems().stream()
+
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> chemical = ChickensRegistry.getItems().stream()
                 .map(chicken -> createDousingRecipe(chicken, smartEgg, smartChickenStack))
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> liquid = ChickensRegistry.getItems().stream()
+                .map(chicken -> createLiquidDousingRecipe(chicken, smartEgg, smartChickenStack))
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> special = buildSpecialDousingRecipes(chickenItem);
+
+        return Stream.of(chemical, liquid, special)
+                .flatMap(List::stream)
                 .filter(Objects::nonNull)
                 .toList();
     }
@@ -299,7 +312,74 @@ public class ChickensJeiPlugin implements IModPlugin {
                 reagent,
                 result,
                 entry,
-                chemical);
+                chemical,
+                null,
+                AvianDousingMachineBlockEntity.CHEMICAL_COST,
+                AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST);
+    }
+
+    @Nullable
+    private static ChickensJeiRecipeTypes.AvianDousingRecipe createLiquidDousingRecipe(ChickensRegistryItem chicken,
+            ItemStack smartEgg, ItemStack smartChicken) {
+        ItemStack layItem = chicken.createLayItem();
+        if (layItem.isEmpty() || !(layItem.getItem() instanceof LiquidEggItem)) {
+            return null;
+        }
+        int liquidId = ChickenItemHelper.getChickenType(layItem);
+        LiquidEggRegistryItem entry = LiquidEggRegistry.findById(liquidId);
+        if (entry == null) {
+            return null;
+        }
+        FluidStack fluid = new FluidStack(entry.getFluid(), AvianDousingMachineBlockEntity.LIQUID_COST);
+        if (fluid.isEmpty()) {
+            return null;
+        }
+        // Use the liquid egg as the displayed reagent so JEI "uses" on the egg shows the dousing recipe.
+        ItemStack reagent = LiquidEggItem.createFor(entry);
+        ItemStack result = ChickensSpawnEggItem.createFor(chicken);
+        return new ChickensJeiRecipeTypes.AvianDousingRecipe(
+                smartEgg.copy(),
+                smartChicken.copy(),
+                reagent,
+                result,
+                null,
+                null,
+                fluid,
+                AvianDousingMachineBlockEntity.LIQUID_COST,
+                AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST);
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianDousingRecipe> buildSpecialDousingRecipes(ChickenItem chickenItem) {
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> list = new ArrayList<>();
+        ChickensRegistryItem obsidian = ChickensRegistry.getByEntityName("obsidianChicken");
+        ChickensRegistryItem dragon = ChickensRegistry.getByEntityName("dragonChicken");
+        if (obsidian != null && dragon != null) {
+            list.add(createSpecialDousingRecipe(obsidian, dragon, chickenItem,
+                    new ItemStack(Items.DRAGON_BREATH, AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY / AvianDousingMachineBlockEntity.SPECIAL_PER_ITEM)));
+        }
+        ChickensRegistryItem soulSand = ChickensRegistry.getByEntityName("SoulSandChicken");
+        ChickensRegistryItem wither = ChickensRegistry.getByEntityName("witherChicken");
+        if (soulSand != null && wither != null) {
+            list.add(createSpecialDousingRecipe(soulSand, wither, chickenItem,
+                    new ItemStack(Items.NETHER_STAR, AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY / AvianDousingMachineBlockEntity.SPECIAL_PER_ITEM)));
+        }
+        return list;
+    }
+
+    private static ChickensJeiRecipeTypes.AvianDousingRecipe createSpecialDousingRecipe(ChickensRegistryItem base,
+                                                                                        ChickensRegistryItem target,
+                                                                                        ChickenItem chickenItem,
+                                                                                        ItemStack reagent) {
+        return new ChickensJeiRecipeTypes.AvianDousingRecipe(
+                ChickensSpawnEggItem.createFor(base),
+                chickenItem.createFor(base),
+                reagent,
+                ChickensSpawnEggItem.createFor(target),
+                null,
+                null,
+                null,
+                AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY,
+                AvianDousingMachineBlockEntity.SPECIAL_ENERGY_COST);
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

@@ -61,8 +61,8 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
             reagentSlot.addItemStack(recipe.reagent());
         }
         builder.addSlot(RecipeIngredientRole.INPUT, 58, 52)
-                .addItemStack(recipe.smartEgg())
-                .addItemStack(recipe.smartChicken());
+                .addItemStack(recipe.inputEgg())
+                .addItemStack(recipe.inputChicken());
         builder.addSlot(RecipeIngredientRole.OUTPUT, 124, 52)
                 .addItemStack(recipe.result());
     }
@@ -71,8 +71,15 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
     public void draw(ChickensJeiRecipeTypes.AvianDousingRecipe recipe, IRecipeSlotsView recipeSlotsView,
             GuiGraphics graphics, double mouseX, double mouseY) {
         Component input = Component.translatable("gui.chickens.avian_dousing_machine.input");
+        // Null guard: datapacks or fallback item recipes may omit a chemical entry; show a placeholder instead of crashing.
+        Component chemicalName = recipe.entry() != null
+                ? recipe.entry().getDisplayName()
+                : recipe.reagent().getHoverName();
+        String chemicalId = recipe.entry() != null
+                ? recipe.entry().getChemicalId().toString()
+                : "missing";
         Component chemical = Component.translatable("gui.chickens.avian_dousing_machine.chemical",
-                recipe.entry().getDisplayName(), recipe.entry().getChemicalId().toString());
+                chemicalName, chemicalId);
         Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume",
                 AvianDousingMachineBlockEntity.CHEMICAL_COST);
         Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy",
