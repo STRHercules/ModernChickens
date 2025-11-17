@@ -25,7 +25,46 @@ Modern Chickens is a NeoForge port of the classic Chickens and Roost mods for Mi
 - **Fluid and chemical automation** - Liquid eggs can be cracked into configurable fluid stacks with the Avian Fluid Converter, and chemical or gas eggs feed the Avian Chemical Converter to build Mekanism-compatible buffers. Both machines ship tank overlays, JEI recipes, and Jade/WTHIT readouts—plus Modern Chickens now generates fluid chickens automatically for every registered liquid in your pack and chemical chickens for every discovered Mekanism chemical.
 - **JEI and HUD integrations** - Recipe categories, item subtypes, and Jade/WTHIT overlay tooltips surface roost, breeder, converter, dousing, and chicken stats directly in-game when the companion mods are installed.
 - **Modded Chicken Support** Modern Chickens will identify all 'ingot' resources in your minecraft instance and generate resource chickens for them.
-- **Specialty resource integrations** - Prebuilt chickens now cover high-value items across popular tech/magic mods: EvilCraft (Blood), Mekanism (Fluorite), Just Dire Things (Celestigem/Time Crystal), Industrial Foregoing (Plastic/Rubber), Draconic Evolution (Chaos Shard), Mystical Agriculture essences (Inferium → Insanium), Powah (Uraninite), Applied Energistics 2 + Extended/Advanced AE (Certus/Charged/Fluix/Silicon/Sky Stone/Entro/Quantum Alloy), Flux Networks (Flux Dust), Applied Fluix, Applied Generators (Ember Crystal), plus Vanilla Amethyst. Each registers only when its parent mod is loaded, keeping packs dependency-safe.
+- **Specialty resource integrations** - Prebuilt chickens now cover high-value items across popular tech/magic mods. Each registers only when its parent mod is loaded, keeping packs dependency-safe.
+
+## Integrated Mods & Unlockable Chickens
+
+- **Applied Energistics 2** — Certus Quartz, Charged Certus, Silicon, Fluix, Sky Stone.
+- **Extended AE / Advanced AE** — Entro Alloy, Quantum Alloy.
+- **Applied Fluix / Applied Generators** — Applied Fluix Crystal, Ember Crystal.
+- **Mekanism** — Fluorite.
+- **EvilCraft** — Blood.
+- **Just Dire Things** — Celestigem, Time Crystal.
+- **Industrial Foregoing** — Plastic, Rubber.
+- **Draconic Evolution** — Chaos Shard.
+- **Mystical Agriculture** — Inferium, Prudentium, Tertium, Imperium, Supremium, Insanium essences.
+- **Powah** — Uraninite.
+- **Flux Networks** — Flux Dust.
+- **Actually Additions** — Black Quartz, Restonia, Diamatine, Emeradic, Enori, Palis, Void crystals.
+- **Vanilla** — Amethyst (Amethyst Shard), Nether Stars, Dragon Eggs
+
+## Boss Chickens via Avian Dousing (Dragon / Wither)
+You cannot breed these; you must infuse them in the **Avian Dousing Machine**.
+
+1. **Base chicken**
+   - Dragon: place an **Obsidian Chicken** in the input slot.
+   - Wither: place a **Soul Sand Chicken** in the input slot.
+
+2. **Fill the special buffer**
+   - Dragon: insert **Dragon’s Breath** bottles.
+   - Wither: insert **Nether Stars**.
+   - Each item adds **100 mB**; you need **1000 mB** total (10 items).
+
+3. **Supply RF**
+   - Ensure the dousing machine is powered; it consumes the listed RF during infusion.
+
+4. **Start infusion**
+   - When the special buffer is full and RF is available, start the process. The base chicken is consumed and replaced with the boss chicken spawn egg:
+     - **Dragon Chicken** → lays **Dragon Eggs**.
+     - **Wither Chicken** → lays **Nether Stars**.
+
+5. **Automate**
+   - Place the resulting chicken in a roost/henhouse to farm Dragon Eggs or Nether Stars hands‑free.
 
 _Chickens available in ATM10!_
 
