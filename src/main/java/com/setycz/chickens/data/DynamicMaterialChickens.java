@@ -146,6 +146,11 @@ final class DynamicMaterialChickens {
             if (itemId == null || item == Items.AIR) {
                 continue;
             }
+            // Prevent auto-generating a generic neutronium ingot chicken; we gate neutronium
+            // through the curated neutron_pile definition instead.
+            if (itemId.getNamespace().equals("avaritia") && itemId.getPath().equals("neutronium_ingot")) {
+                continue;
+            }
 
             for (MaterialKey key : collectKeys(item, itemId)) {
                 if (key.isValid()) {

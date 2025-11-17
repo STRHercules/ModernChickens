@@ -96,3 +96,5 @@
 - Refactor the Jade and WTHIT HUD providers to share a common data builder so future machine tweaks (e.g., new bar types) update both overlays automatically.
 - Add a small client-side scaling slider for the custom HUD bars to help accessibility users or high-DPI monitors without touching resource packs.
 - Consider removing the universal Jade energy provider only for Chickens blocks (via a mod toggle) so other mods keep FE bars while our custom HUD stays single-lined.
+- Add JEI breeding pages for the newly added late-game resource chickens (Eclipse Alloy, neutronium/infinity, Mekanism pellets, Extended AE crystals) so players can easily discover the required parent pairs and progression.
+- Add a whitelist/blacklist hook for dynamic material chickens so future hard-blocked items (e.g., specific ingots we gate through curated breeds) are driven by config rather than hard-coded skips.

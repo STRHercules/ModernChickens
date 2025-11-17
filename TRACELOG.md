@@ -1051,3 +1051,26 @@
   1. Added block-entity guards in `HudTooltipRenderer` so fluid/chemical/energy bars render only on their respective machines (fluid/chemical/flux converters, dousing machine, incubator, henhouse).
   2. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build` to verify.
 - **Rationale**: Prevents stray HUD bars from appearing on unrelated blocks when using WTHIT without Jade.
+
+## Entry 127
+- **Prompt/Task**: Extend/alter default resource chickens to rebalance outputs and add coverage for additional mod items.
+- **Steps**:
+  1. Swapped the chaos chicken output to `draconicevolution:small_chaos_frag`, added an Eclipse Alloy chicken, and retargeted the Time Crystal chicken to breed from it.
+  2. Added late-game chickens for Avaritia (neutronium pile and infinity ingot), Extended AE (entro crystal), Applied Flux (redstone crystal), Mekanism pellets, RFTools dimensional shards, Beyond Dimensions crystallization, SpectreThings ectoplasm, and Mekanism Extras naquadah with appropriate parent pairings and colours.
+  3. Attempted `./gradlew compileJava`, which failed because the wrapper delegates to `ModDevGradle-main/gradlew` that is not executable in this environment (reported “required file not found”).
+- **Rationale**: Aligns integrated chickens with requested balance changes so late-game resources (chaos fragments, pellets, Avaritia/AE materials) have explicit breeds and progressive breeding chains.
+
+## Entry 128
+- **Prompt/Task**: Prevent duplicate neutronium chickens and ensure ectoplasm coverage handles multiple mods without duplicates.
+- **Steps**:
+  1. Added an explicit skip in dynamic material discovery to avoid auto-generating a `avaritia:neutronium_ingot` chicken, keeping neutronium gated through the curated neutron_pile chicken.
+  2. Updated the Ectoplasm chicken definition to accept either `irregular_implements:ectoplasm` or `spectrethings:ectoplasm`, guaranteeing only one ectoplasm breed even when both mods are present.
+  3. Re-ran `./gradlew compileJava` but it still fails because the delegated wrapper (`ModDevGradle-main/gradlew`) is not executable in this environment (“required file not found”).
+- **Rationale**: Avoids duplicate late-game resource chickens and consolidates ectoplasm production to a single breed across overlapping mods.
+
+## Entry 129
+- **Prompt/Task**: Add localisation entries for newly added specialty chickens so names render in-game.
+- **Steps**:
+  1. Added en_us strings for Eclipse Alloy, Neutronium, Infinity, Mekanism pellet variants, Dimensional Shard, Shattered Space-Time, Ectoplasm, Naquadah, Entro Crystal, and Redstone Crystal chickens.
+  2. Build remains unverified here because `./gradlew` still delegates to a missing/invalid `ModDevGradle-main/gradlew` executable in this environment.
+- **Rationale**: Prevents placeholder translation keys from showing on the new chickens, keeping JEI/tooltip names readable.

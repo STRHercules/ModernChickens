@@ -515,9 +515,9 @@ final class ModdedChickens {
 
         // Specialty resource chickens (Better Mod Integration task). Mapped resources:
         // Amethyst → minecraft:amethyst_shard | Blood → evilcraft:bucket_blood | Fluorite → mekanism:fluorite_gem/fluorite
-        // Celestigem → justdirethings:celestigem | Time Crystal → justdirethings:time_crystal
+        // Celestigem → justdirethings:celestigem | Eclipse Alloy → justdirethings:eclipsealloy_ingot | Time Crystal → justdirethings:time_crystal
         // Plastic → industrialforegoing:plastic | Rubber → industrialforegoing:dryrubber
-        // Chaos Shard → draconicevolution:chaos_shard
+        // Chaos Fragment → draconicevolution:small_chaos_frag
         // Mystical Agriculture essences → mysticalagriculture:{inferium,prudentium,tertium,imperium,supremium,insanium}_essence
         // Powah → powah:uraninite | AE2 core set → certus/charged certus/silicon/fluix/sky stone
         // Extended AE → extendedae:entro_ingot | Advanced AE → advanced_ae:quantum_alloy
@@ -544,10 +544,16 @@ final class ModdedChickens {
                 0x3ab6f7, 0xa5f0ff, SpawnType.NONE,
                 "DiamondChicken", "GlowstoneChicken", null));
 
+        // Higher-tier alloy used as the new bridge toward time crystals
+        list.add(new Definition(599, "eclipseAlloyChicken", "just_dire_things/eclipse_alloy_chicken",
+                item("justdirethings:eclipsealloy_ingot"),
+                0x2b2e5a, 0x9dd3ff, SpawnType.NONE,
+                "celestigemChicken", "DiamondChicken", null));
+
         list.add(new Definition(569, "timeCrystalChicken", "just_dire_things/time_crystal_chicken",
                 item("justdirethings:time_crystal"),
                 0x62f3ff, 0xc0fff6, SpawnType.NONE,
-                "celestigemChicken", "QuartzChicken", null));
+                "eclipseAlloyChicken", "QuartzChicken", null));
 
         list.add(new Definition(570, "plasticChicken", "industrial_foregoing/plastic_chicken",
                 combine(tag("c:plastics"), item("industrialforegoing:plastic")),
@@ -561,7 +567,7 @@ final class ModdedChickens {
                 "latexChicken", "LogChicken", null));
 
         list.add(new Definition(572, "chaosShardChicken", "draconic/chaos_shard_chicken",
-                item("draconicevolution:chaos_shard"),
+                item("draconicevolution:small_chaos_frag"),
                 0x4a004a, 0xff52ff, SpawnType.NONE,
                 "draconiumAwakenedChicken", "EnderChicken", null));
 
@@ -704,6 +710,69 @@ final class ModdedChickens {
                 item("actuallyadditions:void_crystal"),
                 0x0f0f0f, 0x3d3d3d, SpawnType.NONE,
                 "CoalChicken", "BlackChicken", null));
+
+        // Additional late-game mod resources and gaps in default coverage
+        list.add(new Definition(600, "neutroniumChicken", "avaritia/neutronium_chicken",
+                item("avaritia:neutron_pile"),
+                0xa6a6b4, 0x5f6173, SpawnType.NONE,
+                "witherChicken", "DiamondChicken", null));
+
+        list.add(new Definition(601, "infinityChicken", "avaritia/infinity_chicken",
+                item("avaritia:infinity_ingot"),
+                0xf4e3a1, 0x7cf7ff, SpawnType.NONE,
+                "neutroniumChicken", "dragonChicken", null));
+
+        list.add(new Definition(602, "hdpePelletChicken", "mekanism/hdpe_pellet_chicken",
+                item("mekanism:hdpe_pellet"),
+                0xf2f7f3, 0xbad7c8, SpawnType.NONE,
+                "plasticChicken", "osmiumChicken", null));
+
+        list.add(new Definition(603, "plutoniumPelletChicken", "mekanism/plutonium_pellet_chicken",
+                item("mekanism:pellet_plutonium"),
+                0x6bd06a, 0xd4ffc4, SpawnType.NONE,
+                "uraniumChicken", "osmiumChicken", null));
+
+        list.add(new Definition(604, "poloniumPelletChicken", "mekanism/polonium_pellet_chicken",
+                item("mekanism:pellet_polonium"),
+                0xa37cf2, 0xdfc8ff, SpawnType.NONE,
+                "plutoniumPelletChicken", "fluoriteChicken", null));
+
+        list.add(new Definition(605, "antimatterPelletChicken", "mekanism/antimatter_pellet_chicken",
+                item("mekanism:pellet_antimatter"),
+                0xf843c8, 0xff9bf2, SpawnType.NONE,
+                "poloniumPelletChicken", "witherChicken", null));
+
+        list.add(new Definition(606, "dimensionalShardChicken", "rftools/dimensional_shard_chicken",
+                item("rftoolsbase:dimensionalshard"),
+                0x8df0ff, 0x8f3ad3, SpawnType.NONE,
+                "QuartzChicken", "EnderChicken", null));
+
+        list.add(new Definition(607, "shatteredSpaceTimeChicken", "beyond_dimensions/shattered_space_time_chicken",
+                item("beyonddimensions:shattered_space_time_crystallization"),
+                0x443388, 0x9affe6, SpawnType.NONE,
+                "timeCrystalChicken", "chaosShardChicken", null));
+
+        list.add(new Definition(608, "ectoplasmChicken", "spectrethings/ectoplasm_chicken",
+                // Single ectoplasm chicken that works with either mod; first available item wins.
+                combine(item("irregular_implements:ectoplasm"),
+                        item("spectrethings:ectoplasm")),
+                0xc7ffbe, 0x63ff8a, SpawnType.NONE,
+                "SoulSandChicken", "NetherwartChicken", null));
+
+        list.add(new Definition(609, "naquadahChicken", "mekanism_extras/naquadah_chicken",
+                item("mekanism_extras:ingot_naquadah"),
+                0x2f4a3a, 0x77a386, SpawnType.NONE,
+                "osmiumChicken", "EnderChicken", null));
+
+        list.add(new Definition(610, "entroCrystalChicken", "extended_ae/entro_crystal_chicken",
+                item("extendedae:entro_crystal"),
+                0x5b3e7a, 0xc6a9ff, SpawnType.NONE,
+                "entroChicken", "amethystChicken", null));
+
+        list.add(new Definition(611, "redstoneCrystalChicken", "applied_flux/redstone_crystal_chicken",
+                item("appflux:redstone_crystal"),
+                0xcc0000, 0xff6666, SpawnType.NONE,
+                "RedstoneChicken", "QuartzChicken", null));
 
         return list;
     }
