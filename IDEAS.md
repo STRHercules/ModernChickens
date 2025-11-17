@@ -2,15 +2,28 @@
 
 This document is for cataloguing and detailing potential ideas for features.
 
-##  Current/Plausible
+## Implemented
 
 * Better Mod Integration - Create chickens for popular mod resources that are not ingots/liquids/chemicals. (Essence, Alloys, Certus Quartz, Plastic, Magic, Blood, Oils, Flux, etc)
 
 * Chicken Expansion - Create an additional Tier of chickens that are attainable via various methods. Such as an Ender Dragon Chicken that requires Dragon's Breath and/or a Dragon Egg, or a Wither Chicken that requires Nether Stars.
     * Perhaps modify the Dousing Machine to accept Dragon's Breath and/or Nether Stars
 
+##  Current/Plausible
+
 * Develop out 'Toxic' Chicken/Egg features
     * Radioactive/Toxic Chickens and Eggs that require care to handle
+
+* Dedicated Mod-Book - Have an in-game guide-book for the Modern Chickens mod.
+
+* Achievements - Add achievements for milestones in Modern Chickens.
+
+
+## Far-Out Ideas
+
+* Mob Farming/Grinding - Develop a 'Toxic Hen House' where players can house toxic (Radioactive, toxic chemical) chickens and have their toxicity radiate outwards from the Toxic Hen House - killing anything nearby.
+
+* Funny/Gag/Meme Chickens - Use existing unused assets to create joke chickens.
 
 * Time Egg - When thrown speeds up tick time in a small area for a short while (imagine accelerating crop growth or machine speed – basically a chicken-based Time in a Bottle).
 
@@ -31,17 +44,6 @@ This document is for cataloguing and detailing potential ideas for features.
     * Shoulder Chicken - Small chicken that rides on the players' shoulder.
     * Vacuum Chicken - Has an internal storage, vacuums nearby dropped items. (saves contents)
     * Battery Chicken - Walking RF Storage - Wirelessly supplies to nearby machines.
-
-* Dedicated Mod-Book - Have an in-game guide-book for the Modern Chickens mod.
-
-* Achievements - Add achievements for milestones in Modern Chickens.
-
-* Mob Farming/Grinding - Develop a 'Toxic Hen House' where players can house toxic (Radioactive, toxic chemical) chickens and have their toxicity radiate outwards from the Toxic Hen House - killing anything nearby.
-
-* Funny/Gag/Meme Chickens - Use existing unused assets to create joke chickens.
-
-
-## Far-Out Ideas
 
 * Chicken Dimension - For a huge exploration addition, consider a new dimension or area themed around chickens. This could be a “Sky Hen Sanctuary” dimension accessed by using a special egg (similar in spirit to the Aether or Twilight Forest portals). In this realm, players find floating islands made of giant nests, exclusive breeds (like Cloud Chickens or Thunderbirds), and perhaps a unique dungeon or mini-boss (Mother Hen boss guarding rare eggs). While creating a full dimension is a large undertaking, even a smaller-scale area or structure could work: e.g. Chicken Temples that spawn in the world, filled with hostile “feral chickens” and guarding a loot chest of rare eggs. This adds exploration gameplay – players have reasons to leave their base and seek out legendary chickens in far-off lands or structures.
 
