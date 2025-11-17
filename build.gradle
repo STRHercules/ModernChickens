@@ -78,6 +78,10 @@ tasks.named('processResources') {
             into 'assets/chickens/textures/gui'
         }
     }
+    from('roost/src/main/resources/assets/roost/textures/gui') {
+        include 'jei.png'
+        into 'assets/chickens/textures/gui'
+    }
     from('OriginalChickens/src/main/resources/assets/chickens/textures/entity') {
         include 'WaterChicken.png'
         into 'assets/chickens/textures/entity'

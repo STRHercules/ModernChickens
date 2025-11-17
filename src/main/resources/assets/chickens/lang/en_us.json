@@ -75,7 +75,7 @@
   "tooltip.chickens.avian_dousing_machine.liquid": "Liquid: %s (%s / %s mB)",
   "tooltip.chickens.avian_dousing_machine.energy": "Stored Energy: %s / %s RF",
   "tooltip.chickens.avian_dousing_machine.progress": "Infusion progress: %s%%",
-  "tooltip.chickens.incubator": "Incubates chicken spawn eggs into portable chicken items using stored RF.",
+  "tooltip.chickens.incubator": "Incubate spawn eggs into portable chicken items.",
   "tooltip.chickens.incubator.energy": "Stored Energy: %s / %s RF",
   "tooltip.chickens.incubator.cost": "RF per egg: %s",
   "tooltip.chickens.incubator.progress": "Incubation progress: %s%%",

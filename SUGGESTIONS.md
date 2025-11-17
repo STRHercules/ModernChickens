@@ -87,3 +87,6 @@
 - Generate and bundle placeholder textures for the new specialty resource chickens (AE, Powah, Mystical Agriculture, etc.) so JEI and entity renders don't fall back to missing-purple while final art is sourced.
 
 - Added clear display names for the new specialty resource chickens to en_us lang so JEI/tooltips show meaningful names (e.g., Fluorite Chicken, Inferium Essence Chicken, Flux Dust Chicken).
+- Add a tiny JEI info tab for the Chicken Catcher recipe itself so players can still discover how to craft the tool now that the catching page hides the clickable catcher slot.
+- Consider a small JEI info tab or tooltip hint that breeding consumes seeds, since the visible Breeding page now omits the seed requirement to mirror the legacy Roost layout.
+- If players still need stack-size context for Roost production, consider a subtle tooltip on hover rather than inline text to keep the Roost layout clean.

@@ -23,7 +23,8 @@ public final class IncubatorCategory implements IRecipeCategory<ChickensJeiRecip
     private final IDrawable icon;
 
     public IncubatorCategory(IGuiHelper guiHelper) {
-        this.background = guiHelper.createBlankDrawable(144, 54);
+        // Give the description room so text never overflows the JEI panel.
+        this.background = guiHelper.createBlankDrawable(148, 70);
         this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModRegistry.INCUBATOR_ITEM.get()));
     }
 
@@ -49,9 +50,9 @@ public final class IncubatorCategory implements IRecipeCategory<ChickensJeiRecip
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, ChickensJeiRecipeTypes.IncubatorRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 24, 18)
+        builder.addSlot(RecipeIngredientRole.INPUT, 30, 26)
                 .addItemStack(recipe.spawnEgg());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 96, 18)
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 104, 26)
                 .addItemStack(recipe.chicken());
     }
 
@@ -61,7 +62,15 @@ public final class IncubatorCategory implements IRecipeCategory<ChickensJeiRecip
         Component energy = Component.translatable("tooltip.chickens.incubator.cost", recipe.energyCost());
         Component hint = Component.translatable("tooltip.chickens.incubator");
         int color = 0xFF7F7F7F;
-        graphics.drawString(Minecraft.getInstance().font, energy, 8, 2, color, false);
-        graphics.drawString(Minecraft.getInstance().font, hint, 8, 40, color, false);
+        graphics.drawString(Minecraft.getInstance().font, energy, 8, 6, color, false);
+        drawWrapped(graphics, hint, 8, 48, 132, color);
+    }
+
+    private static void drawWrapped(GuiGraphics graphics, Component text, int x, int y, int width, int color) {
+        var font = Minecraft.getInstance().font;
+        for (var line : font.split(text, width)) {
+            graphics.drawString(font, line, x, y, color, false);
+            y += font.lineHeight;
+        }
     }
 }

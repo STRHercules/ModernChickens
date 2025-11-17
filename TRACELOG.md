@@ -961,3 +961,34 @@
 - Added missing dousing liquid translation so JEI no longer shows raw key; liquid recipes now label ‘Liquid: <fluid> (cost mB)’.
 - Refreshed JEI dousing UI copy and added an energy bar; dousing recipes now show reagent/cost/energy clearly instead of raw translation keys for liquids.
 - Swapped Avian Dousing JEI layout to the new `douse_jei.png` background and aligned slots/tooltips to the provided coordinates; liquid bar now renders over the tank area and text sits in the data band.
+
+## Entry 115
+- **Prompt/Task**: Hide the clickable catcher slot in the JEI “Chicken Catching” page, keep only the animated catcher, and realign the spawn egg/output icons per the provided screenshot.
+- **Steps**:
+  1. Removed the visible catcher slot and kept the catcher as an invisible ingredient so JEI still tracks the dependency while only the animation renders.
+  2. Recentered the spawn egg/output slots on the Roost row panel, nudging them to match the legacy alignment from the reference image.
+  3. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; only the known JEI deprecation warnings remain.
+- **Rationale**: Players now see a single animated catcher (like original Roost) without an extra clickable slot, and the item icons line up cleanly in the JEI panel.
+
+## Entry 116
+- **Prompt/Task**: Reposition the spawn egg and chicken output icons in the JEI “Chicken Catching” page per the provided alignment screenshot.
+- **Steps**:
+  1. Shifted the spawn egg slot 18px left and the chicken output slot 18px right to line up with the legacy Roost layout while keeping the catcher hidden as an invisible ingredient.
+  2. Recompiled with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; only the pre-existing JEI deprecation warnings remain.
+- **Rationale**: The catching page now mirrors the exact spacing shown in the reference image without exposing an extra clickable catcher slot.
+
+## Entry 117
+- **Prompt/Task**: Strip extra text from the Breeding JEI page so it matches the original Roost layout (only parents, animated hearts, and output on the row panel).
+- **Steps**:
+  1. Removed the seeds/chance text rendering and reused the Roost row panel plus animated hearts for the Breeder JEI category.
+  2. Centered the three visible slots on the 90px row panel, kept seeds as invisible ingredients for recipe lookups, and verified visuals via compile check.
+  3. Ran `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; warnings unchanged (JEI subtype deprecations).
+- **Rationale**: The breeding page now mirrors the legacy Roost presentation—clean row with parents, hearts animation, and child—without redundant chance/seed text.
+
+## Entry 118
+- **Prompt/Task**: Make the Roost Production JEI match the original Roost layout (row panel with animated arrow only).
+- **Steps**:
+  1. Swapped the Roosting JEI background to the Roost row panel texture and added the animated arrow slice from `jei.png`.
+  2. Centered the input/output slots on the 72px row, removed the stack-size text, and kept drop counts as invisible ingredients so JEI still tracks them.
+  3. Recompiled with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; only existing JEI deprecation warnings remain.
+- **Rationale**: The Roost production page now mirrors the original Roost presentation—chicken on the left, animated arrow, drop on the right—without extra copy.
