@@ -992,3 +992,62 @@
   2. Centered the input/output slots on the 72px row, removed the stack-size text, and kept drop counts as invisible ingredients so JEI still tracks them.
   3. Recompiled with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; only existing JEI deprecation warnings remain.
 - **Rationale**: The Roost production page now mirrors the original Roost presentation—chicken on the left, animated arrow, drop on the right—without extra copy.
+
+## Entry 119
+- **Prompt/Task**: Extend README with a concise list of integrated mods and the chickens unlocked when those mods are present.
+- **Steps**:
+  1. Added an “Integrated Mods & Unlockable Chickens” section summarizing per-mod drops (AE2 family, Mekanism, EvilCraft, Just Dire Things, Industrial Foregoing, Draconic Evolution, Mystical Agriculture tiers, Powah, Flux Networks, Applied Fluix/Generators, Actually Additions, Vanilla Amethyst).
+  2. Kept the wording dependency-safe by noting they only register when the parent mod is loaded.
+  3. Recompiled via `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; warnings unchanged (JEI subtype deprecations).
+- **Rationale**: The README now tells pack makers and players exactly which chickens appear when specific mods are installed, matching the new specialty integrations added to the codebase.
+
+## Entry 120
+- **Prompt/Task**: Document how to obtain Dragon/Wither Chickens via the Avian Dousing Machine for farming Dragon Eggs and Nether Stars.
+- **Steps**:
+  1. Added a README section explaining the dousing route: base chickens (Obsidian/Soul Sand), filling the special buffer with Dragon’s Breath or Nether Stars (100 mB each, 1000 mB total), RF requirement, and resulting drops.
+  2. Kept the flow concise and automation-focused so players know to place the resulting chickens into roosts/henhouses.
+  3. Recompiled with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . -q compileJava`; warnings unchanged (JEI subtype deprecations).
+- **Rationale**: Players now have an in-README recipe for unlocking the boss-tier chickens without hunting through code or JEI.
+
+## Entry 121
+- **Prompt/Task**: Mirror the WTHIT machine overlays in Jade so Jade users see the same bars and stats (energy/fluid/progress and chicken/tooltips).
+- **Steps**:
+  1. Added a native Jade plugin with HUD data providers and a custom bar element covering the flux/fluid converters, dousing machine, incubator, henhouse, and roost-like containers plus the ChickensChicken entity tooltip.
+  2. Introduced a lightweight `HudData` NBT payload and compile-only Jade dependency via Modrinth to keep Jade optional while avoiding reflection-heavy IMC.
+  3. Verified the project builds with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build`.
+- **Rationale**: Jade now renders the same on-hover information as WTHIT, keeping overlays consistent across tooltip mods and modpacks.
+
+## Entry 122
+- **Prompt/Task**: Avian Flux Converter overlay shows two RF bars in Jade; remove the duplicate so only the custom HUD bar remains.
+- **Steps**:
+  1. Cleared Jade’s built-in universal energy elements inside the custom HUD component provider before rendering Chickens’ bar, preventing the extra FE line.
+  2. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build` to confirm a clean compile.
+- **Rationale**: The Avian Flux Converter tooltip now matches WTHIT—single energy bar with the Chickens styling and correct numbers.
+
+## Entry 123
+- **Prompt/Task**: Avian Flux Converter and Avian Fluid Converter both showed duplicate bars in Jade; hide the built-in universal fluid line as well.
+- **Steps**:
+  1. Suppressed Jade’s universal fluid tooltip elements alongside energy inside `ChickensHudComponentProvider` so only Chickens’ custom HUD bars remain.
+  2. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build` to verify success.
+- **Rationale**: Both converters now display a single Chickens-styled bar (energy or fluid) without the extra vanilla Jade line.
+
+## Entry 124
+- **Prompt/Task**: Jade still rendered duplicate bars for Avian converters; ensure universal bars are purged after all providers run.
+- **Steps**:
+  1. Added a Jade tooltip-collected callback (`JadeOverlaySanitiser`) that removes universal energy and fluid entries after aggregation.
+  2. Registered the callback with high priority via `JadeIntegration` and recompiled with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build`.
+- **Rationale**: Universal FE/fluid lines are now stripped post-render, leaving only the Chickens HUD bars in Jade.
+
+## Entry 125
+- **Prompt/Task**: Chickens failed to load in packs without Jade because `ChickensMod` referenced Jade classes at startup.
+- **Steps**:
+  1. Removed the direct `JadeIntegration.init()` call/import from `ChickensMod`, leaving Jade discovery to its own plugin when Jade is present.
+  2. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build` to confirm a clean, optional Jade dependency.
+- **Rationale**: Modern Chickens now loads correctly whether Jade is installed or not, while still enabling the Jade overlay when available.
+
+## Entry 126
+- **Prompt/Task**: WTHIT overlays showed a “Liquid Chlorine” bar on every block when Jade was absent.
+- **Steps**:
+  1. Added block-entity guards in `HudTooltipRenderer` so fluid/chemical/energy bars render only on their respective machines (fluid/chemical/flux converters, dousing machine, incubator, henhouse).
+  2. Rebuilt with `java -cp ModDevGradle-main/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -p . build` to verify.
+- **Rationale**: Prevents stray HUD bars from appearing on unrelated blocks when using WTHIT without Jade.

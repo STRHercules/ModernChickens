@@ -51,6 +51,12 @@ repositories {
             includeGroup 'mcp.mobius.waila'
         }
     }
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 tasks.named('processResources') {
@@ -137,6 +143,8 @@ dependencies {
     implementation "mezz.jei:jei-${project.minecraft_version}-neoforge:${project.jei_version}"
     // Compile against the WTHIT API without bundling the overlay implementation.
     compileOnly "mcp.mobius.waila:wthit-api:neo-${project.wthit_version}"
+    // Jade client overlay (compileOnly keeps the dependency optional)
+    compileOnly "maven.modrinth:jade:${project.jade_version}"
 }
 
 neoForge {

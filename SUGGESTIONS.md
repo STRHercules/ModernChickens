@@ -90,3 +90,9 @@
 - Add a tiny JEI info tab for the Chicken Catcher recipe itself so players can still discover how to craft the tool now that the catching page hides the clickable catcher slot.
 - Consider a small JEI info tab or tooltip hint that breeding consumes seeds, since the visible Breeding page now omits the seed requirement to mirror the legacy Roost layout.
 - If players still need stack-size context for Roost production, consider a subtle tooltip on hover rather than inline text to keep the Roost layout clean.
+- Consider generating the integrated-mods/chicken list automatically from `ModdedChickens` to keep the README in sync as new integrations land.
+- Add the Dragon/Wither dousing steps as a short JEI info tab on the Avian Dousing Machine so players can discover the boss-chicken path in-game.
+- Gate the new Jade overlay behind a synced config toggle so packs running both Jade and WTHIT can disable one HUD to avoid duplicate bars.
+- Refactor the Jade and WTHIT HUD providers to share a common data builder so future machine tweaks (e.g., new bar types) update both overlays automatically.
+- Add a small client-side scaling slider for the custom HUD bars to help accessibility users or high-DPI monitors without touching resource packs.
+- Consider removing the universal Jade energy provider only for Chickens blocks (via a mod toggle) so other mods keep FE bars while our custom HUD stays single-lined.

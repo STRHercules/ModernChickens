@@ -18,6 +18,7 @@ import mcp.mobius.waila.api.ITooltip;
 import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.data.EnergyData;
 import mcp.mobius.waila.api.data.FluidData;
+import net.minecraft.network.chat.Component;
 
 /**
  * Main entry point that wires Chickens block entities into WTHIT. The plugin
@@ -35,11 +36,12 @@ public final class ChickensWthitPlugin implements IWailaPlugin {
         registrar.addEventListener(new IEventListener() {
             @Override
             public void onHandleTooltip(ITooltip tooltip, ICommonAccessor accessor, IPluginConfig config) {
+                // Strip WTHIT's universal fluid/energy lines when our custom HUD is present by replacing them with blanks.
                 if (tooltip.getLine(FluidData.ID) != null) {
-                    tooltip.setLine(FluidData.ID);
+                    tooltip.setLine(FluidData.ID).with(Component.empty());
                 }
                 if (tooltip.getLine(HudTooltipRenderer.HUD_TAG) != null && tooltip.getLine(EnergyData.ID) != null) {
-                    tooltip.setLine(EnergyData.ID);
+                    tooltip.setLine(EnergyData.ID).with(Component.empty());
                 }
             }
         });

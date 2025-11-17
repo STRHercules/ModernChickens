@@ -4,7 +4,6 @@ import com.setycz.chickens.command.ChickensCommands;
 import com.setycz.chickens.data.ChickensDataLoader;
 import com.setycz.chickens.RoostEggPreventer;
 import com.setycz.chickens.entity.NetherPopulationHandler;
-import com.setycz.chickens.integration.jade.JadeIntegration;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.data.ChickenItemModelProvider;
 import com.setycz.chickens.spawn.SpawnPlanDataLoader;
@@ -32,7 +31,6 @@ public final class ChickensMod {
         modBus.addListener(this::onCommonSetup);
         ChickenTeachHandler.init();
         ChickensCommands.init();
-        JadeIntegration.init();
         NetherPopulationHandler.init();
         OverworldPopulationHandler.init();
         RoostEggPreventer.init();

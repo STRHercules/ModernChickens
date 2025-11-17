@@ -4,6 +4,12 @@ import com.setycz.chickens.ChemicalEggRegistry;
 import com.setycz.chickens.ChemicalEggRegistryItem;
 import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.ChickensMod;
+import com.setycz.chickens.blockentity.AvianChemicalConverterBlockEntity;
+import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
+import com.setycz.chickens.blockentity.AvianFluidConverterBlockEntity;
+import com.setycz.chickens.blockentity.AvianFluxConverterBlockEntity;
+import com.setycz.chickens.blockentity.HenhouseBlockEntity;
+import com.setycz.chickens.blockentity.IncubatorBlockEntity;
 import com.setycz.chickens.integration.wthit.component.HudBarComponent;
 import com.setycz.chickens.integration.wthit.overlay.HudOverlayHelper;
 import mcp.mobius.waila.api.IBlockAccessor;
@@ -37,12 +43,33 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
             return;
         }
         tooltip.setLine(HUD_TAG);
+        Object target = accessor.getBlockEntity();
+        boolean allowFluid = target instanceof AvianFluidConverterBlockEntity
+                || target instanceof AvianDousingMachineBlockEntity;
+        boolean allowChemical = target instanceof AvianChemicalConverterBlockEntity
+                || target instanceof AvianDousingMachineBlockEntity;
+        boolean allowEnergy = target instanceof AvianFluxConverterBlockEntity
+                || target instanceof AvianDousingMachineBlockEntity
+                || target instanceof IncubatorBlockEntity
+                || target instanceof HenhouseBlockEntity;
         for (HudOverlayHelper.Entry entry : helper.entries()) {
             switch (entry.type()) {
                 case TEXT -> tooltip.addLine(((HudOverlayHelper.TextEntry) entry).text());
-                case FLUID -> tooltip.addLine(buildFluidBar((HudOverlayHelper.FluidEntry) entry));
-                case CHEMICAL -> tooltip.addLine(buildChemicalBar((HudOverlayHelper.ChemicalEntry) entry));
-                case ENERGY -> tooltip.addLine(buildEnergyBar((HudOverlayHelper.EnergyEntry) entry));
+                case FLUID -> {
+                    if (allowFluid) {
+                        tooltip.addLine(buildFluidBar((HudOverlayHelper.FluidEntry) entry));
+                    }
+                }
+                case CHEMICAL -> {
+                    if (allowChemical) {
+                        tooltip.addLine(buildChemicalBar((HudOverlayHelper.ChemicalEntry) entry));
+                    }
+                }
+                case ENERGY -> {
+                    if (allowEnergy) {
+                        tooltip.addLine(buildEnergyBar((HudOverlayHelper.EnergyEntry) entry));
+                    }
+                }
             }
         }
     }
