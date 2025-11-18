@@ -30,13 +30,19 @@ Modern Chickens is a NeoForge port of the classic Chickens and Roost mods for Mi
 ## Integrated Mods & Unlockable Chickens
 
 - **Applied Energistics 2** — Certus Quartz, Charged Certus, Silicon, Fluix, Sky Stone.
-- **Extended AE / Advanced AE** — Entro Alloy, Quantum Alloy.
+- **Extended AE / Advanced AE** — Entro Alloy, Quantum Alloy, and Entro Crystal.
 - **Applied Fluix / Applied Generators** — Applied Fluix Crystal, Ember Crystal.
-- **Mekanism** — Fluorite.
+- **Mekanism** — Fluorite, HDPE Pellet, Plutonium Pellet, Polonium Pellet, Antimatter Pellet.
+- **Mekanism Extras** — Naquadah Ingot, Fluids, Chemicals
 - **EvilCraft** — Blood.
-- **Just Dire Things** — Celestigem, Time Crystal.
+- **Just Dire Things** — Celestigem, Eclipse Alloy, Time Crystal.
 - **Industrial Foregoing** — Plastic, Rubber.
-- **Draconic Evolution** — Chaos Shard.
+- **Draconic Evolution** — Chaos Fragment (small chaos frag).
+- **Avaritia** — Neutron Pile (Neutronium) and Infinity Ingot.
+- **RFTools Base** — Dimensional Shard.
+- **Beyond Dimensions** — Shattered Space-Time Crystallization.
+- **Applied Flux** — Redstone Crystal.
+- **SpectreThings / Irregular Implements** — Ectoplasm (single consolidated chicken when either mod is present).
 - **Mystical Agriculture** — Inferium, Prudentium, Tertium, Imperium, Supremium, Insanium essences.
 - **Powah** — Uraninite.
 - **Flux Networks** — Flux Dust.

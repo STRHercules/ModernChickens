@@ -1074,3 +1074,10 @@
   1. Added en_us strings for Eclipse Alloy, Neutronium, Infinity, Mekanism pellet variants, Dimensional Shard, Shattered Space-Time, Ectoplasm, Naquadah, Entro Crystal, and Redstone Crystal chickens.
   2. Build remains unverified here because `./gradlew` still delegates to a missing/invalid `ModDevGradle-main/gradlew` executable in this environment.
 - **Rationale**: Prevents placeholder translation keys from showing on the new chickens, keeping JEI/tooltip names readable.
+
+## Entry 130
+- **Prompt/Task**: Update README to reflect newly added modded chickens and resources.
+- **Steps**:
+  1. Expanded the Integrated Mods section to list Eclipse Alloy, neutronium/infinity, Mekanism pellets, Naquadah, Dimensional Shards, Shattered Space-Time, Redstone Crystal, Entro Crystal, Chaos Fragment, and consolidated Ectoplasm coverage.
+  2. Left build status unchanged; `./gradlew` still cannot run in this environment because the delegated wrapper is missing.
+- **Rationale**: Keeps documentation aligned with the current modded chicken roster so pack makers and players can see supported resources at a glance.
