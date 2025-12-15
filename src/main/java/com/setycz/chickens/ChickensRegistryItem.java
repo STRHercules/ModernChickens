@@ -6,6 +6,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.fluids.FluidType;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +17,9 @@ import javax.annotation.Nullable;
  * behaviour that the entity class consumes at runtime.
  */
 public class ChickensRegistryItem {
+    /** Default liquid cost (mB) used by the Avian Dousing Machine when no per-chicken override is present. */
+    public static final int DEFAULT_LIQUID_DOUSING_COST = FluidType.BUCKET_VOLUME * 10;
+
     private final int id;
     private final String entityName;
     private ItemStack layItem;
@@ -36,6 +40,7 @@ public class ChickensRegistryItem {
     private boolean tintItem = true;
     private boolean custom;
     private boolean naturalSpawnOverride;
+    private int liquidDousingCost = DEFAULT_LIQUID_DOUSING_COST;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -258,5 +263,13 @@ public class ChickensRegistryItem {
 
     public boolean isCustom() {
         return custom;
+    }
+
+    public int getLiquidDousingCost() {
+        return liquidDousingCost;
+    }
+
+    public void setLiquidDousingCost(int amount) {
+        liquidDousingCost = Math.max(1, amount);
     }
 }

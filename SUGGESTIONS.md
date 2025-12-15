@@ -98,3 +98,4 @@
 - Consider removing the universal Jade energy provider only for Chickens blocks (via a mod toggle) so other mods keep FE bars while our custom HUD stays single-lined.
 - Add JEI breeding pages for the newly added late-game resource chickens (Eclipse Alloy, neutronium/infinity, Mekanism pellets, Extended AE crystals) so players can easily discover the required parent pairs and progression.
 - Add a whitelist/blacklist hook for dynamic material chickens so future hard-blocked items (e.g., specific ingots we gate through curated breeds) are driven by config rather than hard-coded skips.
+- Add a matching liquidEnergyCost override per chicken so packs that tweak fluid cost can balance RF as well.

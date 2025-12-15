@@ -1081,3 +1081,11 @@
   1. Expanded the Integrated Mods section to list Eclipse Alloy, neutronium/infinity, Mekanism pellets, Naquadah, Dimensional Shards, Shattered Space-Time, Redstone Crystal, Entro Crystal, Chaos Fragment, and consolidated Ectoplasm coverage.
   2. Left build status unchanged; `./gradlew` still cannot run in this environment because the delegated wrapper is missing.
 - **Rationale**: Keeps documentation aligned with the current modded chicken roster so pack makers and players can see supported resources at a glance.
+
+## Entry 131
+- **Prompt/Task**: Expose the dousing liquid cost per chicken via `chickens.cfg` and use it in the Avian Dousing Machine.
+- **Steps**:
+  1. Added a per-chicken `liquidDousingCost` field to the registry item, defaulting to 10 buckets, and taught the config loader/legacy bridge to read and write the new key for every chicken section.
+  2. Updated the Avian Dousing Machine to resolve the target chicken from the stored fluid and use that chicken's configured cost for plan selection, resource checks, draining, JEI recipes, and GUI tooltips (synced to the client via a new data slot).
+  3. Attempted `./gradlew -q compileJava`, but the wrapper failed with a lock-file creation error (`Could not create parent directory for lock file /home/zach/.gradle/...`), likely due to the current sandboxed environment.
+- **Rationale**: Letting packs tune liquid infusion cost per chicken removes the hard-coded 10-bucket cost while keeping JEI and the dousing UI accurate to those overrides.

@@ -214,7 +214,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
             }
             int useCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
                     ? AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY
-                    : AvianDousingMachineBlockEntity.LIQUID_COST;
+                    : menu.getLiquidCost();
             int energyCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
                     ? AvianDousingMachineBlockEntity.SPECIAL_ENERGY_COST
                     : AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST;

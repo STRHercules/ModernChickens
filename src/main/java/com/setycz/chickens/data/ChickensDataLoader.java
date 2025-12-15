@@ -467,6 +467,10 @@ public final class ChickensDataLoader {
 
             boolean allowNatural = readBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride());
             chicken.setNaturalSpawnOverride(allowNatural);
+
+            int liquidDousingCost = ensurePositive(props, prefix + "liquidDousingCost",
+                    readInt(props, prefix + "liquidDousingCost", chicken.getLiquidDousingCost()), 1);
+            chicken.setLiquidDousingCost(liquidDousingCost);
         }
 
         for (Map.Entry<ChickensRegistryItem, ParentNames> entry : parentOverrides.entrySet()) {

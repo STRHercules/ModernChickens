@@ -138,12 +138,13 @@ public final class LegacyConfigBridge {
                 writer.write(String.format(Locale.ROOT, "    B:enabled=%s%n", getBoolean(props, prefix + "enabled", true)));
                 writer.write(String.format(Locale.ROOT, "    D:layCoefficient=%s%n", getString(props, prefix + "layCoefficient", "1.0")));
                 writer.write(String.format(Locale.ROOT, "    S:spawnType=%s%n", getString(props, prefix + "spawnType", chicken.getSpawnType().name())));
-                writer.write(String.format(Locale.ROOT, "    B:allowNaturalSpawn=%s%n", getBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride())));
-                writer.write(String.format(Locale.ROOT, "    S:parent1=%s%n", getString(props, prefix + "parent1", chicken.getParent1() != null ? chicken.getParent1().getEntityName() : "")));
-                writer.write(String.format(Locale.ROOT, "    S:parent2=%s%n", getString(props, prefix + "parent2", chicken.getParent2() != null ? chicken.getParent2().getEntityName() : "")));
+            writer.write(String.format(Locale.ROOT, "    B:allowNaturalSpawn=%s%n", getBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride())));
+            writer.write(String.format(Locale.ROOT, "    S:parent1=%s%n", getString(props, prefix + "parent1", chicken.getParent1() != null ? chicken.getParent1().getEntityName() : "")));
+            writer.write(String.format(Locale.ROOT, "    S:parent2=%s%n", getString(props, prefix + "parent2", chicken.getParent2() != null ? chicken.getParent2().getEntityName() : "")));
+            writer.write(String.format(Locale.ROOT, "    I:liquidDousingCost=%d%n", getInt(props, prefix + "liquidDousingCost", chicken.getLiquidDousingCost())));
 
-                writeItemEntry(writer, props, prefix, "egg", chicken.createLayItem());
-                writeItemEntry(writer, props, prefix, "drop", chicken.createDropItem());
+            writeItemEntry(writer, props, prefix, "egg", chicken.createLayItem());
+            writeItemEntry(writer, props, prefix, "drop", chicken.createDropItem());
 
                 writer.write("}\n\n");
             }
@@ -201,6 +202,7 @@ public final class LegacyConfigBridge {
             case "dropItemName" -> props.setProperty(prefix + "dropItem", value);
             case "dropItemAmount" -> props.setProperty(prefix + "dropCount", value);
             case "dropItemMeta" -> props.setProperty(prefix + "dropType", value);
+            case "liquidDousingCost" -> props.setProperty(prefix + "liquidDousingCost", value);
             default -> {
             }
         }
@@ -239,6 +241,18 @@ public final class LegacyConfigBridge {
 
     private static String getBoolean(Properties props, String key, boolean fallback) {
         return props.getProperty(key, Boolean.toString(fallback));
+    }
+
+    private static int getInt(Properties props, String key, int fallback) {
+        String value = props.getProperty(key);
+        if (value == null) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
     }
 
     private static Path legacyConfigPath() {

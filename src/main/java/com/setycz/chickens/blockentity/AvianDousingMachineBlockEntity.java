@@ -77,7 +77,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     public static final int ENERGY_MAX_RECEIVE = 20_000;
     public static final int MAX_PROGRESS = 200;
 
-    public static final int LIQUID_COST = FluidType.BUCKET_VOLUME * 100;
+    @Deprecated // use per-chicken configurable value via ChickensRegistryItem#getLiquidDousingCost()
+    public static final int LIQUID_COST = FluidType.BUCKET_VOLUME * 10;
     public static final int SPECIAL_LIQUID_CAPACITY = FluidType.BUCKET_VOLUME; // 1000 mB buffer for boss infusions
     public static final int SPECIAL_PER_ITEM = 100; // Dragon's Breath bottle / Nether Star adds 100 mB
     public static final int CHEMICAL_COST = FluidType.BUCKET_VOLUME * 10;
@@ -192,29 +193,32 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 && isChicken(inputChicken, "obsidianChicken")) {
             ChickensRegistryItem dragon = findChickenByName("dragonChicken");
             if (dragon != null && canOutput(output, dragon)) {
-                return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH);
+                return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0);
             }
         }
         if (specialInfusion == SpecialInfusion.NETHER_STAR && specialAmount >= SPECIAL_LIQUID_CAPACITY
                 && isChicken(inputChicken, "soulSandChicken")) {
             ChickensRegistryItem wither = findChickenByName("witherChicken");
             if (wither != null && canOutput(output, wither)) {
-                return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR);
+                return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0);
             }
         }
 
         if (chemicalAmount >= CHEMICAL_COST && chemicalId != null) {
             ChickensRegistryItem chicken = resolveChemicalChicken(chemicalId);
             if (chicken != null && canOutput(output, chicken)) {
-                return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE);
+                return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0);
             }
         }
 
         FluidStack stored = liquidTank.getFluid();
-        if (!stored.isEmpty() && stored.getAmount() >= LIQUID_COST) {
+        if (!stored.isEmpty()) {
             ChickensRegistryItem chicken = resolveLiquidChicken(stored);
-            if (chicken != null && canOutput(output, chicken)) {
-                return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE);
+            if (chicken != null) {
+                int liquidCost = chicken.getLiquidDousingCost();
+                if (stored.getAmount() >= liquidCost && canOutput(output, chicken)) {
+                    return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost);
+                }
             }
         }
 
@@ -226,7 +230,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return energyStorage.getEnergyStored() >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
         }
         if (plan.mode() == InfusionMode.LIQUID) {
-            return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= LIQUID_COST;
+            return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= plan.liquidCost();
         }
         if (plan.mode() == InfusionMode.SPECIAL) {
             return energyStorage.getEnergyStored() >= SPECIAL_ENERGY_COST && specialAmount >= SPECIAL_LIQUID_CAPACITY;
@@ -267,7 +271,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (!energyStorage.consumeEnergy(LIQUID_ENERGY_COST)) {
                 return;
             }
-            liquidTank.drain(LIQUID_COST, IFluidHandler.FluidAction.EXECUTE);
+            liquidTank.drain(plan.liquidCost(), IFluidHandler.FluidAction.EXECUTE);
         } else if (plan.mode() == InfusionMode.SPECIAL) {
             if (!energyStorage.consumeEnergy(SPECIAL_ENERGY_COST)) {
                 return;
@@ -851,6 +855,18 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return chicken;
     }
 
+    public int getLiquidCostForStoredFluid() {
+        FluidStack stored = liquidTank.getFluid();
+        if (stored.isEmpty()) {
+            return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
+        }
+        ChickensRegistryItem chicken = resolveLiquidChicken(stored);
+        if (chicken == null) {
+            return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
+        }
+        return chicken.getLiquidDousingCost();
+    }
+
     @Nullable
     private ChickensRegistryItem resolveChemicalChicken(ResourceLocation id) {
         Integer cached = CHEMICAL_CHICKEN_CACHE.get(id);
@@ -944,9 +960,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private record OperationPlan(InfusionMode mode, @Nullable ChickensRegistryItem chicken,
-                                 SpecialInfusion special) {
+                                 SpecialInfusion special, int liquidCost) {
         static OperationPlan none() {
-            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE);
+            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0);
         }
     }
 

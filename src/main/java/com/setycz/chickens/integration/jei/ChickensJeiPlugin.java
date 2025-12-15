@@ -330,7 +330,8 @@ public class ChickensJeiPlugin implements IModPlugin {
         if (entry == null) {
             return null;
         }
-        FluidStack fluid = new FluidStack(entry.getFluid(), AvianDousingMachineBlockEntity.LIQUID_COST);
+        int liquidCost = chicken.getLiquidDousingCost();
+        FluidStack fluid = new FluidStack(entry.getFluid(), liquidCost);
         if (fluid.isEmpty()) {
             return null;
         }
@@ -345,7 +346,7 @@ public class ChickensJeiPlugin implements IModPlugin {
                 null,
                 null,
                 fluid,
-                AvianDousingMachineBlockEntity.LIQUID_COST,
+                liquidCost,
                 AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST);
     }
 
