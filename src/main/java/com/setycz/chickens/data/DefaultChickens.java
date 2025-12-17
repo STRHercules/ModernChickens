@@ -293,10 +293,24 @@ public final class DefaultChickens {
             byName.put(chicken.getEntityName().toLowerCase(Locale.ROOT), chicken);
         }
         ModdedChickens.register(chickens, byName);
+
+        // is after the modded chickens since it relies on a chicken registered in there
+        ChickensRegistryItem netheriteChicken = new ChickensRegistryItem(
+                303, "NetheriteChicken", texture("NetheriteChicken"),
+                new ItemStack(Items.ANCIENT_DEBRIS),
+                0xd6d4d4, 0x31292a,
+                byName.get("witherChicken"), blazeChicken).setLayCoefficient(0.25f);
+        chickens.add(netheriteChicken);
+
+        byName.put(netheriteChicken.getEntityName().toLowerCase(Locale.ROOT), netheriteChicken);
+
+
         DynamicMaterialChickens.register(chickens, byName);
         DynamicFluidChickens.register(chickens, byName);
         DynamicChemicalChickens.register(chickens, byName);
         DynamicGasChickens.register(chickens, byName);
+
+
 
         return chickens;
     }

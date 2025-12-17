@@ -190,6 +190,13 @@ public class ChickensRegistryItem {
         return (int) Math.max(6000 * getTier() * layCoefficient, 1.0f);
     }
 
+    /**
+     * @return the chicken's lay coefficient
+     */
+    public float getLayCoefficient() {
+        return layCoefficient;
+    }
+
     public int getMaxLayTime() {
         return 2 * getMinLayTime();
     }
