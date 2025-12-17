@@ -75,6 +75,11 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
         }
     }
 
+    @Override
+    protected void spawnChickenLay(RandomSource random) {
+
+    }
+
     @Nullable
     private ChickensChicken createParentFromSlot(ServerLevel level, int slot) {
         ItemStack stack = getItem(slot);

@@ -199,7 +199,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         if (fullOfChickens && fullOfSeeds && timeElapsed >= timeUntilNextDrop) {
             if (timeUntilNextDrop > 0) {
                 consumeSeeds();
-                spawnChickenDrop(level.random);
+                spawnChickenLay(level.random);
             }
             resetTimer(level);
         }
@@ -248,6 +248,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     }
 
     protected abstract void spawnChickenDrop(RandomSource random);
+    protected abstract void spawnChickenLay(RandomSource random);
 
     protected abstract int requiredSeedsForDrop();
 

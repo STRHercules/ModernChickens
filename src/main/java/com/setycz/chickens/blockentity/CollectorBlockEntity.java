@@ -44,6 +44,11 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
+    protected void spawnChickenLay(RandomSource random) {
+        
+    }
+
+    @Override
     protected int requiredSeedsForDrop() {
         return 0;
     }
