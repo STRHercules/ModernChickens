@@ -143,7 +143,7 @@ final class DynamicMaterialChickens {
         Map<String, MaterialCandidate> unique = new LinkedHashMap<>();
         for (Item item : BuiltInRegistries.ITEM) {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-            if (itemId == null || item == Items.AIR) {
+            if (itemId == null || item == Items.AIR || item == Items.NETHERITE_INGOT) {
                 continue;
             }
             // Prevent auto-generating a generic neutronium ingot chicken; we gate neutronium
