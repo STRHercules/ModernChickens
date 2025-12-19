@@ -155,8 +155,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         }
         updateChickenInfoIfNeeded(level);
         updateTimerIfNeeded(level);
-//        spawnChickenDropIfNeeded(level);
-        spawnChickenLayIfNeeded(level);
+        spawnChickenItemIfNeeded(level);
         updateProgress();
         skipNextTimerReset = false;
     }
@@ -185,21 +184,11 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         }
     }
 
-    private void spawnChickenDropIfNeeded(Level level) {
+    private void spawnChickenItemIfNeeded(Level level) {
         if (fullOfChickens && fullOfSeeds && timeElapsed >= timeUntilNextDrop) {
             if (timeUntilNextDrop > 0) {
                 consumeSeeds();
-                spawnChickenDrop(level.random);
-            }
-            resetTimer(level);
-        }
-    }
-
-    private void spawnChickenLayIfNeeded(Level level) {
-        if (fullOfChickens && fullOfSeeds && timeElapsed >= timeUntilNextDrop) {
-            if (timeUntilNextDrop > 0) {
-                consumeSeeds();
-                spawnChickenLay(level.random);
+                spawnChickenItem(level.random);
             }
             resetTimer(level);
         }
@@ -247,8 +236,11 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         setChanged();
     }
 
-    protected abstract void spawnChickenDrop(RandomSource random);
-    protected abstract void spawnChickenLay(RandomSource random);
+    /**
+     * spawns the item that should be spawned during @method runTick
+     * @param random
+     */
+    protected abstract void spawnChickenItem(RandomSource random);
 
     protected abstract int requiredSeedsForDrop();
 

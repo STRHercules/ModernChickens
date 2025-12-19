@@ -51,7 +51,7 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected void spawnChickenDrop(RandomSource random) {
+    protected void spawnChickenItem(RandomSource random) {
         Level level = getLevel();
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
@@ -74,11 +74,7 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
             playSpawnEffects(serverLevel);
         }
     }
-
-    @Override
-    protected void spawnChickenLay(RandomSource random) {
-
-    }
+    
 
     @Nullable
     private ChickensChicken createParentFromSlot(ServerLevel level, int slot) {

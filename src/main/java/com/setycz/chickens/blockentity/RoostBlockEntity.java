@@ -39,25 +39,13 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected void spawnChickenDrop(RandomSource random) {
+    protected void spawnChickenItem(RandomSource random) {
         ChickenContainerEntry entry = getChickenEntry(CHICKEN_SLOT);
         if (entry == null) {
             return;
         }
-        ItemStack drop = entry.createDrop(random);
-        ItemStack remaining = pushIntoOutput(drop);
-        if (!remaining.isEmpty() && level != null) {
-            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), remaining);
-        }
-    }
-
-    protected void spawnChickenLay(RandomSource random) {
-        ChickenContainerEntry entry = getChickenEntry(CHICKEN_SLOT);
-        if (entry == null) {
-            return;
-        }
-        ItemStack lay = entry.createLay(random);
-        ItemStack remaining = pushIntoOutput(lay);
+        ItemStack item = entry.createLay(random);
+        ItemStack remaining = pushIntoOutput(item);
         if (!remaining.isEmpty() && level != null) {
             Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), remaining);
         }
