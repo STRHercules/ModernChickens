@@ -39,13 +39,13 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected void spawnChickenDrop(RandomSource random) {
+    protected void spawnChickenItem(RandomSource random) {
         ChickenContainerEntry entry = getChickenEntry(CHICKEN_SLOT);
         if (entry == null) {
             return;
         }
-        ItemStack drop = entry.createDrop(random);
-        ItemStack remaining = pushIntoOutput(drop);
+        ItemStack item = entry.createLay(random);
+        ItemStack remaining = pushIntoOutput(item);
         if (!remaining.isEmpty() && level != null) {
             Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), remaining);
         }
@@ -59,6 +59,14 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     @Override
     protected double speedMultiplier() {
         double base = ChickensConfigHolder.get().getRoostSpeedMultiplier();
+
+        // So the production rate can be changed per chicken in chicken.cfg
+        double chickenLayCoeffient = 1.0;
+        if (getChickenEntry(CHICKEN_SLOT) != null) {
+            chickenLayCoeffient = getChickenEntry(CHICKEN_SLOT).chicken().getLayCoefficient();
+        }
+
+
         double auraMultiplier = ChickensConfigHolder.get().getRoosterAuraMultiplier();
         int auraRange = ChickensConfigHolder.get().getRoosterAuraRange();
         if (auraRange <= 0 || auraMultiplier <= 1.0D || level == null) {
@@ -74,7 +82,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
         // base * (1 + 3 * 0.25) = base * 1.75.
         double bonusPerRooster = auraMultiplier - 1.0D;
         double totalMultiplier = 1.0D + activeRoosters * bonusPerRooster;
-        return base * Math.max(totalMultiplier, 0.0D);
+        return (base * Math.max(totalMultiplier, 0.0D)) * chickenLayCoeffient;
     }
 
     private static int countActiveRoostersInNests(net.minecraft.world.level.Level level, BlockPos origin, int range) {

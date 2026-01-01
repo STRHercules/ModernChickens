@@ -13,6 +13,8 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +29,8 @@ import java.util.Map;
  * but the relationships and identifiers are otherwise identical.
  */
 public final class DefaultChickens {
+    private static final Logger log = LoggerFactory.getLogger(DefaultChickens.class);
+
     private DefaultChickens() {
     }
 
@@ -293,10 +297,26 @@ public final class DefaultChickens {
             byName.put(chicken.getEntityName().toLowerCase(Locale.ROOT), chicken);
         }
         ModdedChickens.register(chickens, byName);
+
+        ChickensRegistryItem witherChicken = byName.get("witherchicken");
+
+        // is after the modded chickens since it relies on a chicken registered in there
+        ChickensRegistryItem netheriteChicken = new ChickensRegistryItem(
+                306, "NetheriteChicken", texture("NetheriteChicken"),
+                new ItemStack(Items.ANCIENT_DEBRIS),
+                0xd6d4d4, 0x31292a,
+                witherChicken, blazeChicken).setLayCoefficient(0.25f);
+        chickens.add(netheriteChicken);
+
+        byName.put(netheriteChicken.getEntityName().toLowerCase(Locale.ROOT), netheriteChicken);
+
+
         DynamicMaterialChickens.register(chickens, byName);
         DynamicFluidChickens.register(chickens, byName);
         DynamicChemicalChickens.register(chickens, byName);
         DynamicGasChickens.register(chickens, byName);
+
+
 
         return chickens;
     }

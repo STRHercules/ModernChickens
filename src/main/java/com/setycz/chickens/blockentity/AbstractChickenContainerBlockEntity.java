@@ -62,6 +62,14 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
             return drop;
         }
 
+        public ItemStack createLay(RandomSource random) {
+            ItemStack lay = chicken.createLayItem();
+            int gain = stats.gain();
+            lay.setCount(gain >= 10 ? 3 : gain >= 5 ? 2 : 1);
+            return lay;
+        }
+
+
         public int getAddedTime(ItemStack stack) {
             return Math.max(0, stack.getCount()) * Math.max(stats.growth(), 1);
         }
@@ -147,7 +155,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         }
         updateChickenInfoIfNeeded(level);
         updateTimerIfNeeded(level);
-        spawnChickenDropIfNeeded(level);
+        spawnChickenItemIfNeeded(level);
         updateProgress();
         skipNextTimerReset = false;
     }
@@ -176,11 +184,11 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         }
     }
 
-    private void spawnChickenDropIfNeeded(Level level) {
+    private void spawnChickenItemIfNeeded(Level level) {
         if (fullOfChickens && fullOfSeeds && timeElapsed >= timeUntilNextDrop) {
             if (timeUntilNextDrop > 0) {
                 consumeSeeds();
-                spawnChickenDrop(level.random);
+                spawnChickenItem(level.random);
             }
             resetTimer(level);
         }
@@ -222,12 +230,17 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
                 timeUntilNextDrop = Math.max(timeUntilNextDrop, entry.getLayTime(random));
             }
         }
+//        chic
         double multiplier = Math.max(speedMultiplier(), 0.0001D);
         timeUntilNextDrop = (int) (timeUntilNextDrop / multiplier);
         setChanged();
     }
 
-    protected abstract void spawnChickenDrop(RandomSource random);
+    /**
+     * spawns the item that should be spawned during @method runTick
+     * @param random
+     */
+    protected abstract void spawnChickenItem(RandomSource random);
 
     protected abstract int requiredSeedsForDrop();
 
