@@ -13,6 +13,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,7 @@ public final class ChickensMod {
         RoostEggPreventer.init();
         NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);
+        NeoForge.EVENT_BUS.addListener(this::onServerAboutToStart);
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
         modBus.addListener(this::onGatherData);
     }
@@ -45,6 +47,22 @@ public final class ChickensMod {
         // Defer the heavy registry bootstrap so it runs on the correct thread
         // once NeoForge has finished initialising its data tables.
         event.enqueueWork(ChickensDataLoader::bootstrap);
+    }
+    
+    private void onServerAboutToStart(ServerAboutToStartEvent event) {
+        LOGGER.info("Server about to start - resolving KubeJS chicken parents");
+        // Resolve parent relationships for KubeJS-registered chickens
+        // Using reflection to avoid hard dependency on KubeJS
+        try {
+            Class<?> builderClass = Class.forName("com.setycz.chickens.integration.kubejs.ChickenBuilder");
+            java.lang.reflect.Method method = builderClass.getMethod("resolveAllParents");
+            method.invoke(null);
+        } catch (ClassNotFoundException e) {
+            // KubeJS integration not loaded, which is fine
+            LOGGER.debug("KubeJS integration not found, skipping parent resolution");
+        } catch (Exception e) {
+            LOGGER.error("Failed to resolve KubeJS chicken parents", e);
+        }
     }
 
     private void onGatherData(GatherDataEvent event) {
