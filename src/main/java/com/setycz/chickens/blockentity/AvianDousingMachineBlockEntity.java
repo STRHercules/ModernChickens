@@ -7,6 +7,7 @@ import com.setycz.chickens.ChickensRegistryItem;
 import com.setycz.chickens.LiquidEggRegistry;
 import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.block.AvianDousingMachineBlock;
+import com.setycz.chickens.integration.kubejs.MachineRecipeRegistry;
 import com.setycz.chickens.integration.mekanism.MekanismChemicalHelper;
 import com.setycz.chickens.item.ChickenItem;
 import com.setycz.chickens.item.ChickenItemHelper;
@@ -193,31 +194,57 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 && isChicken(inputChicken, "obsidianChicken")) {
             ChickensRegistryItem dragon = findChickenByName("dragonChicken");
             if (dragon != null && canOutput(output, dragon)) {
-                return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0);
+                return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0, 0, SPECIAL_ENERGY_COST);
             }
         }
         if (specialInfusion == SpecialInfusion.NETHER_STAR && specialAmount >= SPECIAL_LIQUID_CAPACITY
                 && isChicken(inputChicken, "soulSandChicken")) {
             ChickensRegistryItem wither = findChickenByName("witherChicken");
             if (wither != null && canOutput(output, wither)) {
-                return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0);
+                return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0, 0, SPECIAL_ENERGY_COST);
             }
+        }
+
+        // Custom dousing recipes registered via KubeJS take priority over the default mappings.
+        MachineRecipeRegistry.DousingRecipe customChemical = findCustomChemicalRecipe(inputChicken);
+        if (customChemical != null) {
+            if (chemicalAmount >= customChemical.reagentAmount()) {
+                ChickensRegistryItem chicken = ChickensRegistry.getByType(customChemical.outputChickenId());
+                if (chicken != null && canOutput(output, chicken)) {
+                    return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0,
+                            customChemical.reagentAmount(), customChemical.energyCost());
+                }
+            }
+            return OperationPlan.none();
         }
 
         if (chemicalAmount >= CHEMICAL_COST && chemicalId != null) {
             ChickensRegistryItem chicken = resolveChemicalChicken(chemicalId);
             if (chicken != null && canOutput(output, chicken)) {
-                return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0);
+                return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0, CHEMICAL_COST,
+                        CHEMICAL_ENERGY_COST);
             }
         }
 
         FluidStack stored = liquidTank.getFluid();
         if (!stored.isEmpty()) {
+            MachineRecipeRegistry.DousingRecipe customLiquid = findCustomLiquidRecipe(inputChicken, stored);
+            if (customLiquid != null) {
+                if (stored.getAmount() >= customLiquid.reagentAmount()) {
+                    ChickensRegistryItem chicken = ChickensRegistry.getByType(customLiquid.outputChickenId());
+                    if (chicken != null && canOutput(output, chicken)) {
+                        return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE,
+                                customLiquid.reagentAmount(), 0, customLiquid.energyCost());
+                    }
+                }
+                return OperationPlan.none();
+            }
             ChickensRegistryItem chicken = resolveLiquidChicken(stored);
             if (chicken != null) {
                 int liquidCost = chicken.getLiquidDousingCost();
                 if (stored.getAmount() >= liquidCost && canOutput(output, chicken)) {
-                    return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost);
+                    return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost, 0,
+                            LIQUID_ENERGY_COST);
                 }
             }
         }
@@ -227,13 +254,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private boolean hasResourcesFor(OperationPlan plan) {
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            return energyStorage.getEnergyStored() >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
+            return energyStorage.getEnergyStored() >= plan.energyCost() && chemicalAmount >= plan.chemicalCost();
         }
         if (plan.mode() == InfusionMode.LIQUID) {
-            return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= plan.liquidCost();
+            return energyStorage.getEnergyStored() >= plan.energyCost()
+                    && liquidTank.getFluidAmount() >= plan.liquidCost();
         }
         if (plan.mode() == InfusionMode.SPECIAL) {
-            return energyStorage.getEnergyStored() >= SPECIAL_ENERGY_COST && specialAmount >= SPECIAL_LIQUID_CAPACITY;
+            return energyStorage.getEnergyStored() >= plan.energyCost() && specialAmount >= SPECIAL_LIQUID_CAPACITY;
         }
         return false;
     }
@@ -258,22 +286,22 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
 
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            if (!energyStorage.consumeEnergy(CHEMICAL_ENERGY_COST)) {
+            if (!energyStorage.consumeEnergy(plan.energyCost())) {
                 return;
             }
-            chemicalAmount -= CHEMICAL_COST;
+            chemicalAmount -= plan.chemicalCost();
             if (chemicalAmount <= 0) {
                 clearChemical();
             }
             invalidateChemicalHandlers();
             markChemicalDirty();
         } else if (plan.mode() == InfusionMode.LIQUID) {
-            if (!energyStorage.consumeEnergy(LIQUID_ENERGY_COST)) {
+            if (!energyStorage.consumeEnergy(plan.energyCost())) {
                 return;
             }
             liquidTank.drain(plan.liquidCost(), IFluidHandler.FluidAction.EXECUTE);
         } else if (plan.mode() == InfusionMode.SPECIAL) {
-            if (!energyStorage.consumeEnergy(SPECIAL_ENERGY_COST)) {
+            if (!energyStorage.consumeEnergy(plan.energyCost())) {
                 return;
             }
             specialAmount = 0;
@@ -306,6 +334,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return false;
         }
         if (chicken.getId() == ChickensRegistry.SMART_CHICKEN_ID) {
+            return true;
+        }
+        // Accept any chicken that has an explicit KubeJS dousing recipe.
+        if (MachineRecipeRegistry.hasDousingRecipeForInput(chicken.getId())) {
             return true;
         }
         return isChicken(chicken, "obsidianChicken") || isChicken(chicken, "soulSandChicken");
@@ -826,6 +858,29 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     @Nullable
+    private MachineRecipeRegistry.DousingRecipe findCustomChemicalRecipe(@Nullable ChickensRegistryItem inputChicken) {
+        if (inputChicken == null || chemicalId == null) {
+            return null;
+        }
+        return MachineRecipeRegistry.findDousingRecipe(MachineRecipeRegistry.DousingType.CHEMICAL,
+                inputChicken.getId(), chemicalId);
+    }
+
+    @Nullable
+    private MachineRecipeRegistry.DousingRecipe findCustomLiquidRecipe(@Nullable ChickensRegistryItem inputChicken,
+            FluidStack stored) {
+        if (inputChicken == null || stored.isEmpty()) {
+            return null;
+        }
+        ResourceLocation fluidId = stored.getFluid().builtInRegistryHolder().key().location();
+        if (fluidId == null) {
+            return null;
+        }
+        return MachineRecipeRegistry.findDousingRecipe(MachineRecipeRegistry.DousingType.FLUID,
+                inputChicken.getId(), fluidId);
+    }
+
+    @Nullable
     private ChickensRegistryItem resolveLiquidChicken(FluidStack stack) {
         if (stack.isEmpty()) {
             return null;
@@ -860,11 +915,48 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (stored.isEmpty()) {
             return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
         }
+        // Prefer a matching KubeJS recipe so the GUI shows custom per-recipe costs.
+        ChickensRegistryItem inputChicken = getChicken(items.get(INPUT_SLOT));
+        MachineRecipeRegistry.DousingRecipe custom = findCustomLiquidRecipe(inputChicken, stored);
+        if (custom != null) {
+            return custom.reagentAmount();
+        }
         ChickensRegistryItem chicken = resolveLiquidChicken(stored);
         if (chicken == null) {
             return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
         }
         return chicken.getLiquidDousingCost();
+    }
+
+    public int getLiquidEnergyCostForStoredFluid() {
+        FluidStack stored = liquidTank.getFluid();
+        if (stored.isEmpty()) {
+            return LIQUID_ENERGY_COST;
+        }
+        ChickensRegistryItem inputChicken = getChicken(items.get(INPUT_SLOT));
+        MachineRecipeRegistry.DousingRecipe custom = findCustomLiquidRecipe(inputChicken, stored);
+        if (custom != null) {
+            return custom.energyCost();
+        }
+        return LIQUID_ENERGY_COST;
+    }
+
+    public int getChemicalCostForStoredChemical() {
+        ChickensRegistryItem inputChicken = getChicken(items.get(INPUT_SLOT));
+        MachineRecipeRegistry.DousingRecipe custom = findCustomChemicalRecipe(inputChicken);
+        if (custom != null) {
+            return custom.reagentAmount();
+        }
+        return CHEMICAL_COST;
+    }
+
+    public int getChemicalEnergyCostForStoredChemical() {
+        ChickensRegistryItem inputChicken = getChicken(items.get(INPUT_SLOT));
+        MachineRecipeRegistry.DousingRecipe custom = findCustomChemicalRecipe(inputChicken);
+        if (custom != null) {
+            return custom.energyCost();
+        }
+        return CHEMICAL_ENERGY_COST;
     }
 
     @Nullable
@@ -960,9 +1052,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private record OperationPlan(InfusionMode mode, @Nullable ChickensRegistryItem chicken,
-                                 SpecialInfusion special, int liquidCost) {
+                                 SpecialInfusion special, int liquidCost, int chemicalCost, int energyCost) {
         static OperationPlan none() {
-            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0);
+            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0, 0, 0);
         }
     }
 

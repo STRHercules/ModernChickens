@@ -53,6 +53,9 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
     private int clientSpecialAmount;
     private int clientSpecialType;
     private int clientLiquidCost;
+    private int clientLiquidEnergyCost;
+    private int clientChemicalCost;
+    private int clientChemicalEnergyCost;
     private InfusionMode clientMode = InfusionMode.NONE;
 
     public AvianDousingMachineMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
@@ -80,7 +83,11 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.clientChemicalEntryId = machine.getChemicalEntryId();
         this.clientSpecialAmount = machine.getSpecialAmount();
         this.clientSpecialType = machine.getSpecialInfusion().ordinal();
+        // Cache per-recipe costs so the client can render custom KubeJS recipes.
         this.clientLiquidCost = machine.getLiquidCostForStoredFluid();
+        this.clientLiquidEnergyCost = machine.getLiquidEnergyCostForStoredFluid();
+        this.clientChemicalCost = machine.getChemicalCostForStoredChemical();
+        this.clientChemicalEnergyCost = machine.getChemicalEnergyCostForStoredChemical();
         this.clientMode = machine.getMode();
 
         this.addSlot(new SmartChickenSlot(machine, 0, 50, 35));
@@ -195,6 +202,30 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.addDataSlot(splitGetter(
                 () -> getServerLiquidCost() >>> 16,
                 value -> clientLiquidCost = (clientLiquidCost & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+
+        // Liquid dousing energy cost (per stored fluid/chicken)
+        this.addDataSlot(splitGetter(
+                () -> getServerLiquidEnergyCost(),
+                value -> clientLiquidEnergyCost = (clientLiquidEnergyCost & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerLiquidEnergyCost() >>> 16,
+                value -> clientLiquidEnergyCost = (clientLiquidEnergyCost & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+
+        // Chemical dousing cost (per stored chemical/chicken)
+        this.addDataSlot(splitGetter(
+                () -> getServerChemicalCost(),
+                value -> clientChemicalCost = (clientChemicalCost & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerChemicalCost() >>> 16,
+                value -> clientChemicalCost = (clientChemicalCost & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+
+        // Chemical dousing energy cost (per stored chemical/chicken)
+        this.addDataSlot(splitGetter(
+                () -> getServerChemicalEnergyCost(),
+                value -> clientChemicalEnergyCost = (clientChemicalEnergyCost & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerChemicalEnergyCost() >>> 16,
+                value -> clientChemicalEnergyCost = (clientChemicalEnergyCost & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
 
         // Chemical amount and capacity
         this.addDataSlot(splitGetter(
@@ -314,6 +345,18 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
     public int getLiquidCost() {
         return isServerSide() ? machine.getLiquidCostForStoredFluid() : clientLiquidCost;
+    }
+
+    public int getLiquidEnergyCost() {
+        return isServerSide() ? machine.getLiquidEnergyCostForStoredFluid() : clientLiquidEnergyCost;
+    }
+
+    public int getChemicalCost() {
+        return isServerSide() ? machine.getChemicalCostForStoredChemical() : clientChemicalCost;
+    }
+
+    public int getChemicalEnergyCost() {
+        return isServerSide() ? machine.getChemicalEnergyCostForStoredChemical() : clientChemicalEnergyCost;
     }
 
     public int getChemicalAmount() {
@@ -445,6 +488,18 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
     private int getServerLiquidCost() {
         return machine != null ? machine.getLiquidCostForStoredFluid() : ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
+    }
+
+    private int getServerLiquidEnergyCost() {
+        return machine != null ? machine.getLiquidEnergyCostForStoredFluid() : AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST;
+    }
+
+    private int getServerChemicalCost() {
+        return machine != null ? machine.getChemicalCostForStoredChemical() : AvianDousingMachineBlockEntity.CHEMICAL_COST;
+    }
+
+    private int getServerChemicalEnergyCost() {
+        return machine != null ? machine.getChemicalEnergyCostForStoredChemical() : AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST;
     }
 
     private interface IntSupplier {

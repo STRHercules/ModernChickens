@@ -197,8 +197,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
                     ? menu.getStoredChemical().getDisplayName()
                     : Component.translatable("tooltip.chickens.avian_dousing_machine.empty");
             Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.chemical",
-                    chemicalName, amount, capacity, AvianDousingMachineBlockEntity.CHEMICAL_COST,
-                    AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST);
+                    chemicalName, amount, capacity, menu.getChemicalCost(), menu.getChemicalEnergyCost());
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }
@@ -217,7 +216,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
                     : menu.getLiquidCost();
             int energyCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
                     ? AvianDousingMachineBlockEntity.SPECIAL_ENERGY_COST
-                    : AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST;
+                    : menu.getLiquidEnergyCost();
             Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.liquid",
                     fluidName, amount, capacity, useCost, energyCost);
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);

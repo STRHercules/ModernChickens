@@ -34,6 +34,8 @@ public class ChickensRegistryItem {
     private SpawnType spawnType;
     private boolean enabled = true;
     private float layCoefficient = 1.0f;
+    // When set, this overrides the parent-derived tier for scripted chickens.
+    private int tierOverride;
     @Nullable
     private Component displayName;
     private boolean generatedTexture;
@@ -93,6 +95,11 @@ public class ChickensRegistryItem {
         return this;
     }
 
+    public ChickensRegistryItem setTierOverride(int tier) {
+        tierOverride = Math.max(1, tier);
+        return this;
+    }
+
     public ChickensRegistryItem setDisplayName(Component name) {
         displayName = name;
         return this;
@@ -146,6 +153,9 @@ public class ChickensRegistryItem {
     }
 
     public int getTier() {
+        if (tierOverride > 0) {
+            return tierOverride;
+        }
         if (parent1 == null || parent2 == null) {
             return 1;
         }

@@ -79,11 +79,9 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
                     : recipe.reagent().getHoverName();
         String reagentId = recipe.entry() != null
                 ? recipe.entry().getChemicalId().toString()
-                : recipe.fluid() != null
-                    ? recipe.fluid().getFluid().builtInRegistryHolder().key().location().toString()
-                    : "item";
-
-        Component reagent = Component.translatable("gui.chickens.avian_dousing_machine.chemical", reagentName, reagentId);
+                : "missing";
+        Component chemical = Component.translatable("gui.chickens.avian_dousing_machine.chemical",
+                chemicalName, chemicalId);
         Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume", recipe.fluidCost());
         Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy", recipe.energyCost());
         int textColor = 0xFF7F7F7F;

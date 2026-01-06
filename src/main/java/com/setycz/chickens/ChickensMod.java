@@ -1,12 +1,15 @@
 package com.setycz.chickens;
 
 import com.setycz.chickens.command.ChickensCommands;
+import com.setycz.chickens.ChickensRegistry;
 import com.setycz.chickens.data.ChickensDataLoader;
+import com.setycz.chickens.data.BreedingGraphExporter;
 import com.setycz.chickens.RoostEggPreventer;
 import com.setycz.chickens.entity.NetherPopulationHandler;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.data.ChickenItemModelProvider;
 import com.setycz.chickens.spawn.SpawnPlanDataLoader;
+import com.setycz.chickens.spawn.ChickensSpawnManager;
 import com.setycz.chickens.entity.OverworldPopulationHandler;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -63,6 +66,9 @@ public final class ChickensMod {
         } catch (Exception e) {
             LOGGER.error("Failed to resolve KubeJS chicken parents", e);
         }
+        // Refresh spawn tables and export the breeding graph once KubeJS chickens are registered.
+        ChickensSpawnManager.refreshFromRegistry();
+        BreedingGraphExporter.export(ChickensRegistry.getItems());
     }
 
     private void onGatherData(GatherDataEvent event) {
