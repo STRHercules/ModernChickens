@@ -71,22 +71,24 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
     public void draw(ChickensJeiRecipeTypes.AvianDousingRecipe recipe, IRecipeSlotsView recipeSlotsView,
             GuiGraphics graphics, double mouseX, double mouseY) {
         Component input = Component.translatable("gui.chickens.avian_dousing_machine.input");
-        // Null guard: datapacks or fallback item recipes may omit a chemical entry; show a placeholder instead of crashing.
-        Component chemicalName = recipe.entry() != null
+        // Resolve the displayed reagent + id based on the recipe type (chemical, liquid, or special item).
+        Component reagentName = recipe.entry() != null
                 ? recipe.entry().getDisplayName()
-                : recipe.reagent().getHoverName();
-        String chemicalId = recipe.entry() != null
+                : recipe.fluid() != null
+                    ? recipe.fluid().getHoverName()
+                    : recipe.reagent().getHoverName();
+        String reagentId = recipe.entry() != null
                 ? recipe.entry().getChemicalId().toString()
-                : "missing";
-        Component chemical = Component.translatable("gui.chickens.avian_dousing_machine.chemical",
-                chemicalName, chemicalId);
-        Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume",
-                AvianDousingMachineBlockEntity.CHEMICAL_COST);
-        Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy",
-                AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST);
+                : recipe.fluid() != null
+                    ? recipe.fluid().getFluid().builtInRegistryHolder().key().location().toString()
+                    : "item";
+
+        Component reagent = Component.translatable("gui.chickens.avian_dousing_machine.chemical", reagentName, reagentId);
+        Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume", recipe.fluidCost());
+        Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy", recipe.energyCost());
         int textColor = 0xFF7F7F7F;
         graphics.drawString(Minecraft.getInstance().font, input, 4, 4, textColor, false);
-        graphics.drawString(Minecraft.getInstance().font, chemical, 4, 16, textColor, false);
+        graphics.drawString(Minecraft.getInstance().font, reagent, 4, 16, textColor, false);
         graphics.drawString(Minecraft.getInstance().font, volume, 4, 28, textColor, false);
         graphics.drawString(Minecraft.getInstance().font, energy, 4, 40, textColor, false);
     }
