@@ -29,6 +29,7 @@ import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.item.ChickenStats;
 import com.setycz.chickens.item.GasEggItem;
 import com.setycz.chickens.item.LiquidEggItem;
+import com.setycz.chickens.integration.kubejs.MachineRecipeRegistry;
 import com.setycz.chickens.registry.ModRegistry;
 import com.setycz.chickens.blockentity.AvianDousingMachineBlockEntity;
 import mezz.jei.api.IModPlugin;
@@ -39,6 +40,7 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -236,7 +238,8 @@ public class ChickensJeiPlugin implements IModPlugin {
     }
 
     private static List<ChickensJeiRecipeTypes.AvianFluidConverterRecipe> buildAvianFluidConverterRecipes() {
-        return LiquidEggRegistry.getAll().stream()
+        List<ChickensJeiRecipeTypes.AvianFluidConverterRecipe> recipes = new ArrayList<>();
+        LiquidEggRegistry.getAll().stream()
                 .map(liquid -> {
                     FluidStack fluid = liquid.createFluidStack();
                     if (fluid.isEmpty()) {
@@ -247,11 +250,33 @@ public class ChickensJeiPlugin implements IModPlugin {
                             fluid);
                 })
                 .filter(Objects::nonNull)
-                .toList();
+                .forEach(recipes::add);
+        // Append KubeJS-defined conversions so JEI mirrors custom machine behaviour.
+        recipes.addAll(buildCustomAvianFluidConverterRecipes());
+        return recipes;
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianFluidConverterRecipe> buildCustomAvianFluidConverterRecipes() {
+        List<ChickensJeiRecipeTypes.AvianFluidConverterRecipe> recipes = new ArrayList<>();
+        for (MachineRecipeRegistry.FluidConverterRecipe recipe : MachineRecipeRegistry.getFluidConverterRecipes()) {
+            LiquidEggRegistryItem input = LiquidEggRegistry.findByFluid(recipe.inputFluidId());
+            if (input == null) {
+                continue;
+            }
+            FluidStack fluid = new FluidStack(BuiltInRegistries.FLUID.get(recipe.outputFluidId()), recipe.outputAmount());
+            if (fluid.isEmpty()) {
+                continue;
+            }
+            recipes.add(new ChickensJeiRecipeTypes.AvianFluidConverterRecipe(
+                    LiquidEggItem.createFor(input),
+                    fluid));
+        }
+        return recipes;
     }
 
     private static List<ChickensJeiRecipeTypes.AvianChemicalConverterRecipe> buildAvianChemicalConverterRecipes() {
-        return Stream.concat(
+        List<ChickensJeiRecipeTypes.AvianChemicalConverterRecipe> recipes = new ArrayList<>();
+        Stream.concat(
                 ChemicalEggRegistry.getAll().stream()
                         .filter(entry -> entry.getVolume() > 0)
                         .map(entry -> new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(
@@ -260,7 +285,45 @@ public class ChickensJeiPlugin implements IModPlugin {
                         .filter(entry -> entry.getVolume() > 0)
                         .map(entry -> new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(
                                 GasEggItem.createFor(entry), entry)))
-                .toList();
+                .forEach(recipes::add);
+        // Append KubeJS-defined chemical conversions so JEI mirrors custom machine behaviour.
+        recipes.addAll(buildCustomAvianChemicalConverterRecipes());
+        return recipes;
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianChemicalConverterRecipe> buildCustomAvianChemicalConverterRecipes() {
+        List<ChickensJeiRecipeTypes.AvianChemicalConverterRecipe> recipes = new ArrayList<>();
+        for (MachineRecipeRegistry.ChemicalConverterRecipe recipe : MachineRecipeRegistry.getChemicalConverterRecipes()) {
+            ChemicalEggRegistryItem input = ChemicalEggRegistry.findByChemical(recipe.inputChemicalId());
+            if (input == null) {
+                input = GasEggRegistry.findByChemical(recipe.inputChemicalId());
+            }
+            if (input == null) {
+                continue;
+            }
+            ChemicalEggRegistryItem output = ChemicalEggRegistry.findByChemical(recipe.outputChemicalId());
+            if (output == null) {
+                output = GasEggRegistry.findByChemical(recipe.outputChemicalId());
+            }
+            if (output == null) {
+                continue;
+            }
+            ItemStack egg = input.isGaseous()
+                    ? GasEggItem.createFor(input)
+                    : ChemicalEggItem.createFor(input);
+            // Clone the entry so JEI reflects custom per-recipe output volumes.
+            ChemicalEggRegistryItem displayEntry = new ChemicalEggRegistryItem(
+                    output.getId(),
+                    output.getChemicalId(),
+                    output.getTexture(),
+                    output.getDisplayName(),
+                    output.getEggColor(),
+                    recipe.outputAmount(),
+                    output.getHazards(),
+                    output.isGaseous());
+            recipes.add(new ChickensJeiRecipeTypes.AvianChemicalConverterRecipe(egg, displayEntry));
+        }
+        return recipes;
     }
 
     private static List<ChickensJeiRecipeTypes.AvianDousingRecipe> buildAvianDousingRecipes() {
@@ -284,10 +347,73 @@ public class ChickensJeiPlugin implements IModPlugin {
 
         List<ChickensJeiRecipeTypes.AvianDousingRecipe> special = buildSpecialDousingRecipes(chickenItem);
 
-        return Stream.of(chemical, liquid, special)
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> custom = buildCustomAvianDousingRecipes(chickenItem);
+
+        return Stream.of(chemical, liquid, special, custom)
                 .flatMap(List::stream)
                 .filter(Objects::nonNull)
                 .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.AvianDousingRecipe> buildCustomAvianDousingRecipes(ChickenItem chickenItem) {
+        List<ChickensJeiRecipeTypes.AvianDousingRecipe> recipes = new ArrayList<>();
+        for (MachineRecipeRegistry.DousingRecipe recipe : MachineRecipeRegistry.getDousingRecipes()) {
+            ChickensRegistryItem inputChicken = ChickensRegistry.getByType(recipe.inputChickenId());
+            ChickensRegistryItem outputChicken = ChickensRegistry.getByType(recipe.outputChickenId());
+            if (inputChicken == null || outputChicken == null) {
+                continue;
+            }
+            ItemStack inputEgg = ChickensSpawnEggItem.createFor(inputChicken);
+            ItemStack inputChickenStack = chickenItem.createFor(inputChicken);
+            ItemStack result = ChickensSpawnEggItem.createFor(outputChicken);
+
+            if (recipe.type() == MachineRecipeRegistry.DousingType.CHEMICAL) {
+                ChemicalEggRegistryItem entry = ChemicalEggRegistry.findByChemical(recipe.reagentId());
+                if (entry == null) {
+                    entry = GasEggRegistry.findByChemical(recipe.reagentId());
+                }
+                if (entry == null) {
+                    continue;
+                }
+                ItemStack reagent = entry.isGaseous()
+                        ? GasEggItem.createFor(entry)
+                        : ChemicalEggItem.createFor(entry);
+                MekanismJeiChemicalHelper.JeiChemicalStack chemical = MekanismJeiChemicalHelper.createStack(
+                        entry,
+                        recipe.reagentAmount());
+                recipes.add(new ChickensJeiRecipeTypes.AvianDousingRecipe(
+                        inputEgg.copy(),
+                        inputChickenStack.copy(),
+                        reagent,
+                        result,
+                        entry,
+                        chemical,
+                        null,
+                        recipe.reagentAmount(),
+                        recipe.energyCost()));
+            } else if (recipe.type() == MachineRecipeRegistry.DousingType.FLUID) {
+                LiquidEggRegistryItem liquid = LiquidEggRegistry.findByFluid(recipe.reagentId());
+                if (liquid == null) {
+                    continue;
+                }
+                FluidStack fluid = new FluidStack(BuiltInRegistries.FLUID.get(recipe.reagentId()), recipe.reagentAmount());
+                if (fluid.isEmpty()) {
+                    continue;
+                }
+                ItemStack reagent = LiquidEggItem.createFor(liquid);
+                recipes.add(new ChickensJeiRecipeTypes.AvianDousingRecipe(
+                        inputEgg.copy(),
+                        inputChickenStack.copy(),
+                        reagent,
+                        result,
+                        null,
+                        null,
+                        fluid,
+                        recipe.reagentAmount(),
+                        recipe.energyCost()));
+            }
+        }
+        return recipes;
     }
 
     @Nullable

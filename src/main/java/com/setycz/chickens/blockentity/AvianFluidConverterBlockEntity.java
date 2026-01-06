@@ -5,6 +5,7 @@ import com.setycz.chickens.LiquidEggRegistryItem;
 import com.setycz.chickens.block.AvianFluidConverterBlock;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
+import com.setycz.chickens.integration.kubejs.MachineRecipeRegistry;
 import com.setycz.chickens.item.ChickenItemHelper;
 import com.setycz.chickens.item.LiquidEggItem;
 import com.setycz.chickens.menu.AvianFluidConverterMenu;
@@ -13,11 +14,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -114,8 +117,16 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
             items.set(0, ItemStack.EMPTY);
             return true;
         }
-        FluidStack payload = entry.createFluidStack();
+        // Allow KubeJS to override the egg->fluid mapping before falling back to defaults.
+        ResourceLocation inputFluidId = BuiltInRegistries.FLUID.getKey(entry.getFluid());
+        MachineRecipeRegistry.FluidConverterRecipe customRecipe = inputFluidId == null
+                ? null
+                : MachineRecipeRegistry.findFluidConverterRecipe(inputFluidId);
+        FluidStack payload = customRecipe != null
+                ? new FluidStack(BuiltInRegistries.FLUID.get(customRecipe.outputFluidId()), customRecipe.outputAmount())
+                : entry.createFluidStack();
         if (payload.isEmpty()) {
+            // If the configured output is missing, consume the egg to avoid stalling the machine.
             items.set(0, ItemStack.EMPTY);
             return true;
         }

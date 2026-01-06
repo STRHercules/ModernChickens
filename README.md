@@ -148,6 +148,26 @@ Combining the Dousing Machine with the Fluid and Chemical Converters lets you go
 
 ![Dousing WTHIT](https://i.imgur.com/V25C4td.png)
 
+## KubeJS: Avian Machine Recipes
+
+Modern Chickens exposes the Avian machines to KubeJS so packs can override or add recipes that mirror the in-game behavior described above.
+
+```js
+ChickensMachineRecipes.register(event => {
+  // Dousing: input chicken + reagent -> output chicken spawn egg
+  event.dousingFluid(inputChicken, outputChicken, fluidId, fluidAmount, energyCost);
+  event.dousingChemical(inputChicken, outputChicken, chemicalId, chemicalAmount, energyCost);
+
+  // Converters: egg's stored fluid/chemical -> internal buffer output
+  event.fluidConverter(inputFluidId, outputFluidId, outputAmount);
+  event.chemicalConverter(inputChemicalId, outputChemicalId, outputAmount);
+});
+```
+
+- **Dousing inputs/outputs**: `inputChicken` and `outputChicken` are chicken IDs (e.g., `smart_chicken`, `chickens:smart_chicken`, or a numeric ID). The machine consumes one input chicken (spawn egg or captured chicken item) and produces one spawn egg of the output chicken. If you define a custom dousing recipe, that input chicken becomes valid in the Dousing Machine slot (not just Smart Chickens).
+- **Dousing reagents**: `fluidId`/`chemicalId` must match what is stored in the machine's fluid tank or chemical buffer. Amounts are per conversion (in mB), and `energyCost` is the RF required per infusion. Chemical recipes are evaluated before liquid recipes, matching the machine's preference when both buffers are available.
+- **Converter overrides**: `inputFluidId`/`inputChemicalId` must match the egg's contained fluid/chemical. `output*Id` is what the converter stores in its internal tank, and `outputAmount` is the per-egg yield (in mB). Custom converter recipes override the default egg-to-fluid/chemical mapping for the matching input.
+
 ## Roosters
 
 ![Rooster](https://i.imgur.com/d49iLC3.png)

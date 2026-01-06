@@ -28,14 +28,19 @@ public class ChickenBuilder {
     private String parent2Name = "";
     private ItemStack layItem = ItemStack.EMPTY;
     private ItemStack dropItem = ItemStack.EMPTY;
-    private int tier = 1;
+    private Integer numericIdOverride = null;
+    private Integer tierOverride = null;
     private SpawnType spawnType = SpawnType.NONE;
     private int primaryColor = 0xFFFFFF;
     private int secondaryColor = 0xFFFF00;
     private String displayName = "";
     private double layCoefficient = 1.0;
     private Boolean generatedTexture = null;
+    private Boolean enabled = null;
+    private Boolean allowNaturalSpawn = null;
+    private Integer liquidDousingCost = null;
     private String texturePath = "";
+    private String itemTexturePath = "";
     
     private static class BuilderData {
         ChickensRegistryItem chicken;
@@ -96,7 +101,12 @@ public class ChickenBuilder {
     }
  
     public ChickenBuilder tier(int tier) {
-        this.tier = Math.max(1, tier);
+        this.tierOverride = Math.max(1, tier);
+        return this;
+    }
+
+    public ChickenBuilder numericId(int id) {
+        this.numericIdOverride = Math.max(0, id);
         return this;
     }
     
@@ -144,9 +154,30 @@ public class ChickenBuilder {
         this.generatedTexture = generated;
         return this;
     }
- 
+
+    // Optional overrides that previously lived in chickens.cfg.
+    public ChickenBuilder enabled(boolean enabled) {
+        this.enabled = enabled;
+        return this;
+    }
+
+    public ChickenBuilder allowNaturalSpawn(boolean allowNaturalSpawn) {
+        this.allowNaturalSpawn = allowNaturalSpawn;
+        return this;
+    }
+
+    public ChickenBuilder liquidDousingCost(int amount) {
+        this.liquidDousingCost = Math.max(1, amount);
+        return this;
+    }
+
     public ChickenBuilder texturePath(String path) {
-        this.texturePath = path;
+        this.texturePath = path != null ? path : "";
+        return this;
+    }
+
+    public ChickenBuilder itemTexturePath(String path) {
+        this.itemTexturePath = path != null ? path : "";
         return this;
     }
     
@@ -159,12 +190,14 @@ public class ChickenBuilder {
             throw new IllegalStateException("Chicken '" + this.id + "' must have a lay item!");
         }
         
-        int numericId = Math.abs(this.id.toString().hashCode() % 1_000_000) + 10_000;
+        // Use explicit IDs when provided to keep compatibility with legacy item data.
+        int numericId = numericIdOverride != null
+                ? numericIdOverride
+                : Math.abs(this.id.toString().hashCode() % 1_000_000) + 10_000;
         
-        ResourceLocation texture = DEFAULT_TEXTURE;
-        if (!texturePath.isEmpty()) {
-            texture = ResourceLocation.parse(texturePath);
-        }
+        boolean hasCustomTexture = !texturePath.trim().isEmpty();
+        boolean hasCustomItemTexture = !itemTexturePath.trim().isEmpty();
+        ResourceLocation texture = hasCustomTexture ? resolveTexturePath(texturePath) : DEFAULT_TEXTURE;
         
         ChickensRegistryItem chicken = new ChickensRegistryItem(
             numericId,
@@ -178,6 +211,10 @@ public class ChickenBuilder {
         if (!dropItem.isEmpty()) {
             chicken.setDropItem(dropItem);
         }
+
+        if (hasCustomItemTexture) {
+            chicken.setItemTexture(resolveItemTexturePath(itemTexturePath));
+        }
         
         chicken.setSpawnType(spawnType);
         
@@ -190,9 +227,28 @@ public class ChickenBuilder {
         if (layCoefficient != 1.0) {
             chicken.setLayCoefficient((float) layCoefficient);
         }
-        
-        if (generatedTexture != null) {
-            chicken.setGeneratedTexture(generatedTexture);
+
+        // Apply KubeJS overrides that replace legacy per-chicken config entries.
+        if (tierOverride != null) {
+            chicken.setTierOverride(tierOverride);
+        }
+        if (enabled != null) {
+            chicken.setEnabled(enabled);
+        }
+        if (allowNaturalSpawn != null) {
+            chicken.setNaturalSpawnOverride(allowNaturalSpawn);
+        }
+        if (liquidDousingCost != null) {
+            chicken.setLiquidDousingCost(liquidDousingCost);
+        }
+
+        boolean useGeneratedTexture = Boolean.TRUE.equals(generatedTexture);
+        if (hasCustomTexture && useGeneratedTexture) {
+            // Custom textures take priority; colors are reserved for generated recolors.
+            useGeneratedTexture = false;
+        }
+        if (generatedTexture != null || hasCustomTexture) {
+            chicken.setGeneratedTexture(useGeneratedTexture);
         }
         
         // Register immediately in ChickensRegistry
@@ -267,5 +323,47 @@ public class ChickenBuilder {
         }
         name.append("Chicken");
         return name.toString().trim();
+    }
+
+    private static ResourceLocation resolveTexturePath(String raw) {
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return DEFAULT_TEXTURE;
+        }
+        if (trimmed.contains(":")) {
+            return ResourceLocation.parse(trimmed);
+        }
+        String normalised = trimmed.replace('\\', '/');
+        if (!normalised.endsWith(".png")) {
+            normalised = normalised + ".png";
+        }
+        if (!normalised.contains("/")) {
+            normalised = "textures/entity/" + normalised;
+        } else if (normalised.startsWith("entity/") || normalised.startsWith("item/")) {
+            normalised = "textures/" + normalised;
+        }
+        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, normalised);
+    }
+
+    private static ResourceLocation resolveItemTexturePath(String raw) {
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/chicken/whitechicken.png");
+        }
+        if (trimmed.contains(":")) {
+            return ResourceLocation.parse(trimmed);
+        }
+        String normalised = trimmed.replace('\\', '/');
+        if (!normalised.endsWith(".png")) {
+            normalised = normalised + ".png";
+        }
+        if (!normalised.contains("/")) {
+            normalised = "textures/item/chicken/" + normalised;
+        } else if (normalised.startsWith("item/")) {
+            normalised = "textures/" + normalised;
+        } else if (normalised.startsWith("chicken/")) {
+            normalised = "textures/item/" + normalised;
+        }
+        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, normalised);
     }
 }

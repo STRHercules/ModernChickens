@@ -80,10 +80,8 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
                 : "missing";
         Component chemical = Component.translatable("gui.chickens.avian_dousing_machine.chemical",
                 chemicalName, chemicalId);
-        Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume",
-                AvianDousingMachineBlockEntity.CHEMICAL_COST);
-        Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy",
-                AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST);
+        Component volume = Component.translatable("gui.chickens.avian_dousing_machine.volume", recipe.fluidCost());
+        Component energy = Component.translatable("gui.chickens.avian_dousing_machine.energy", recipe.energyCost());
         int textColor = 0xFF7F7F7F;
         graphics.drawString(Minecraft.getInstance().font, input, 4, 4, textColor, false);
         graphics.drawString(Minecraft.getInstance().font, chemical, 4, 16, textColor, false);

@@ -6,6 +6,7 @@ import com.setycz.chickens.GasEggRegistry;
 import com.setycz.chickens.block.AvianChemicalConverterBlock;
 import com.setycz.chickens.config.ChickensConfigHolder;
 import com.setycz.chickens.config.ChickensConfigValues;
+import com.setycz.chickens.integration.kubejs.MachineRecipeRegistry;
 import com.setycz.chickens.integration.mekanism.MekanismChemicalHelper;
 import com.setycz.chickens.item.ChemicalEggItem;
 import com.setycz.chickens.item.ChickenItemHelper;
@@ -108,6 +109,22 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             setChanged();
             return true;
         }
+        // Prefer KubeJS overrides if the input chemical has a custom conversion mapping.
+        MachineRecipeRegistry.ChemicalConverterRecipe custom = MachineRecipeRegistry.findChemicalConverterRecipe(entry.getChemicalId());
+        if (custom != null) {
+            ResourceLocation outputId = custom.outputChemicalId();
+            if (!canAccept(outputId)) {
+                return false;
+            }
+            int volume = custom.outputAmount();
+            if (chemicalAmount + volume > tankCapacity) {
+                return false;
+            }
+            items.set(0, ItemStack.EMPTY);
+            storeChemical(outputId, volume);
+            markChemicalDirty();
+            return true;
+        }
         if (!canAccept(entry)) {
             return false;
         }
@@ -121,11 +138,7 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             return false;
         }
         items.set(0, ItemStack.EMPTY);
-        chemicalId = entry.getChemicalId();
-        chemicalEntryId = entry.getId();
-        storedGaseous = entry.isGaseous();
-        chemicalAmount += volume;
-        invalidateChemicalHandlers();
+        storeChemical(entry.getChemicalId(), volume);
         markChemicalDirty();
         return true;
     }
@@ -134,10 +147,35 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
         if (entry == null) {
             return false;
         }
+        return canAccept(entry.getChemicalId());
+    }
+
+    private boolean canAccept(@Nullable ResourceLocation id) {
+        if (id == null) {
+            return false;
+        }
         if (chemicalId == null || chemicalAmount <= 0) {
             return true;
         }
-        return chemicalId.equals(entry.getChemicalId());
+        return chemicalId.equals(id);
+    }
+
+    private void storeChemical(ResourceLocation id, int volume) {
+        // Centralise bookkeeping so custom recipes keep GUI data in sync.
+        chemicalId = id;
+        chemicalAmount += volume;
+        ChemicalEggRegistryItem entry = ChemicalEggRegistry.findByChemical(id);
+        if (entry == null) {
+            entry = GasEggRegistry.findByChemical(id);
+        }
+        if (entry != null) {
+            chemicalEntryId = entry.getId();
+            storedGaseous = entry.isGaseous();
+        } else {
+            chemicalEntryId = -1;
+            storedGaseous = false;
+        }
+        invalidateChemicalHandlers();
     }
 
     /**
