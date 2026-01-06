@@ -23,14 +23,16 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -66,7 +68,7 @@ public class ChickensChicken extends Chicken {
 
     private int layTime;
 
-    public ChickensChicken(net.minecraft.world.entity.EntityType<? extends Chicken> type, Level level) {
+    public ChickensChicken(EntityType<? extends Chicken> type, Level level) {
         super(type, level);
         this.resetTimeUntilNextEgg();
     }
@@ -350,29 +352,36 @@ public class ChickensChicken extends Chicken {
         super.playStepSound(pos, state);
     }
 
+    /**
+     * @param level
+     * @param source
+     * @param recentlyHit
+     */
     @Override
-    protected void dropCustomDeathLoot(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         ChickensRegistryItem description = this.getChickenDescription();
+        int lootAmount = this.random.nextInt(1 + this.getLooting(level, source));
+//        drop.setCount(1 + this.random.nextInt(1 + this.getLooting(level, source)));
+
         if (description != null) {
             ItemStack drop = description.createDropItem();
             imprintFluxEggCharge(drop);
-            drop.setCount(1 + this.random.nextInt(1 + this.getLooting(level, source)));
+            drop.setCount(1 + lootAmount);
             this.spawnAtLocation(drop, 0.0F);
         }
-        if (this.isOnFire()) {
-            this.spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.COOKED_CHICKEN), 0.0F);
-        } else {
-            this.spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.CHICKEN), 0.0F);
-        }
+
+        // Apply looting effect to food drop
+        ItemStack foodDrop = new ItemStack(this.isOnFire() ? Items.COOKED_CHICKEN : Items.CHICKEN);
+        foodDrop.setCount(lootAmount);
+
+        this.spawnAtLocation(foodDrop, 0.0f);
+
         super.dropCustomDeathLoot(level, source, recentlyHit);
     }
 
     private int getLooting(ServerLevel level, net.minecraft.world.damagesource.DamageSource source) {
         if (source.getEntity() instanceof Player player) {
-            return level.registryAccess().registry(Registries.ENCHANTMENT)
-                    .flatMap(registry -> registry.getHolder(Enchantments.LOOTING))
-                    .map(player.getMainHandItem()::getEnchantmentLevel)
-                    .orElse(0);
+            return level.registryAccess().registry(Registries.ENCHANTMENT).flatMap(registry -> registry.getHolder(Enchantments.LOOTING)).map(player.getMainHandItem()::getEnchantmentLevel).orElse(0);
         }
         return 0;
     }
