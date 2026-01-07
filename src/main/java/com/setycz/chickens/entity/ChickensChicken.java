@@ -367,12 +367,16 @@ public class ChickensChicken extends Chicken {
             ItemStack drop = description.createDropItem();
             imprintFluxEggCharge(drop);
             drop.setCount(1 + lootAmount);
+            // roll the loot amount again for the amount of chicken food dropped
+            lootAmount = this.random.nextInt(1 + this.getLooting(level, source));
+
             this.spawnAtLocation(drop, 0.0F);
         }
 
         // Apply looting effect to food drop
         ItemStack foodDrop = new ItemStack(this.isOnFire() ? Items.COOKED_CHICKEN : Items.CHICKEN);
-        foodDrop.setCount(lootAmount);
+
+        foodDrop.setCount(1 + lootAmount);
 
         this.spawnAtLocation(foodDrop, 0.0f);
 
