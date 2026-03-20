@@ -14,7 +14,7 @@ public final class ChickensConfigHolder {
             1.0f, 0.02f, 0.05f, 0.015f, // netherSpawnChanceMultiplier, overworld, nether, end
             false,                   // alwaysShowStats
             1.0D,                    // roostSpeedMultiplier
-            4.0D,                    // breederSpeedMultiplier
+            1.0D,                    // breederSpeedMultiplier
             1.25D,                   // roosterAuraMultiplier
             4,                       // roosterAuraRange
             1,                       // nestMaxRoosters (single rooster by default)

@@ -40,13 +40,13 @@ public final class ChickensCommands {
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
+        // Commands.literal returns a LiteralArgumentBuilder; keeping a local
+        // variable helps readability while constructing the command tree.
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("chickens")
-                .requires(source -> source.hasPermission(4))
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("export")
                         .then(Commands.literal("breeding")
                                 .executes(ctx -> exportBreedingGraph(ctx.getSource()))))
-                .then(Commands.literal("kill")
-                        .executes(ctx -> killAllChickens(ctx.getSource())))
                 .then(Commands.literal("spawn")
                         .then(Commands.literal("multiplier")
                         .then(Commands.argument("value", FloatArgumentType.floatArg(0.0F, 1000.0F))
@@ -135,26 +135,6 @@ public final class ChickensCommands {
         entity.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, null);
         level.addFreshEntity(entity);
         return true;
-    }
-
-    private static int killAllChickens(CommandSourceStack source) {
-        ServerLevel level = source.getLevel();
-        java.util.List<ChickensChicken> all = new java.util.ArrayList<>();
-        level.getAllEntities().forEach(e -> {
-            if (e instanceof ChickensChicken c) all.add(c);
-        });
-        int count = 0;
-        for (ChickensChicken chicken : all) {
-            chicken.discard();
-            count++;
-        }
-        final int total = count;
-        if (total == 0) {
-            source.sendSuccess(() -> Component.translatable("commands.chickens.kill.none"), true);
-        } else {
-            source.sendSuccess(() -> Component.translatable("commands.chickens.kill.success", total), true);
-        }
-        return total;
     }
 
     private static ChickensRegistryItem resolveChicken(String token) {

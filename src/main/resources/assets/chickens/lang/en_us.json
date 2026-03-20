@@ -288,8 +288,6 @@
   "entity.fluxNetworkChicken.name": "Flux Dust Chicken",
   "entity.appliedFluixChicken.name": "Applied Fluix Chicken",
   "entity.emberCrystalChicken.name": "Ember Crystal Chicken",
-  "entity.entroDustChicken.name": "Entro Dust Chicken",
-  "entity.prometheumChicken.name": "Prometheum Chicken",
   "entity.ChickensChicken.tier": "Tier: %s",
   "entity.ChickensChicken.layProgress": "Next egg in ~%smin.",
   "entity.ChickensChicken.nextEggSoon": "Next egg in <1min.",
@@ -298,7 +296,5 @@
   "entity.ChickensChicken.strength": "Strength: %s",
   "entity.chickens.rooster": "Rooster",
   "commands.chickens.export.success": "Exported breeding graph to %s",
-  "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs.",
-  "commands.chickens.kill.success": "Killed %s chickens.",
-  "commands.chickens.kill.none": "No chickens found in this dimension."
+  "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs."
 }

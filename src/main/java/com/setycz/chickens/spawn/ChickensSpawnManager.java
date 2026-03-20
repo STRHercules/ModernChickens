@@ -29,12 +29,12 @@ import java.util.Optional;
  */
 public final class ChickensSpawnManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensSpawns");
-    private static final float SNOW_WEIGHT_MODIFIER = 0.10F;
-    private static final float END_WEIGHT_MODIFIER = 0.09F;
+    private static final float SNOW_WEIGHT_MODIFIER = 0.75F;
+    private static final float END_WEIGHT_MODIFIER = 0.5F;
     private static final double OVERWORLD_CHARGE = 0.12D;
     private static final double OVERWORLD_ENERGY = 0.32D;
-    private static final double NETHER_CHARGE = 0.08D;
-    private static final double NETHER_ENERGY = 0.08D;
+    private static final double NETHER_CHARGE = 0.18D;
+    private static final double NETHER_ENERGY = 0.45D;
 
     private static final Map<SpawnType, SpawnPlan> PLANS = new EnumMap<>(SpawnType.class);
 
@@ -125,6 +125,7 @@ public final class ChickensSpawnManager {
     }
 
     private static int spawnWeightFor(ChickensRegistryItem chicken) {
+        // Lower tiers should dominate the overworld pool while still allowing rare high-tier spawns when enabled.
         return Math.max(1, 8 - Math.min(7, chicken.getTier()));
     }
 

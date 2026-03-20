@@ -1,27 +1,28 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
-license="${mod_license}"
-issueTrackerURL="${issues}"
+loaderVersion="[4,)"
+license="${license}"
+issueTrackerURL="${issue_tracker}"
 # Keep the built-in textures active by default; NeoForge ignores pack.mcmeta's default flags.
 showAsResourcePack=false
 
 [[mods]]
-modId="${mod_id}"
+modId="chickens"
 version="${mod_version}"
-displayName="${mod_named}"
-description="${mod_description}"
+displayName="${mod_display_name}"
+authors="${mod_authors}"
+description='''${mod_description}'''
 
-[[dependencies.${mod_id}]]
+[[dependencies.chickens]]
 modId="neoforge"
-type = "required"
-versionRange="${neoforge_version}"
+mandatory=true
+versionRange="[21.1.0,)"
 ordering="NONE"
 sides="BOTH"
 
-[[dependencies.${mod_id}]]
+[[dependencies.chickens]]
 modId="minecraft"
-type = "required"
-versionRange="${minecraft_version}"
+mandatory=true
+versionRange="[1.21.1,1.22)"
 ordering="NONE"
 sides="BOTH"
 

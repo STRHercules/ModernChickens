@@ -303,7 +303,7 @@ public final class DefaultChickens {
         // is after the modded chickens since it relies on a chicken registered in there
         ChickensRegistryItem netheriteChicken = new ChickensRegistryItem(
                 306, "NetheriteChicken", texture("NetheriteChicken"),
-                new ItemStack(Items.NETHERITE_INGOT),
+                new ItemStack(Items.ANCIENT_DEBRIS),
                 0xd6d4d4, 0x31292a,
                 witherChicken, blazeChicken).setLayCoefficient(0.25f);
         chickens.add(netheriteChicken);
