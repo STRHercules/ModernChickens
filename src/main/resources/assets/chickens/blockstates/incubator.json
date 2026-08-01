@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,lit=false": { "model": "chickens:block/incubator" },
+    "facing=south,lit=false": { "model": "chickens:block/incubator", "y": 180 },
+    "facing=west,lit=false": { "model": "chickens:block/incubator", "y": 270 },
+    "facing=east,lit=false": { "model": "chickens:block/incubator", "y": 90 },
+    "facing=north,lit=true": { "model": "chickens:block/incubator" },
+    "facing=south,lit=true": { "model": "chickens:block/incubator", "y": 180 },
+    "facing=west,lit=true": { "model": "chickens:block/incubator", "y": 270 },
+    "facing=east,lit=true": { "model": "chickens:block/incubator", "y": 90 }
+  }
+}

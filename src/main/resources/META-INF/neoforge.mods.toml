@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL="${issues}"
+# Keep the built-in textures active by default; NeoForge ignores pack.mcmeta's default flags.
+showAsResourcePack=false
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_named}"
+description="${mod_description}"
+
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type = "required"
+versionRange="${neoforge_version}"
+ordering="NONE"
+sides="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type = "required"
+versionRange="${minecraft_version}"
+ordering="NONE"
+sides="BOTH"
+
+

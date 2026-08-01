@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "010",
+    "232",
+    "454"
+  ],
+  "key": {
+    "0": { "item": "minecraft:glass" },
+    "1": { "item": "minecraft:water_bucket" },
+    "2": { "item": "minecraft:bucket" },
+    "3": { "item": "chickens:collector" },
+    "4": { "item": "minecraft:iron_block" },
+    "5": { "item": "minecraft:lava_bucket" }
+  },
+  "result": {
+    "id": "chickens:avian_fluid_converter",
+    "count": 1
+  }
+}

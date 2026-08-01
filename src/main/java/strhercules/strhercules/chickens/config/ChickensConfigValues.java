@@ -1,0 +1,265 @@
+package strhercules.chickens.config;
+
+/**
+ * Immutable snapshot of the global configuration options that used to live
+ * in the legacy configuration file. Only a tiny subset of the mod reads
+ * these values right now, but keeping the structure mirrors the original
+ * behaviour and lets future ports reference the numbers without touching
+ * disk parsing logic again.
+ */
+public final class ChickensConfigValues {
+    private final int spawnProbability;
+    private final int minBroodSize;
+    private final int maxBroodSize;
+    private final float netherSpawnChanceMultiplier;
+    private final float overworldSpawnChance;
+    private final float netherSpawnChance;
+    private final float endSpawnChance;
+    private final boolean alwaysShowStats;
+    private final double roostSpeedMultiplier;
+    private final double breederSpeedMultiplier;
+    private final double roosterAuraMultiplier;
+    private final int roosterAuraRange;
+    /** Maximum number of roosters a single nest can hold. */
+    private final int nestMaxRoosters;
+    /**
+     * Duration, in ticks, that a single seed powers a nest's rooster aura.
+     * A value of 0 disables seed-based consumption and aura from nests.
+     */
+    private final int nestSeedDurationTicks;
+    private final boolean disableVanillaEggLaying;
+    private final int collectorScanRange;
+    private final boolean avianFluxEffectsEnabled;
+    private final double fluxEggCapacityMultiplier;
+    private final int avianFluxCapacity;
+    private final int avianFluxMaxReceive;
+    private final int avianFluxMaxExtract;
+    private final int avianFluidCapacity;
+    private final int avianFluidTransferRate;
+    private final boolean avianFluidEffectsEnabled;
+    private final int avianChemicalCapacity;
+    private final int avianChemicalTransferRate;
+    private final boolean avianChemicalEffectsEnabled;
+    private final boolean liquidEggHazardsEnabled;
+    private final boolean fluidChickensEnabled;
+    private final boolean chemicalChickensEnabled;
+    private final boolean gasChickensEnabled;
+    private final int incubatorEnergyCost;
+    private final int incubatorEnergyCapacity;
+    private final int incubatorEnergyMaxReceive;
+    /** Fixed drop count applied to every roost production tick, regardless of tier. */
+    private final int dropCount;
+
+    public ChickensConfigValues(int spawnProbability, int minBroodSize, int maxBroodSize,
+            float netherSpawnChanceMultiplier, float overworldSpawnChance,
+            float netherSpawnChance, float endSpawnChance, boolean alwaysShowStats,
+            double roostSpeedMultiplier, double breederSpeedMultiplier,
+            double roosterAuraMultiplier, int roosterAuraRange,
+            int nestMaxRoosters, int nestSeedDurationTicks,
+            boolean disableVanillaEggLaying, int collectorScanRange,
+            boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
+            int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
+            int avianFluidCapacity, int avianFluidTransferRate, boolean avianFluidEffectsEnabled,
+            int avianChemicalCapacity, int avianChemicalTransferRate, boolean avianChemicalEffectsEnabled,
+            boolean liquidEggHazardsEnabled, boolean fluidChickensEnabled,
+            boolean chemicalChickensEnabled, boolean gasChickensEnabled, int incubatorEnergyCost,
+            int incubatorEnergyCapacity, int incubatorEnergyMaxReceive,
+            int dropCount) {
+        this.spawnProbability = spawnProbability;
+        this.minBroodSize = minBroodSize;
+        this.maxBroodSize = maxBroodSize;
+        this.netherSpawnChanceMultiplier = netherSpawnChanceMultiplier;
+        this.overworldSpawnChance = overworldSpawnChance;
+        this.netherSpawnChance = netherSpawnChance;
+        this.endSpawnChance = endSpawnChance;
+        this.alwaysShowStats = alwaysShowStats;
+        this.roostSpeedMultiplier = roostSpeedMultiplier;
+        this.breederSpeedMultiplier = breederSpeedMultiplier;
+        this.roosterAuraMultiplier = roosterAuraMultiplier;
+        this.roosterAuraRange = roosterAuraRange;
+        this.nestMaxRoosters = nestMaxRoosters;
+        this.nestSeedDurationTicks = nestSeedDurationTicks;
+        this.disableVanillaEggLaying = disableVanillaEggLaying;
+        this.collectorScanRange = collectorScanRange;
+        this.avianFluxEffectsEnabled = avianFluxEffectsEnabled;
+        this.fluxEggCapacityMultiplier = fluxEggCapacityMultiplier;
+        this.avianFluxCapacity = avianFluxCapacity;
+        this.avianFluxMaxReceive = avianFluxMaxReceive;
+        this.avianFluxMaxExtract = avianFluxMaxExtract;
+        this.avianFluidCapacity = avianFluidCapacity;
+        this.avianFluidTransferRate = avianFluidTransferRate;
+        this.avianFluidEffectsEnabled = avianFluidEffectsEnabled;
+        this.avianChemicalCapacity = avianChemicalCapacity;
+        this.avianChemicalTransferRate = avianChemicalTransferRate;
+        this.avianChemicalEffectsEnabled = avianChemicalEffectsEnabled;
+        this.liquidEggHazardsEnabled = liquidEggHazardsEnabled;
+        this.fluidChickensEnabled = fluidChickensEnabled;
+        this.chemicalChickensEnabled = chemicalChickensEnabled;
+        this.gasChickensEnabled = gasChickensEnabled;
+        this.incubatorEnergyCost = incubatorEnergyCost;
+        this.incubatorEnergyCapacity = incubatorEnergyCapacity;
+        this.incubatorEnergyMaxReceive = incubatorEnergyMaxReceive;
+        this.dropCount = dropCount;
+    }
+
+    public int getSpawnProbability() {
+        return spawnProbability;
+    }
+
+    public int getMinBroodSize() {
+        return minBroodSize;
+    }
+
+    public int getMaxBroodSize() {
+        return maxBroodSize;
+    }
+
+    public float getNetherSpawnChanceMultiplier() {
+        return netherSpawnChanceMultiplier;
+    }
+
+    public float getOverworldSpawnChance() {
+        return overworldSpawnChance;
+    }
+
+    public float getNetherSpawnChance() {
+        return netherSpawnChance;
+    }
+
+    public float getEndSpawnChance() {
+        return endSpawnChance;
+    }
+
+    public boolean isAlwaysShowStats() {
+        return alwaysShowStats;
+    }
+
+    public double getRoostSpeedMultiplier() {
+        return roostSpeedMultiplier;
+    }
+
+    public double getBreederSpeedMultiplier() {
+        return breederSpeedMultiplier;
+    }
+
+    /**
+     * Multiplier applied to roost production speed when a nearby rooster aura
+     * is active. A value of 1.0 disables the boost.
+     */
+    public double getRoosterAuraMultiplier() {
+        return roosterAuraMultiplier;
+    }
+
+    /**
+     * Maximum Manhattan distance (in blocks) at which a rooster placed in a
+     * roost can boost neighbouring roosts. A value of 0 disables the aura.
+     */
+    public int getRoosterAuraRange() {
+        return roosterAuraRange;
+    }
+
+    /**
+     * Maximum number of roosters allowed in a single nest. Values are clamped
+     * to the range [1,16] when read from configuration so malformed configs
+     * cannot create excessively large stacks.
+     */
+    public int getNestMaxRoosters() {
+        return nestMaxRoosters;
+    }
+
+    /**
+     * Returns how many ticks a single seed will keep a nest's rooster aura
+     * active. A value of 0 disables aura production from nests.
+     */
+    public int getNestSeedDurationTicks() {
+        return nestSeedDurationTicks;
+    }
+
+    public boolean isVanillaEggLayingDisabled() {
+        return disableVanillaEggLaying;
+    }
+
+    public int getCollectorScanRange() {
+        return collectorScanRange;
+    }
+
+    public boolean isAvianFluxEffectsEnabled() {
+        return avianFluxEffectsEnabled;
+    }
+
+    public double getFluxEggCapacityMultiplier() {
+        return fluxEggCapacityMultiplier;
+    }
+
+    public int getAvianFluxCapacity() {
+        return avianFluxCapacity;
+    }
+
+    public int getAvianFluxMaxReceive() {
+        return avianFluxMaxReceive;
+    }
+
+    public int getAvianFluxMaxExtract() {
+        return avianFluxMaxExtract;
+    }
+
+    public int getAvianFluidConverterCapacity(int fallback) {
+        return avianFluidCapacity > 0 ? avianFluidCapacity : fallback;
+    }
+
+    public int getAvianFluidConverterTransfer(int fallback) {
+        return avianFluidTransferRate > 0 ? avianFluidTransferRate : fallback;
+    }
+
+    public boolean isAvianFluidConverterEffectsEnabled() {
+        return avianFluidEffectsEnabled;
+    }
+
+    public int getAvianChemicalConverterCapacity(int fallback) {
+        return avianChemicalCapacity > 0 ? avianChemicalCapacity : fallback;
+    }
+
+    public int getAvianChemicalConverterTransfer(int fallback) {
+        return avianChemicalTransferRate > 0 ? avianChemicalTransferRate : fallback;
+    }
+
+    public boolean isAvianChemicalConverterEffectsEnabled() {
+        return avianChemicalEffectsEnabled;
+    }
+
+    public boolean isLiquidEggHazardsEnabled() {
+        return liquidEggHazardsEnabled;
+    }
+
+    public boolean isFluidChickensEnabled() {
+        return fluidChickensEnabled;
+    }
+
+    public boolean isChemicalChickensEnabled() {
+        return chemicalChickensEnabled;
+    }
+
+    public boolean isGasChickensEnabled() {
+        return gasChickensEnabled;
+    }
+
+    public int getIncubatorEnergyCost() {
+        return incubatorEnergyCost;
+    }
+
+    public int getIncubatorEnergyCapacity() {
+        return incubatorEnergyCapacity;
+    }
+
+    public int getIncubatorEnergyMaxReceive() {
+        return incubatorEnergyMaxReceive;
+    }
+
+    /**
+     * Returns the configured drop count applied to every roost production tick.
+     * This value is the same regardless of the chicken's tier.
+     */
+    public int getDropCount() {
+        return dropCount;
+    }
+}

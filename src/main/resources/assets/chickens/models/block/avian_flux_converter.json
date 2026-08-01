@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "chickens:block/collector_plain",
+    "front": "chickens:block/collector_slats",
+    "side": "chickens:block/collector_plain",
+    "bottom": "chickens:block/collector_plain"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "012",
+    "345",
+    "678"
+  ],
+  "key": {
+    "0": {
+      "tag": "minecraft:planks"
+    },
+    "1": {
+      "tag": "minecraft:planks"
+    },
+    "2": {
+      "tag": "minecraft:planks"
+    },
+    "3": {
+      "tag": "minecraft:planks"
+    },
+    "4": {
+      "item": "minecraft:wheat_seeds"
+    },
+    "5": {
+      "tag": "minecraft:planks"
+    },
+    "6": {
+      "item": "minecraft:hay_block"
+    },
+    "7": {
+      "item": "minecraft:hay_block"
+    },
+    "8": {
+      "item": "minecraft:hay_block"
+    }
+  },
+  "result": {
+    "id": "chickens:breeder",
+    "count": 1
+  }
+}

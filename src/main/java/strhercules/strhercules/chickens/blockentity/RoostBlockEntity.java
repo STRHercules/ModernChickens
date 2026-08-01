@@ -1,0 +1,234 @@
+package strhercules.chickens.blockentity;
+
+import strhercules.chickens.ChickensRegistry;
+import strhercules.chickens.ChickensRegistryItem;
+import strhercules.chickens.config.ChickensConfigHolder;
+import strhercules.chickens.item.ChickenItemHelper;
+import strhercules.chickens.blockentity.NestBlockEntity;
+import strhercules.chickens.item.ChickenStats;
+import strhercules.chickens.menu.RoostMenu;
+import strhercules.chickens.registry.ModBlockEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Containers;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.RandomSource;
+
+import java.util.List;
+
+/**
+ * Server-side logic for the roost block. The block entity manages a single
+ * chicken stack plus four output slots that accumulate drops over time.
+ */
+public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
+    public static final int INVENTORY_SIZE = 5;
+    public static final int CHICKEN_SLOT = 0;
+    private static final int MAX_CHICKENS = 16;
+
+    public RoostBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.ROOST.get(), pos, state, INVENTORY_SIZE, 1);
+    }
+
+    @Override
+    protected void spawnChickenItem(RandomSource random) {
+        ChickenContainerEntry entry = getChickenEntry(CHICKEN_SLOT);
+        if (entry == null) {
+            return;
+        }
+        ItemStack item = entry.createLay(random);
+        ItemStack remaining = pushIntoOutput(item);
+        if (!remaining.isEmpty() && level != null) {
+            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), remaining);
+        }
+    }
+
+    @Override
+    protected int requiredSeedsForDrop() {
+        return 0;
+    }
+
+    @Override
+    protected double speedMultiplier() {
+        double base = ChickensConfigHolder.get().getRoostSpeedMultiplier();
+
+        // So the production rate can be changed per chicken in chicken.cfg
+        double chickenLayCoeffient = 1.0;
+        if (getChickenEntry(CHICKEN_SLOT) != null) {
+            chickenLayCoeffient = getChickenEntry(CHICKEN_SLOT).chicken().getLayCoefficient();
+        }
+
+
+        double auraMultiplier = ChickensConfigHolder.get().getRoosterAuraMultiplier();
+        int auraRange = ChickensConfigHolder.get().getRoosterAuraRange();
+        if (auraRange <= 0 || auraMultiplier <= 1.0D || level == null) {
+            return base;
+        }
+        int activeRoosters = countActiveRoostersInNests(level, worldPosition, auraRange);
+        if (activeRoosters <= 0) {
+            return base;
+        }
+        // Preserve the existing meaning of roosterAuraMultiplier for a single
+        // rooster while scaling linearly with additional birds. For example,
+        // a multiplier of 1.25 and three active roosters yields:
+        // base * (1 + 3 * 0.25) = base * 1.75.
+        double bonusPerRooster = auraMultiplier - 1.0D;
+        double totalMultiplier = 1.0D + activeRoosters * bonusPerRooster;
+        return (base * Math.max(totalMultiplier, 0.0D)) * chickenLayCoeffient;
+    }
+
+    private static int countActiveRoostersInNests(net.minecraft.world.level.Level level, BlockPos origin, int range) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int total = 0;
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -range; dz <= range; dz++) {
+                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                    BlockEntity blockEntity = level.getBlockEntity(cursor);
+                    if (!(blockEntity instanceof NestBlockEntity nest)) {
+                        continue;
+                    }
+                    if (!nest.hasActiveAura()) {
+                        continue;
+                    }
+                    total += Math.max(0, nest.getRoosterCount());
+                }
+            }
+        }
+        return total;
+    }
+
+    @Override
+    protected int getChickenSlotCount() {
+        return 1;
+    }
+
+    @Override
+    protected Component getDefaultName() {
+        return Component.translatable("menu.chickens.roost");
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int id, Inventory playerInventory, ContainerData dataAccess) {
+        return new RoostMenu(id, playerInventory, this, dataAccess);
+    }
+
+    @Override
+    protected ChickenContainerEntry createChickenData(int slot, ItemStack stack) {
+        if (slot != CHICKEN_SLOT || !ChickenItemHelper.isChicken(stack)) {
+            return null;
+        }
+        ChickensRegistryItem description = ChickenItemHelper.resolve(stack);
+        if (description == null) {
+            return null;
+        }
+        ChickenStats stats = ChickenItemHelper.getStats(stack);
+        return new ChickenContainerEntry(description, stats);
+    }
+
+    @Override
+    protected int getMaxStackSizeForSlot(int slot, ItemStack stack) {
+        if (slot == CHICKEN_SLOT) {
+            return Math.min(MAX_CHICKENS, stack.getMaxStackSize());
+        }
+        return super.getMaxStackSizeForSlot(slot, stack);
+    }
+
+    public boolean putChicken(ItemStack newStack) {
+        if (!ChickenItemHelper.isChicken(newStack) || level == null) {
+            return false;
+        }
+        ItemStack current = getItem(CHICKEN_SLOT);
+        if (current.isEmpty()) {
+            int toMove = Math.min(MAX_CHICKENS, newStack.getCount());
+            if (toMove <= 0) {
+                return false;
+            }
+            setItem(CHICKEN_SLOT, newStack.split(toMove));
+            playAddSound();
+            return true;
+        }
+        if (!ItemStack.isSameItemSameComponents(current, newStack)) {
+            return false;
+        }
+        int space = MAX_CHICKENS - current.getCount();
+        if (space <= 0) {
+            return false;
+        }
+        int toMove = Math.min(space, newStack.getCount());
+        if (toMove <= 0) {
+            return false;
+        }
+        current.grow(toMove);
+        newStack.shrink(toMove);
+        setChanged();
+        playAddSound();
+        return true;
+    }
+
+    public boolean pullChickenOut(Player player) {
+        ItemStack stack = getItem(CHICKEN_SLOT);
+        if (stack.isEmpty()) {
+            return false;
+        }
+        ItemStack toGive = stack.copy();
+        setItem(CHICKEN_SLOT, ItemStack.EMPTY);
+        if (!player.addItem(toGive)) {
+            player.drop(toGive, false);
+        }
+        playRemoveSound();
+        return true;
+    }
+
+    private void playAddSound() {
+        if (level != null) {
+            level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+    }
+
+    private void playRemoveSound() {
+        if (level != null) {
+            level.playSound(null, worldPosition, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+    }
+
+    @Override
+    public void storeTooltipData(CompoundTag tag) {
+        super.storeTooltipData(tag);
+        ItemStack stack = getItem(CHICKEN_SLOT);
+        if (stack.isEmpty()) {
+            return;
+        }
+        tag.putInt("ChickenId", ChickenItemHelper.getChickenType(stack));
+        tag.putInt("ChickenCount", stack.getCount());
+        ChickenStats stats = ChickenItemHelper.getStats(stack);
+        tag.putInt("Gain", stats.gain());
+        tag.putInt("Growth", stats.growth());
+        tag.putInt("Strength", stats.strength());
+    }
+
+    @Override
+    public void appendTooltip(List<Component> tooltip, CompoundTag data) {
+        if (data.contains("ChickenId")) {
+            ChickensRegistryItem chicken = ChickensRegistry.getByType(data.getInt("ChickenId"));
+            if (chicken != null) {
+                int chickens = data.getInt("ChickenCount");
+                int gain = data.getInt("Gain");
+                int growth = data.getInt("Growth");
+                int strength = data.getInt("Strength");
+                ItemStack drop = chicken.createLayItem();
+                tooltip.add(Component.translatable("tooltip.chickens.roost.summary", chicken.getDisplayName(), chickens,
+                        drop.getHoverName(), drop.getCount()));
+            }
+        }
+        super.appendTooltip(tooltip, data);
+    }
+}

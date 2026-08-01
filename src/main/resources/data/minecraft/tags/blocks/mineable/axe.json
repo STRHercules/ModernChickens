@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "chickens:breeder",
+    "chickens:collector",
+    "chickens:roost",
+    "chickens:henhouse",
+    "chickens:henhouse_spruce",
+    "chickens:henhouse_birch",
+    "chickens:henhouse_jungle",
+    "chickens:henhouse_acacia",
+    "chickens:henhouse_dark_oak",
+    "chickens:avian_flux_converter",
+    "chickens:avian_fluid_converter",
+    "chickens:avian_chemical_converter",
+    "chickens:avian_dousing_machine"
+  ]
+}

@@ -1,0 +1,86 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+/run*
+/run/*
+run-data
+run
+
+# Files from Forge MDK
+forge*changelog.txt
+
+.cache
+logs
+
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+\.gradle
+/.gradle
+\.gradle/*
+/.gradle/*
+\.gradle/*/*
+/.gradle/*/*
+\.gradle/*/*/*
+/.gradle/*/*/*
+
+# other
+eclipse
+/run*
+/run/*
+run-data
+run
+.bin
+.lock
+
+# Files from Forge MDK
+forge*changelog.txt
+
+.cache
+logs
+.gradle/8.9/checksums/checksums.lock
+.gradle/8.9/checksums/checksums.lock
+.gradle/8.9/checksums/checksums.lock
+.gradle/8.9/executionHistory/executionHistory.bin
+.gradle/8.9/executionHistory/executionHistory.lock
+.gradle/8.9/fileHashes/fileHashes.bin
+.gradle/8.9/fileHashes/fileHashes.lock
+.gradle/8.9/fileHashes/resourceHashesCache.bin
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
+.gradle/buildOutputCleanup/outputFiles.bin
+.gradle/configuration-cache/configuration-cache.lock
+.gradle/file-system.probe
+.gradle/configuration-cache/configuration-cache.lock

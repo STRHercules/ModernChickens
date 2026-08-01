@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/egg",
+  "textures": {
+    "layer0": "chickens:item/flux_egg"
+  }
+}
