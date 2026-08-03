@@ -4,29 +4,7 @@ This document is for cataloguing and detailing potential ideas for features.
 
 ## New Scratch
 
-
-
-
 ## Mega Chicken
-- the user `can right-click`-use a perfect 10/10/10 chicken item on their tamed mega chicken to change the mega chicken's appearance to the respective chicken used on it
-    - this makes poof particles appear around the mega chicken as the skin changes to the respective `tamed` skin.
-
-- the mega chicken stores its chest inventory across restarts, etc
-
-- mega chickens should have varied stats, like horses
-
-- Observe [ModernCompanions]`R:\Users\Zach\Documents\GitHub\ModernCompanions\` and learn how that mod transfers entities to items and back to entities while preserving all relevant data, then do these;
-    - Make it so the user can use the `chicken catcher` on their tamed mega chicken to convert it to an item 
-        - this item stores all relevant NBT, UUID data etc - along with any chests the chicken may have equipped
-        - using the stored mega chicken item on the ground restores the mega chicken as it was preserved
-    - when mega chicken dies, becomes an item that preserves all it's NBT, UUID, and any equipped chest data as well
-        - the user can infuse this item to activate it
-        - when activated, using on the ground revives the chicken with a clean bill of health and all data preserved
-    
-
-
-
-
 
 ## Implemented
 
@@ -38,7 +16,6 @@ This document is for cataloguing and detailing potential ideas for features.
 * Dedicated Mod-Book - Have an in-game guide-book for the Modern Chickens mod.
 
 * Achievements - Add achievements for milestones in Modern Chickens.
-
 
 ## Far-Out Ideas
 
