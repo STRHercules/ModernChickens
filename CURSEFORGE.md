@@ -327,6 +327,8 @@ Useful RF settings:
 
 ## Radioactive chickens and items
 
+![Redstone Flux Eggs](https://i.imgur.com/Fj9whGz.png)
+
 Radioactive content is an optional integration with **Mekanism's radiation system**. Modern Chickens does not add a separate radiation mechanic and does not require Mekanism for the core breeding mod.
 
 ### Radioactive breeds
