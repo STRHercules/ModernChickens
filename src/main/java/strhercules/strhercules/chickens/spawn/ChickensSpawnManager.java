@@ -31,7 +31,8 @@ public final class ChickensSpawnManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensSpawns");
     private static final float SNOW_WEIGHT_MODIFIER = 0.75F;
     private static final float END_WEIGHT_MODIFIER = 0.5F;
-    private static final float MODERN_CHICKEN_WEIGHT_MODIFIER = 0.25F;
+    private static final float MODERN_CHICKEN_WEIGHT_MODIFIER = 0.10F;
+    private static final int MAX_NATURAL_BROOD_SIZE = 2;
     private static final double OVERWORLD_CHARGE = 0.12D;
     private static final double OVERWORLD_ENERGY = 0.32D;
     private static final double NETHER_CHARGE = 0.18D;
@@ -75,8 +76,8 @@ public final class ChickensSpawnManager {
                 continue;
             }
 
-            int minBrood = Math.max(1, config.getMinBroodSize());
-            int maxBrood = Math.max(minBrood, config.getMaxBroodSize());
+            int minBrood = clampBroodSize(config.getMinBroodSize(), 1);
+            int maxBrood = clampBroodSize(config.getMaxBroodSize(), minBrood);
             double charge = spawnType == SpawnType.HELL ? NETHER_CHARGE : OVERWORLD_CHARGE;
             double energy = spawnType == SpawnType.HELL ? NETHER_ENERGY : OVERWORLD_ENERGY;
 
@@ -89,6 +90,11 @@ public final class ChickensSpawnManager {
                 charge = data.applyCharge(charge);
                 energy = data.applyEnergy(energy);
             }
+
+            // Keep old configs and datapack overrides from turning a natural
+            // insertion into a large animal group.
+            minBrood = clampBroodSize(minBrood, 1);
+            maxBrood = clampBroodSize(maxBrood, minBrood);
 
             if (spawnWeight <= 0) {
                 continue;
@@ -125,6 +131,10 @@ public final class ChickensSpawnManager {
             weight = Math.round(weight * END_WEIGHT_MODIFIER);
         }
         return weight;
+    }
+
+    private static int clampBroodSize(int value, int minimum) {
+        return Math.max(minimum, Math.min(MAX_NATURAL_BROOD_SIZE, value));
     }
 
     private static int spawnWeightFor(ChickensRegistryItem chicken) {
