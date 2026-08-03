@@ -46,9 +46,12 @@ public final class DefaultChickens {
         chickens.add(smartChicken);
 
         ChickensRegistryItem vanillaChicken = new ChickensRegistryItem(
-                33, "VanillaChicken", texture("VanillaChicken"),
+                33, "VanillaChicken", ResourceLocation.fromNamespaceAndPath(
+                        ChickensMod.MOD_ID, "textures/entity/vanilla.png"),
                 new ItemStack(Items.EGG),
-                0xffffff, 0xffaa00).setSpawnType(SpawnType.NONE);
+                0xffffff, 0xffaa00).setSpawnType(SpawnType.NONE)
+                .setItemTexture(ResourceLocation.fromNamespaceAndPath(
+                        ChickensMod.MOD_ID, "textures/item/chicken/vanilla.png"));
         // vanillaChicken.setLayItem(new ItemStack(Items.EGG));
         // vanillaChicken.setDropItem(new ItemStack(Items.EGG));
         chickens.add(vanillaChicken);

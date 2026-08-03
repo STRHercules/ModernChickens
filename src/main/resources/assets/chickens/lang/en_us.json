@@ -167,7 +167,7 @@
   "entity.FlintChicken.name": "Flint Chicken",
   "entity.SnowballChicken.name": "Snowball Chicken",
   "entity.IceChicken.name": "Blue Ice Chicken",
-  "entity.VanillaChicken": "Chicken",
+  "entity.VanillaChicken.name": "Chicken",
   "entity.LavaChicken.name": "Lava Chicken",
   "entity.QuartzChicken.name": "Nether Quartz Chicken",
   "entity.RedstoneChicken.name": "Redstone Chicken",

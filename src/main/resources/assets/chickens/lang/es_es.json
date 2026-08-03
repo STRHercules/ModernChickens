@@ -171,7 +171,7 @@
   "entity.FlintChicken.name": "Pollo de Pedernal",
   "entity.SnowballChicken.name": "Pollo de Bola de Nieve",
   "entity.IceChicken": "Pollo de Bola de Hielo Azul",
-  "entity.VanillaChicken": "Pollo",
+  "entity.VanillaChicken.name": "Pollo",
   "entity.LavaChicken.name": "Pollo de Lava",
   "entity.QuartzChicken.name": "Pollo de Cuarzo del Nether",
   "entity.RedstoneChicken.name": "Pollo de Redstone",

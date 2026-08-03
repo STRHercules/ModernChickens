@@ -8,6 +8,7 @@ import strhercules.chickens.data.DefaultChickens;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -49,6 +50,9 @@ public final class ChickenItemModelProvider implements DataProvider {
                 continue;
             }
             String modelName = chicken.getEntityName().toLowerCase(Locale.ROOT);
+            String itemTexture = chicken.getItemTexture() != null
+                    ? toModelTexture(chicken.getItemTexture())
+                    : ChickensMod.MOD_ID + ":item/chicken/" + modelName;
 
             JsonObject override = new JsonObject();
             JsonObject predicate = new JsonObject();
@@ -60,7 +64,7 @@ public final class ChickenItemModelProvider implements DataProvider {
             JsonObject variant = new JsonObject();
             variant.addProperty("parent", "minecraft:item/generated");
             JsonObject variantTextures = new JsonObject();
-            variantTextures.addProperty("layer0", ChickensMod.MOD_ID + ":item/chicken/" + modelName);
+            variantTextures.addProperty("layer0", itemTexture);
             variant.add("textures", variantTextures);
 
             Path variantPath = this.packOutput.getOutputFolder(PackOutput.Target.RESOURCE_PACK)
@@ -74,6 +78,17 @@ public final class ChickenItemModelProvider implements DataProvider {
         futures.add(DataProvider.saveStable(output, root, path));
 
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+    }
+
+    private static String toModelTexture(ResourceLocation texture) {
+        String path = texture.getPath();
+        if (path.startsWith("textures/")) {
+            path = path.substring("textures/".length());
+        }
+        if (path.endsWith(".png")) {
+            path = path.substring(0, path.length() - ".png".length());
+        }
+        return texture.getNamespace() + ":" + path;
     }
 
     @Override
