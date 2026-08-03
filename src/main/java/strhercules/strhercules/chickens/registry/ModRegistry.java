@@ -58,13 +58,13 @@ public final class ModRegistry {
     public static final DeferredItem<ChickensSpawnEggItem> SPAWN_EGG = ITEMS.register("spawn_egg",
             () -> new ChickensSpawnEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<ColoredEggItem> COLORED_EGG = ITEMS.register("colored_egg",
-            () -> new ColoredEggItem(new Item.Properties().stacksTo(16)));
+            () -> new ColoredEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<LiquidEggItem> LIQUID_EGG = ITEMS.register("liquid_egg",
-            () -> new LiquidEggItem(new Item.Properties().stacksTo(16)));
+            () -> new LiquidEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<ChemicalEggItem> CHEMICAL_EGG = ITEMS.register("chemical_egg",
-            () -> new ChemicalEggItem(new Item.Properties().stacksTo(16)));
+            () -> new ChemicalEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<GasEggItem> GAS_EGG = ITEMS.register("gas_egg",
-            () -> new GasEggItem(new Item.Properties().stacksTo(16)));
+            () -> new GasEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<FluxEggItem> FLUX_EGG = ITEMS.register("flux_egg",
             () -> new FluxEggItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
