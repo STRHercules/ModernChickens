@@ -3,6 +3,7 @@ package strhercules.chickens.item;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.entity.ChickensChicken;
+import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.entity.Rooster;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.world.entity.animal.Chicken;
@@ -38,6 +39,10 @@ public class ChickenCatcherItem extends Item {
 
         if (entity instanceof Rooster rooster) {
             return catchRooster(stack, player, hand, level, position, rooster);
+        }
+
+        if (entity instanceof MegaChicken megaChicken) {
+            return catchMegaChicken(stack, player, hand, level, position, megaChicken);
         }
 
         // Pollo vanilla de Minecraft → VanillaChicken item con stats 1/1/1
@@ -87,6 +92,26 @@ public class ChickenCatcherItem extends Item {
                     ? EquipmentSlot.MAINHAND
                     : EquipmentSlot.OFFHAND;
             stack.hurtAndBreak(1, player, slot);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult catchMegaChicken(ItemStack catcher, Player player, InteractionHand hand,
+                                               Level level, Vec3 position, MegaChicken chicken) {
+        if (!chicken.isTamed() || !player.getUUID().equals(chicken.getOwnerUUID()) || chicken.isVehicle()) {
+            spawnParticles(level, position, true);
+            playSound(level, position, SoundEvents.VILLAGER_NO);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            ItemStack chickenStack = MegaChickenItem.createFromEntity(chicken, ModRegistry.MEGA_CHICKEN_ITEM.get());
+            serverLevel.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(
+                    serverLevel, position.x, position.y + 0.2D, position.z, chickenStack));
+            chicken.discard();
+            spawnParticles(level, position, false);
+            playSound(level, position, SoundEvents.CHICKEN_EGG);
+            EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+            catcher.hurtAndBreak(1, player, slot);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

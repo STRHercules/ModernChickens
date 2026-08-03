@@ -21,6 +21,7 @@ import strhercules.chickens.item.CreativeCatcherItem;
 import strhercules.chickens.item.LiquidEggItem;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.GasEggItem;
+import strhercules.chickens.item.MegaChickenItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.material.MapColor;
@@ -126,6 +127,8 @@ public final class ModRegistry {
             () -> new ChickenItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<ChickenCatcherItem> CATCHER = ITEMS.register("catcher",
             () -> new ChickenCatcherItem(new Item.Properties().stacksTo(1).durability(64)));
+    public static final DeferredItem<MegaChickenItem> MEGA_CHICKEN_ITEM = ITEMS.register("mega_chicken",
+            () -> new MegaChickenItem(new Item.Properties()));
     public static final DeferredItem<CreativeCatcherItem> CREATIVE_CATCHER = ITEMS.register("creative_catcher",
             () -> new CreativeCatcherItem(new Item.Properties().stacksTo(1).component(DataComponents.UNBREAKABLE, new Unbreakable(true))));
 

@@ -1,9 +1,17 @@
 package strhercules.chickens.client.render;
 
+import strhercules.chickens.ChickensMod;
+import strhercules.chickens.ChickensRegistry;
+import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.entity.MegaChicken;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 /** Renderer for the supplied 3x Mega Chicken model and its tame-state equipment. */
 public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChickenModel> {
@@ -11,6 +19,7 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
             "chickens", "textures/entity/megachicken/mega_chicken.png");
     private static final ResourceLocation TAMED_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             "chickens", "textures/entity/megachicken/mega_chicken_tamed.png");
+    private static final Set<ResourceLocation> AVAILABLE_TEXTURES = new HashSet<>();
 
     public MegaChickenRenderer(EntityRendererProvider.Context context) {
         super(context, new MegaChickenModel(context.bakeLayer(MegaChickenModel.LAYER_LOCATION)), 0.9F);
@@ -18,7 +27,38 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
 
     @Override
     public ResourceLocation getTextureLocation(MegaChicken chicken) {
-        return chicken.isTamed() ? TAMED_TEXTURE : UNTAMED_TEXTURE;
+        if (!chicken.isTamed()) {
+            return UNTAMED_TEXTURE;
+        }
+        ResourceLocation appearance = appearanceTexture(chicken);
+        return appearance == null ? TAMED_TEXTURE : appearance;
+    }
+
+    private static ResourceLocation appearanceTexture(MegaChicken chicken) {
+        ChickensRegistryItem appearance = ChickensRegistry.getByType(chicken.getAppearanceType());
+        if (appearance == null) {
+            return null;
+        }
+        String path = appearance.getTexture().getPath();
+        int slash = path.lastIndexOf('/');
+        String name = slash >= 0 ? path.substring(slash + 1) : path;
+        if (name.endsWith(".png")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+                "textures/entity/megachicken/" + name.toLowerCase(Locale.ROOT) + ".png");
+        return hasTexture(texture) ? texture : null;
+    }
+
+    private static boolean hasTexture(ResourceLocation texture) {
+        if (AVAILABLE_TEXTURES.contains(texture)) {
+            return true;
+        }
+        if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
+            AVAILABLE_TEXTURES.add(texture);
+            return true;
+        }
+        return false;
     }
 
     @Override
