@@ -61,6 +61,7 @@ public final class ModCreativeTabs {
                         }
 
                         // Huevos de spawn y huevos de color
+                        output.accept(ModRegistry.MEGA_CHICKEN_SPAWN_EGG.get());
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
                             output.accept(ChickensSpawnEggItem.createFor(chicken));
                             if (chicken.isDye()) {

@@ -5,14 +5,19 @@ This document is for cataloguing and detailing potential ideas for features.
 ## New Scratch
 
 
-- Convert all config options to be editable via in-game mod menu config
 
 
-
-
-
-
-
+## Mega Chicken
+- The user can use a chicken spawn egg on a mega chicken to change its' appearance to match that of the spawn egg chicken used on it
+- The user can equip 2 individual chests to the mega chicken gui
+    - each one loads the respective chest visually on the chicken
+        - left, right
+    - the mega chicken stores its chest inventory across restarts, etc
+    - the mega chicken supports modded chests
+    - equipping the saddle adds it to the entity
+- the user can use the chicken catcher on their tamed mega chicken to convert it to an item 
+    - this item stores all relevant NBT, UUID data etc - along with any chests the chicken may have equipped
+    - using the item on the ground restores the mega chicken as it was preserved
 
 
 
@@ -25,15 +30,10 @@ This document is for cataloguing and detailing potential ideas for features.
 
 ## Implemented
 
-* Better Mod Integration - Create chickens for popular mod resources that are not ingots/liquids/chemicals. (Essence, Alloys, Certus Quartz, Plastic, Magic, Blood, Oils, Flux, etc)
-
 * Chicken Expansion - Create an additional Tier of chickens that are attainable via various methods. Such as an Ender Dragon Chicken that requires Dragon's Breath and/or a Dragon Egg, or a Wither Chicken that requires Nether Stars.
     * Perhaps modify the Dousing Machine to accept Dragon's Breath and/or Nether Stars
 
 ##  Current/Plausible
-
-* Develop out 'Toxic' Chicken/Egg features
-    * Radioactive/Toxic Chickens and Eggs that require care to handle
 
 * Dedicated Mod-Book - Have an in-game guide-book for the Modern Chickens mod.
 

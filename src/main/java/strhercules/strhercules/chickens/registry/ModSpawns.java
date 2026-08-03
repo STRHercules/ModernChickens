@@ -1,6 +1,7 @@
 package strhercules.chickens.registry;
 
 import strhercules.chickens.entity.ChickensChicken;
+import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.entity.Rooster;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
@@ -31,6 +32,11 @@ public final class ModSpawns {
                 SpawnPlacements.getPlacementType(EntityType.CHICKEN),
                 SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
                 Rooster::checkSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ModEntityTypes.MEGA_CHICKEN.get(),
+                SpawnPlacements.getPlacementType(EntityType.CHICKEN),
+                SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
+                MegaChicken::checkSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }

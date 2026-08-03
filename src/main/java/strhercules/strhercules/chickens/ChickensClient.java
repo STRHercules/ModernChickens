@@ -11,6 +11,9 @@ import strhercules.chickens.client.render.ChickenItemSpriteModels;
 import strhercules.chickens.client.render.ChickensChickenRenderer;
 import strhercules.chickens.client.render.DynamicChickenTextures;
 import strhercules.chickens.client.render.LiquidChickenOverlayLayer;
+import strhercules.chickens.client.render.MegaChickenModel;
+import strhercules.chickens.client.render.MegaChickenRenderer;
+import strhercules.chickens.client.render.MegaChickenSaddleModel;
 import strhercules.chickens.client.render.RoosterModel;
 import strhercules.chickens.client.render.RoosterRenderer;
 import strhercules.chickens.client.render.blockentity.BreederBlockEntityRenderer;
@@ -64,6 +67,7 @@ public final class ChickensClient {
         event.registerEntityRenderer(ModEntityTypes.COLORED_EGG.get(), context -> new ThrownItemRenderer<>(context, 1.0F, true));
         event.registerEntityRenderer(ModEntityTypes.CHICKENS_CHICKEN.get(), ChickensChickenRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.ROOSTER.get(), RoosterRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.MEGA_CHICKEN.get(), MegaChickenRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ROOST.get(), RoostBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.NEST.get(), NestBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BREEDER.get(), BreederBlockEntityRenderer::new);
@@ -73,6 +77,8 @@ public final class ChickensClient {
     @SubscribeEvent
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(RoosterModel.LAYER_LOCATION, RoosterModel::createBodyLayer);
+        event.registerLayerDefinition(MegaChickenModel.LAYER_LOCATION, MegaChickenModel::createBodyLayer);
+        event.registerLayerDefinition(MegaChickenSaddleModel.LAYER_LOCATION, MegaChickenSaddleModel::createBodyLayer);
     }
 
     @SubscribeEvent

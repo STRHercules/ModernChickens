@@ -31,6 +31,8 @@ public final class ChickensSpawnBiomeModifier implements BiomeModifier {
         if (!hasVanillaChickenSpawn(builder)) {
             return;
         }
+        builder.getMobSpawnSettings().addSpawn(MobCategory.CREATURE,
+                new MobSpawnSettings.SpawnerData(ModEntityTypes.MEGA_CHICKEN.get(), 1, 1, 1));
         ChickensSpawnManager.planFor(biome).ifPresent(plan -> addSpawn(builder, plan));
     }
 

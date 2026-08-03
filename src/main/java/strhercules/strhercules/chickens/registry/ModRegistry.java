@@ -29,6 +29,7 @@ import net.minecraft.world.item.component.Unbreakable;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredRegister.Blocks;
 import net.neoforged.neoforge.registries.DeferredRegister.Items;
 import net.neoforged.bus.api.IEventBus;
@@ -57,6 +58,9 @@ public final class ModRegistry {
 
     public static final DeferredItem<ChickensSpawnEggItem> SPAWN_EGG = ITEMS.register("spawn_egg",
             () -> new ChickensSpawnEggItem(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<DeferredSpawnEggItem> MEGA_CHICKEN_SPAWN_EGG = ITEMS.register("mega_chicken_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntityTypes.MEGA_CHICKEN, 0xFFFFFF, 0xD51F1F,
+                    new Item.Properties().stacksTo(64)));
     public static final DeferredItem<ColoredEggItem> COLORED_EGG = ITEMS.register("colored_egg",
             () -> new ColoredEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<LiquidEggItem> LIQUID_EGG = ITEMS.register("liquid_egg",
