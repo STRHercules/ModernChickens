@@ -2,6 +2,8 @@ package strhercules.chickens.block;
 
 import com.mojang.serialization.MapCodec;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
+import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,6 +25,8 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
@@ -82,6 +86,19 @@ public class HenhouseBlock extends HorizontalDirectionalBlock implements EntityB
         // Each block hosts a dedicated henhouse block entity that stores the
         // hay, dirt, and egg inventory plus the internal energy counter.
         return new HenhouseBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide || type != ModBlockEntities.HENHOUSE.get()) {
+            return null;
+        }
+        return (lvl, pos, blockState, blockEntity) -> {
+            if (blockEntity instanceof HenhouseBlockEntity henhouse) {
+                MekanismRadiationCompat.tickMachineWarning(lvl, pos, henhouse);
+            }
+        };
     }
 
     @Override

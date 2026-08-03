@@ -6,6 +6,7 @@ import strhercules.chickens.RoostEggPreventer;
 import strhercules.chickens.registry.ModRegistry;
 import strhercules.chickens.data.ChickenItemModelProvider;
 import strhercules.chickens.spawn.SpawnPlanDataLoader;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -30,6 +31,7 @@ public final class ChickensMod {
         ChickenTeachHandler.init();
         ChickensCommands.init();
         RoostEggPreventer.init();
+        MekanismRadiationCompat.init();
         NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");

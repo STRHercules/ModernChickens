@@ -1,6 +1,7 @@
 package strhercules.chickens.blockentity;
 
 import strhercules.chickens.ChickensRegistryItem;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.ChickenStats;
 import net.minecraft.core.BlockPos;
@@ -142,6 +143,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     public static <T extends AbstractChickenContainerBlockEntity> void serverTick(Level level, BlockPos pos, BlockState state,
             T container) {
         container.runServerTick(level);
+        MekanismRadiationCompat.tickMachineWarning(level, pos, container);
     }
 
     protected void runServerTick(Level level) {

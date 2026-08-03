@@ -3,6 +3,7 @@ package strhercules.chickens.blockentity;
 import strhercules.chickens.block.AvianFluxConverterBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.config.ChickensConfigValues;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.FluxEggItem;
 import strhercules.chickens.menu.AvianFluxConverterMenu;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -116,6 +117,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AvianFluxConverterBlockEntity converter) {
         converter.tickServer(level);
+        MekanismRadiationCompat.tickMachineWarning(level, pos, converter);
     }
 
     private void tickServer(Level level) {

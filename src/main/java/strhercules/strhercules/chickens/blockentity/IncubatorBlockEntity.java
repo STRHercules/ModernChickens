@@ -3,6 +3,7 @@ package strhercules.chickens.blockentity;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.block.IncubatorBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.menu.IncubatorMenu;
@@ -71,6 +72,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, IncubatorBlockEntity incubator) {
         incubator.tickServer(level);
+        MekanismRadiationCompat.tickMachineWarning(level, pos, incubator);
     }
 
     private void tickServer(Level level) {

@@ -8,6 +8,7 @@ import strhercules.chickens.LiquidEggRegistry;
 import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.block.AvianDousingMachineBlock;
 import strhercules.chickens.integration.mekanism.MekanismChemicalHelper;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChickenItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.ChickensSpawnEggItem;
@@ -136,6 +137,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return (level, pos, state, blockEntity) -> {
             if (blockEntity instanceof AvianDousingMachineBlockEntity machine) {
                 machine.tickServer(level);
+                MekanismRadiationCompat.tickMachineWarning(level, pos, machine);
             }
         };
     }
@@ -587,6 +589,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     public int getChemicalEntryId() {
         return chemicalEntryId;
+    }
+
+    @Nullable
+    public ResourceLocation getChemicalId() {
+        return chemicalId;
     }
 
     public FluidStack getFluid() {

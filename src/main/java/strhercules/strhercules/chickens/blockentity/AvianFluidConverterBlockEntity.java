@@ -5,6 +5,7 @@ import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.block.AvianFluidConverterBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.config.ChickensConfigValues;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.LiquidEggItem;
 import strhercules.chickens.menu.AvianFluidConverterMenu;
@@ -82,6 +83,7 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
         return (level, pos, state, blockEntity) -> {
             if (blockEntity instanceof AvianFluidConverterBlockEntity converter) {
                 converter.tickServer(level);
+                MekanismRadiationCompat.tickMachineWarning(level, pos, converter);
             }
         };
     }

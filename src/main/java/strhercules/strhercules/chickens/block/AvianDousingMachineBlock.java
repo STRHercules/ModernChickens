@@ -2,6 +2,7 @@ package strhercules.chickens.block;
 
 import com.mojang.serialization.MapCodec;
 import strhercules.chickens.blockentity.AvianDousingMachineBlockEntity;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -123,6 +124,7 @@ public class AvianDousingMachineBlock extends HorizontalDirectionalBlock impleme
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof AvianDousingMachineBlockEntity machine) {
+                MekanismRadiationCompat.spillDousingRadiation(level, pos, machine);
                 Containers.dropContents(level, pos, machine);
                 level.updateNeighbourForOutputSignal(pos, this);
             }

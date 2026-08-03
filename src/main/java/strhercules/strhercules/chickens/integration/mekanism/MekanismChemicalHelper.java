@@ -165,7 +165,7 @@ public final class MekanismChemicalHelper {
                     ResourceLocation.fromNamespaceAndPath("mekanism", "chemical_handler"), (Class<Object>) handlerClass);
             blockCapability = capability;
             present = true;
-        } catch (ReflectiveOperationException ex) {
+        } catch (ReflectiveOperationException | LinkageError ex) {
             LOGGER.debug("Mekanism API not detected; chemical chickens will stay disabled", ex);
         }
         AVAILABLE = present;
@@ -393,6 +393,22 @@ public final class MekanismChemicalHelper {
             return null;
         }
         return CHEMICAL_REGISTRY.getKey(chemical);
+    }
+
+    public static boolean isRadioactive(@Nullable ResourceLocation id) {
+        if (id == null || CHEMICAL_IS_RADIOACTIVE == null) {
+            return false;
+        }
+        Object chemical = getChemical(id);
+        if (chemical == null) {
+            return false;
+        }
+        try {
+            return (boolean) CHEMICAL_IS_RADIOACTIVE.invoke(chemical);
+        } catch (IllegalAccessException | InvocationTargetException ex) {
+            LOGGER.debug("Unable to inspect Mekanism chemical radioactivity", ex);
+            return false;
+        }
     }
 
     public record ChemicalData(ResourceLocation id,

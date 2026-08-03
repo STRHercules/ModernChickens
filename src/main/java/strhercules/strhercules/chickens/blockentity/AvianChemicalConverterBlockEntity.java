@@ -7,6 +7,7 @@ import strhercules.chickens.block.AvianChemicalConverterBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.config.ChickensConfigValues;
 import strhercules.chickens.integration.mekanism.MekanismChemicalHelper;
+import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.GasEggItem;
@@ -80,6 +81,7 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
         return (level, pos, state, blockEntity) -> {
             if (blockEntity instanceof AvianChemicalConverterBlockEntity converter) {
                 converter.tickServer(level);
+                MekanismRadiationCompat.tickMachineWarning(level, pos, converter);
             }
         };
     }
