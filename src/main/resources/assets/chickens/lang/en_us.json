@@ -391,6 +391,7 @@
   "entity.ChickensChicken.strength": "Strength: %s",
   "entity.chickens.rooster": "Rooster",
   "entity.chickens.mega_chicken": "Mega Chicken",
+  "entity.chickens.mega_chicken.taming_progress": "%s seeds remaining to tame",
   "commands.chickens.export.success": "Exported breeding graph to %s",
   "commands.chickens.export.failure": "Failed to export breeding graph. Check server logs.",
   "config.jade.plugin_chickens.chickens_chicken": "Chicken",

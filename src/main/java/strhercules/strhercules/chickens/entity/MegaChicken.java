@@ -73,8 +73,16 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     private static final String TAG_LEFT_CHEST = "LeftChest";
     private static final String TAG_CHEST_EQUIPMENT_DATA = "MegaChickenChestEquipment";
     private static final String TAG_APPEARANCE_TYPE = "MegaChickenAppearanceType";
+    private static final String TAG_TAMING_SEEDS_REQUIRED = "TamingSeedsRequired";
+    private static final String TAG_TAMING_SEEDS_GIVEN = "TamingSeedsGiven";
     private static final int DEFAULT_APPEARANCE_TYPE = -1;
+    private static final int MIN_TAMING_SEEDS = 16;
+    private static final int MAX_TAMING_SEEDS = 64;
     private static final EntityDataAccessor<Integer> DATA_APPEARANCE_TYPE = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_TAMING_SEEDS_REQUIRED = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_TAMING_SEEDS_GIVEN = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.INT);
 
     private final SimpleContainer chestEquipment = new SimpleContainer(2);
@@ -96,6 +104,8 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         builder.define(DATA_RIGHT_CHEST, false);
         builder.define(DATA_LEFT_CHEST, false);
         builder.define(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
+        builder.define(DATA_TAMING_SEEDS_REQUIRED, 0);
+        builder.define(DATA_TAMING_SEEDS_GIVEN, 0);
     }
 
     @Override
@@ -120,7 +130,15 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             return false;
         }
         if (!this.isTamed() && !this.level().isClientSide) {
-            this.tameWithName(player);
+            int required = this.getTamingSeedsRequired();
+            int given = Math.min(this.entityData.get(DATA_TAMING_SEEDS_GIVEN) + 1, required);
+            this.entityData.set(DATA_TAMING_SEEDS_GIVEN, given);
+            if (given >= required) {
+                this.tameWithName(player);
+            } else {
+                player.displayClientMessage(Component.translatable(
+                        "entity.chickens.mega_chicken.taming_progress", required - given), true);
+            }
         } else if (this.isTamed() && !this.level().isClientSide && this.getHealth() < this.getMaxHealth()) {
             this.heal(1.0F);
         }
@@ -233,6 +251,8 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         if (!left.isEmpty()) {
             compound.put(TAG_LEFT_CHEST, left.save(this.registryAccess()));
         }
+        compound.putInt(TAG_TAMING_SEEDS_REQUIRED, this.getTamingSeedsRequired());
+        compound.putInt(TAG_TAMING_SEEDS_GIVEN, this.entityData.get(DATA_TAMING_SEEDS_GIVEN));
     }
 
     @Override
@@ -263,6 +283,14 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         if (wasChested && !loadedChest && !hasEquipmentData) {
             // Migrate the old single-chest horse state to the right visual slot.
             this.chestEquipment.setItem(RIGHT_CHEST_SLOT, new ItemStack(Items.CHEST));
+        }
+        if (compound.contains(TAG_TAMING_SEEDS_REQUIRED, Tag.TAG_INT)) {
+            int required = Mth.clamp(compound.getInt(TAG_TAMING_SEEDS_REQUIRED), MIN_TAMING_SEEDS,
+                    MAX_TAMING_SEEDS);
+            this.entityData.set(DATA_TAMING_SEEDS_REQUIRED, required);
+            int given = compound.contains(TAG_TAMING_SEEDS_GIVEN, Tag.TAG_INT)
+                    ? compound.getInt(TAG_TAMING_SEEDS_GIVEN) : 0;
+            this.entityData.set(DATA_TAMING_SEEDS_GIVEN, Mth.clamp(given, 0, required));
         }
         this.syncChestFlags();
     }
@@ -388,6 +416,31 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(generateMaxHealth(random::nextInt));
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(generateSpeed(random::nextDouble));
         this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(generateJumpStrength(random::nextDouble));
+        this.initializeTamingSeedRequirement(random);
+    }
+
+    private void initializeTamingSeedRequirement(RandomSource random) {
+        if (this.entityData.get(DATA_TAMING_SEEDS_REQUIRED) > 0) {
+            return;
+        }
+        double healthScore = Mth.clamp((this.getMaxHealth() - 15.0D) / 15.0D, 0.0D, 1.0D);
+        double speedScore = Mth.clamp((this.getAttributeValue(Attributes.MOVEMENT_SPEED) - 0.1125D) / 0.225D,
+                0.0D, 1.0D);
+        double jumpScore = Mth.clamp((this.getAttributeValue(Attributes.JUMP_STRENGTH) - 0.4D) / 0.6D,
+                0.0D, 1.0D);
+        int statBasedMaximum = MIN_TAMING_SEEDS + Mth.floor(
+                ((healthScore + speedScore + jumpScore) / 3.0D) * (MAX_TAMING_SEEDS - MIN_TAMING_SEEDS));
+        this.entityData.set(DATA_TAMING_SEEDS_REQUIRED,
+                MIN_TAMING_SEEDS + random.nextInt(statBasedMaximum - MIN_TAMING_SEEDS + 1));
+    }
+
+    private int getTamingSeedsRequired() {
+        int required = this.entityData.get(DATA_TAMING_SEEDS_REQUIRED);
+        if (required <= 0) {
+            this.initializeTamingSeedRequirement(this.random);
+            required = this.entityData.get(DATA_TAMING_SEEDS_REQUIRED);
+        }
+        return required;
     }
 
     public static boolean checkSpawnRules(EntityType<MegaChicken> type, LevelAccessor level,
