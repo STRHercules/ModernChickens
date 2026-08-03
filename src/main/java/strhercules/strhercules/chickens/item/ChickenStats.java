@@ -37,15 +37,15 @@ public record ChickenStats(int growth, int gain, int strength, boolean analysed)
 
     public int outputCount() {
         return switch (gain) {
-            case 1 -> 8;
-            case 2 -> 10;
-            case 3 -> 20;
-            case 4 -> 25;
-            case 5 -> 30;
-            case 6 -> 35;
-            case 7 -> 40;
-            case 8 -> 45;
-            case 9 -> 50;
+            case 1 -> 1;
+            case 2 -> 3;
+            case 3 -> 6;
+            case 4 -> 10;
+            case 5 -> 16;
+            case 6 -> 23;
+            case 7 -> 31;
+            case 8 -> 41;
+            case 9 -> 52;
             default -> 64;
         };
     }
