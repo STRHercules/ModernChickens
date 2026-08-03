@@ -8,9 +8,6 @@ This document is for cataloguing and detailing potential ideas for features.
 
 ## Implemented
 
-* Chicken Expansion - Create an additional Tier of chickens that are attainable via various methods. Such as an Ender Dragon Chicken that requires Dragon's Breath and/or a Dragon Egg, or a Wither Chicken that requires Nether Stars.
-    * Perhaps modify the Dousing Machine to accept Dragon's Breath and/or Nether Stars
-
 ##  Current/Plausible
 
 * Dedicated Mod-Book - Have an in-game guide-book for the Modern Chickens mod.
