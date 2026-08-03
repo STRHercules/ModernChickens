@@ -728,6 +728,7 @@ public final class ChickensDataLoader {
                 readInt(props, "general.incubatorEnergyCost", 10_000), 1);
         int dropCount = ensurePositive(props, "general.roostDropCount",
                 readInt(props, "general.roostDropCount", 64), 1);
+        boolean scalingDrops = readBoolean(props, "general.scalingDrops", true);
         return new ChickensConfigValues(spawnProbability, minBroodSize, maxBroodSize, multiplier,
                 overworldChance, netherChance, endChance, alwaysShowStats,
                 roostSpeed, breederSpeed, roosterAuraMultiplier, roosterAuraRange,
@@ -739,7 +740,7 @@ public final class ChickensDataLoader {
                 liquidEggHazards,
                 fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled, incubatorEnergyCost,
                 incubatorCapacity, incubatorMaxReceive,
-                dropCount);
+                dropCount, scalingDrops);
     }
 
     private static String readString(Properties props, String key, String defaultValue) {

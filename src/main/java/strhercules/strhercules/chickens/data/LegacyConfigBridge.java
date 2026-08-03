@@ -124,9 +124,17 @@ public final class LegacyConfigBridge {
             writer.write(String.format(Locale.ROOT, "    I:avianFluxCapacity=%d%n", general.getAvianFluxCapacity()));
             writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxReceive=%d%n", general.getAvianFluxMaxReceive()));
             writer.write(String.format(Locale.ROOT, "    I:avianFluxMaxExtract=%d%n", general.getAvianFluxMaxExtract()));
+            writer.write(String.format(Locale.ROOT, "    I:avianFluidConverterCapacity=%d%n", general.getAvianFluidConverterCapacity(8_000)));
+            writer.write(String.format(Locale.ROOT, "    I:avianFluidConverterTransferRate=%d%n", general.getAvianFluidConverterTransfer(2_000)));
+            writer.write(String.format(Locale.ROOT, "    B:avianFluidConverterEffectsEnabled=%s%n", general.isAvianFluidConverterEffectsEnabled()));
+            writer.write(String.format(Locale.ROOT, "    I:avianChemicalConverterCapacity=%d%n", general.getAvianChemicalConverterCapacity(8_000)));
+            writer.write(String.format(Locale.ROOT, "    I:avianChemicalConverterTransferRate=%d%n", general.getAvianChemicalConverterTransfer(2_000)));
+            writer.write(String.format(Locale.ROOT, "    B:avianChemicalConverterEffectsEnabled=%s%n", general.isAvianChemicalConverterEffectsEnabled()));
+            writer.write(String.format(Locale.ROOT, "    B:liquidEggHazardsEnabled=%s%n", general.isLiquidEggHazardsEnabled()));
             writer.write(String.format(Locale.ROOT, "    I:incubatorEnergyCost=%d%n", general.getIncubatorEnergyCost()));
             writer.write(String.format(Locale.ROOT, "    I:incubatorCapacity=%d%n", general.getIncubatorEnergyCapacity()));
             writer.write(String.format(Locale.ROOT, "    I:incubatorMaxReceive=%d%n", general.getIncubatorEnergyMaxReceive()));
+            writer.write(String.format(Locale.ROOT, "    B:scalingDrops=%s%n", general.isScalingDropsEnabled()));
             writer.write(String.format(Locale.ROOT, "    B:enableFluidChickens=%s%n", general.isFluidChickensEnabled()));
             writer.write(String.format(Locale.ROOT, "    B:enableChemicalChickens=%s%n", general.isChemicalChickensEnabled()));
             writer.write(String.format(Locale.ROOT, "    B:enableGasChickens=%s%n", general.isGasChickensEnabled()));
@@ -184,12 +192,12 @@ public final class LegacyConfigBridge {
                 getInt(props, "general.avianFluxCapacity",          current.getAvianFluxCapacity()),
                 getInt(props, "general.avianFluxMaxReceive",        current.getAvianFluxMaxReceive()),
                 getInt(props, "general.avianFluxMaxExtract",        current.getAvianFluxMaxExtract()),
-                getInt(props, "general.avianFluidCapacity",         current.getAvianFluidConverterCapacity(8_000)),
-                getInt(props, "general.avianFluidTransferRate",     current.getAvianFluidConverterTransfer(2_000)),
-                getBool(props, "general.avianFluidEffectsEnabled",  current.isAvianFluidConverterEffectsEnabled()),
-                getInt(props, "general.avianChemicalCapacity",      current.getAvianChemicalConverterCapacity(8_000)),
-                getInt(props, "general.avianChemicalTransferRate",  current.getAvianChemicalConverterTransfer(2_000)),
-                getBool(props, "general.avianChemicalEffectsEnabled", current.isAvianChemicalConverterEffectsEnabled()),
+                getInt(props, "general.avianFluidConverterCapacity", current.getAvianFluidConverterCapacity(8_000)),
+                getInt(props, "general.avianFluidConverterTransferRate", current.getAvianFluidConverterTransfer(2_000)),
+                getBool(props, "general.avianFluidConverterEffectsEnabled", current.isAvianFluidConverterEffectsEnabled()),
+                getInt(props, "general.avianChemicalConverterCapacity", current.getAvianChemicalConverterCapacity(8_000)),
+                getInt(props, "general.avianChemicalConverterTransferRate", current.getAvianChemicalConverterTransfer(2_000)),
+                getBool(props, "general.avianChemicalConverterEffectsEnabled", current.isAvianChemicalConverterEffectsEnabled()),
                 getBool(props, "general.liquidEggHazardsEnabled",   current.isLiquidEggHazardsEnabled()),
                 getBool(props, "general.enableFluidChickens",       current.isFluidChickensEnabled()),
                 getBool(props, "general.enableChemicalChickens",    current.isChemicalChickensEnabled()),
@@ -197,7 +205,8 @@ public final class LegacyConfigBridge {
                 getInt(props, "general.incubatorEnergyCost",        current.getIncubatorEnergyCost()),
                 getInt(props, "general.incubatorCapacity",          current.getIncubatorEnergyCapacity()),
                 getInt(props, "general.incubatorMaxReceive",        current.getIncubatorEnergyMaxReceive()),
-                current.getDropCount()
+                current.getDropCount(),
+                getBool(props, "general.scalingDrops", current.isScalingDropsEnabled())
         );
         ChickensConfigHolder.set(built);
     }
@@ -243,9 +252,17 @@ public final class LegacyConfigBridge {
             case "avianFluxCapacity" -> props.setProperty("general.avianFluxCapacity", value);
             case "avianFluxMaxReceive" -> props.setProperty("general.avianFluxMaxReceive", value);
             case "avianFluxMaxExtract" -> props.setProperty("general.avianFluxMaxExtract", value);
+            case "avianFluidConverterCapacity" -> props.setProperty("general.avianFluidConverterCapacity", value);
+            case "avianFluidConverterTransferRate" -> props.setProperty("general.avianFluidConverterTransferRate", value);
+            case "avianFluidConverterEffectsEnabled" -> props.setProperty("general.avianFluidConverterEffectsEnabled", value);
+            case "avianChemicalConverterCapacity" -> props.setProperty("general.avianChemicalConverterCapacity", value);
+            case "avianChemicalConverterTransferRate" -> props.setProperty("general.avianChemicalConverterTransferRate", value);
+            case "avianChemicalConverterEffectsEnabled" -> props.setProperty("general.avianChemicalConverterEffectsEnabled", value);
+            case "liquidEggHazardsEnabled" -> props.setProperty("general.liquidEggHazardsEnabled", value);
             case "incubatorEnergyCost" -> props.setProperty("general.incubatorEnergyCost", value);
             case "incubatorCapacity" -> props.setProperty("general.incubatorCapacity", value);
             case "incubatorMaxReceive" -> props.setProperty("general.incubatorMaxReceive", value);
+            case "scalingDrops" -> props.setProperty("general.scalingDrops", value);
             case "enableFluidChickens" -> props.setProperty("general.enableFluidChickens", value);
             case "enableChemicalChickens" -> props.setProperty("general.enableChemicalChickens", value);
             case "enableGasChickens" -> props.setProperty("general.enableGasChickens", value);

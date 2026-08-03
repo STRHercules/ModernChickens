@@ -1,6 +1,7 @@
 package strhercules.chickens.item;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Immutable snapshot of a chicken's growth, gain, and strength values. The
@@ -32,6 +33,26 @@ public record ChickenStats(int growth, int gain, int strength, boolean analysed)
             return 10;
         }
         return value;
+    }
+
+    public int outputCount() {
+        return switch (gain) {
+            case 1 -> 8;
+            case 2 -> 10;
+            case 3 -> 20;
+            case 4 -> 25;
+            case 5 -> 30;
+            case 6 -> 35;
+            case 7 -> 40;
+            case 8 -> 45;
+            case 9 -> 50;
+            default -> 64;
+        };
+    }
+
+    public ItemStack scaleOutput(ItemStack stack) {
+        stack.setCount(outputCount());
+        return stack;
     }
 
     public CompoundTag toTag() {

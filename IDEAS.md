@@ -3,18 +3,9 @@
 This document is for cataloguing and detailing potential ideas for features.
 
 ## New Scratch
-Increase the amount of resources higher level chickens output.
-    For example, level 1 chickens drop 8 items
-    Level 2: 10
-    Level 3: 20
-    Level 4: 25
-    Level 5: 30
-    Level 6: 35
-    Level 7: 40
-    Level 8: 45
-    Level 9: 50
-    Level 10: 64 items
-    (Scaling drops will be a config toggle, default ON)
+
+
+- Convert all config options to be editable via in-game mod menu config
 
 
 

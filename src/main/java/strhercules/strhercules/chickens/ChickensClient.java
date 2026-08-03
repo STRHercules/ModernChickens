@@ -1,5 +1,6 @@
 package strhercules.chickens;
 
+import strhercules.chickens.client.ChickensConfigScreen;
 import strhercules.chickens.ChemicalEggRegistry;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.LiquidEggRegistry;
@@ -46,6 +47,8 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 /**
  * Client-only hooks for renderer and colour registration. Static event
@@ -74,6 +77,8 @@ public final class ChickensClient {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        ModLoadingContext.get().getActiveContainer().registerExtensionPoint(IConfigScreenFactory.class,
+                (container, parent) -> new ChickensConfigScreen(parent));
         event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(ModRegistry.BREEDER.get(), RenderType.cutout()));
     }
 

@@ -4,6 +4,7 @@ import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
+import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChickenStats;
 import strhercules.chickens.item.FluxEggItem;
 import strhercules.chickens.registry.ModEntityTypes;
@@ -236,13 +237,18 @@ public class ChickensChicken extends Chicken {
         if (stack.isEmpty()) {
             return;
         }
-        depositOrDrop(stack);
         int gain = this.getGain();
-        if (gain >= 5) {
-            depositOrDrop(description.createLayItem());
-        }
-        if (gain >= 10) {
-            depositOrDrop(description.createLayItem());
+        ChickenStats stats = new ChickenStats(this.getGrowth(), gain, this.getStrength(), this.getStatsAnalyzed());
+        if (ChickensConfigHolder.get().isScalingDropsEnabled()) {
+            depositOrDrop(stats.scaleOutput(stack));
+        } else {
+            depositOrDrop(stack);
+            if (gain >= 5) {
+                depositOrDrop(description.createLayItem());
+            }
+            if (gain >= 10) {
+                depositOrDrop(description.createLayItem());
+            }
         }
         this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
         this.gameEvent(GameEvent.ENTITY_PLACE, this);
@@ -450,6 +456,10 @@ public class ChickensChicken extends Chicken {
         ChickensRegistryItem description = this.getChickenDescription();
         if (description != null) {
             ItemStack drop = description.createDropItem();
+            if (ChickensConfigHolder.get().isScalingDropsEnabled()) {
+                new ChickenStats(this.getGrowth(), this.getGain(), this.getStrength(), this.getStatsAnalyzed())
+                        .scaleOutput(drop);
+            }
             imprintFluxEggCharge(drop);
             drop.grow(this.random.nextInt(1 + this.getLooting(level, source)));
             this.spawnAtLocation(drop, 0.0F);

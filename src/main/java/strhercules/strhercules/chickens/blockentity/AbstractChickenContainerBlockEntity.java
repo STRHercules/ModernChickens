@@ -60,8 +60,12 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
             return chicken.createDropItem();
         }
 
-        public ItemStack createLay(RandomSource random) {
-            return chicken.createLayItem();
+        public ItemStack createLay(RandomSource random, boolean scalingDrops) {
+            ItemStack stack = chicken.createLayItem();
+            if (scalingDrops) {
+                stats.scaleOutput(stack);
+            }
+            return stack;
         }
 
 
