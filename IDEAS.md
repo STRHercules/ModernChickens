@@ -8,21 +8,21 @@ This document is for cataloguing and detailing potential ideas for features.
 
 
 ## Mega Chicken
-- The user can use a chicken spawn egg on a mega chicken to change its' appearance to match that of the spawn egg chicken used on it
-- The user can equip 2 individual chests to the mega chicken gui
-    - each one loads the respective chest visually on the chicken
-        - left, right
-    - the mega chicken stores its chest inventory across restarts, etc
-    - the mega chicken supports modded chests
-    - equipping the saddle adds it to the entity
-- the user can use the chicken catcher on their tamed mega chicken to convert it to an item 
-    - this item stores all relevant NBT, UUID data etc - along with any chests the chicken may have equipped
-    - using the item on the ground restores the mega chicken as it was preserved
+- the user `can right-click`-use a perfect 10/10/10 chicken item on their tamed mega chicken to change the mega chicken's appearance to the respective chicken used on it
+    - this makes poof particles appear around the mega chicken as the skin changes to the respective `tamed` skin.
 
+- the mega chicken stores its chest inventory across restarts, etc
 
+- mega chickens should have varied stats, like horses
 
-
-
+- Observe [ModernCompanions]`R:\Users\Zach\Documents\GitHub\ModernCompanions\` and learn how that mod transfers entities to items and back to entities while preserving all relevant data, then do these;
+    - Make it so the user can use the `chicken catcher` on their tamed mega chicken to convert it to an item 
+        - this item stores all relevant NBT, UUID data etc - along with any chests the chicken may have equipped
+        - using the stored mega chicken item on the ground restores the mega chicken as it was preserved
+    - when mega chicken dies, becomes an item that preserves all it's NBT, UUID, and any equipped chest data as well
+        - the user can infuse this item to activate it
+        - when activated, using on the ground revives the chicken with a clean bill of health and all data preserved
+    
 
 
 
@@ -53,8 +53,6 @@ This document is for cataloguing and detailing potential ideas for features.
 * Chicken Generator - Turns standard chicken byproducts (Meat, Feathers, Eggs) into RF
 
 * DNA Splicing - Ability to extract DNA from high-stat chickens to apply to other chickens.
-
-* Mounts - Add some fun by letting players ride or use chickens for travel. A Giant Chicken Mount could be a tameable breed (perhaps breeding a chicken with a horse?). This idea integrates well with exploration: players might search for the ingredients to create a Chocobo-like chicken mount.
 
 * Summoning & Familiars – Add new mobs or summonable creatures via chicken items.
     * Chest Chicken - Has an internal storage that can carry items for you!

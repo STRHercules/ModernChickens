@@ -13,7 +13,6 @@ import strhercules.chickens.client.render.DynamicChickenTextures;
 import strhercules.chickens.client.render.LiquidChickenOverlayLayer;
 import strhercules.chickens.client.render.MegaChickenModel;
 import strhercules.chickens.client.render.MegaChickenRenderer;
-import strhercules.chickens.client.render.MegaChickenSaddleModel;
 import strhercules.chickens.client.render.RoosterModel;
 import strhercules.chickens.client.render.RoosterRenderer;
 import strhercules.chickens.client.render.blockentity.BreederBlockEntityRenderer;
@@ -33,6 +32,7 @@ import strhercules.chickens.screen.BreederScreen;
 import strhercules.chickens.screen.CollectorScreen;
 import strhercules.chickens.screen.IncubatorScreen;
 import strhercules.chickens.screen.HenhouseScreen;
+import strhercules.chickens.screen.MegaChickenScreen;
 import strhercules.chickens.screen.RoostScreen;
 import strhercules.chickens.screen.NestScreen;
 import strhercules.chickens.screen.RoosterScreen;
@@ -78,7 +78,6 @@ public final class ChickensClient {
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(RoosterModel.LAYER_LOCATION, RoosterModel::createBodyLayer);
         event.registerLayerDefinition(MegaChickenModel.LAYER_LOCATION, MegaChickenModel::createBodyLayer);
-        event.registerLayerDefinition(MegaChickenSaddleModel.LAYER_LOCATION, MegaChickenSaddleModel::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -112,6 +111,7 @@ public final class ChickensClient {
         event.register(ModMenuTypes.AVIAN_CHEMICAL_CONVERTER.get(), AvianChemicalConverterScreen::new);
         event.register(ModMenuTypes.AVIAN_DOUSING_MACHINE.get(), AvianDousingMachineScreen::new);
         event.register(ModMenuTypes.INCUBATOR.get(), IncubatorScreen::new);
+        event.register(ModMenuTypes.MEGA_CHICKEN.get(), MegaChickenScreen::new);
     }
 
     @SubscribeEvent

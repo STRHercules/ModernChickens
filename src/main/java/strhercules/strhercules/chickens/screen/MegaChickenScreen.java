@@ -1,0 +1,64 @@
+package strhercules.chickens.screen;
+
+import strhercules.chickens.entity.MegaChicken;
+import strhercules.chickens.menu.MegaChickenMenu;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+
+/** Vanilla horse-style GUI for the mega chicken's saddle, chests, and cargo. */
+public final class MegaChickenScreen extends AbstractContainerScreen<MegaChickenMenu> {
+    private static final ResourceLocation FULL_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/megachicken.png");
+    private static final ResourceLocation ONE_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/megachicken_onechest.png");
+    private static final ResourceLocation NO_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/megachicken_nochest.png");
+
+    private final MegaChicken chicken;
+    private float xMouse;
+    private float yMouse;
+
+    public MegaChickenScreen(MegaChickenMenu menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title);
+        this.chicken = menu.getChicken();
+        this.imageWidth = 176;
+        this.imageHeight = 256;
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
+        boolean rightChest = this.chicken.hasRightChest();
+        boolean leftChest = this.chicken.hasLeftChest();
+        ResourceLocation texture = rightChest && leftChest
+                ? FULL_CHEST_TEXTURE
+                : rightChest
+                ? ONE_CHEST_TEXTURE
+                : NO_CHEST_TEXTURE;
+        graphics.blit(texture, x, y, 0.0F, 0.0F,
+                this.imageWidth, this.imageHeight, 256, 256);
+        if (leftChest && !rightChest) {
+            graphics.blit(ONE_CHEST_TEXTURE, x, y + 62, 0.0F, 116.0F,
+                    this.imageWidth, 54, 256, 256);
+        }
+        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics,
+                x + 8, y + 7, x + 60, y + 59, 17, 0.25F, this.xMouse, this.yMouse, this.chicken);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        this.xMouse = mouseX;
+        this.yMouse = mouseY;
+        super.render(graphics, mouseX, mouseY, partialTicks);
+        this.renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+    }
+}

@@ -1,7 +1,12 @@
 package strhercules.chickens.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -25,20 +30,44 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import strhercules.chickens.menu.MegaChickenMenu;
 
 import javax.annotation.Nullable;
 
 /**
  * The rare, rideable wild chicken. Horse inheritance supplies the native saddle,
- * chest inventory, owner persistence, passenger control, and horse inventory screen.
+ * cargo inventory, owner persistence, and passenger control.
  */
-public class MegaChicken extends AbstractChestedHorse {
+public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
+    private static final EntityDataAccessor<Boolean> DATA_RIGHT_CHEST = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_LEFT_CHEST = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.BOOLEAN);
+
+    public static final int RIGHT_CHEST_SLOT = 0;
+    public static final int LEFT_CHEST_SLOT = 1;
+    private static final String TAG_RIGHT_CHEST = "RightChest";
+    private static final String TAG_LEFT_CHEST = "LeftChest";
+    private static final String TAG_CHEST_EQUIPMENT_DATA = "MegaChickenChestEquipment";
+
+    private final SimpleContainer chestEquipment = new SimpleContainer(2);
+
     public float flap;
     public float flapSpeed;
     public float oFlapSpeed;
@@ -47,6 +76,14 @@ public class MegaChicken extends AbstractChestedHorse {
 
     public MegaChicken(EntityType<? extends MegaChicken> type, Level level) {
         super(type, level);
+        this.chestEquipment.addListener(container -> this.syncChestFlags());
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_RIGHT_CHEST, false);
+        builder.define(DATA_LEFT_CHEST, false);
     }
 
     @Override
@@ -76,6 +113,139 @@ public class MegaChicken extends AbstractChestedHorse {
             this.heal(1.0F);
         }
         return true;
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack held = player.getItemInHand(hand);
+        if (!this.isVehicle() && this.isTamed() && !this.isBaby() && held.is(Items.CHEST)) {
+            int slot = !this.hasRightChest() ? RIGHT_CHEST_SLOT
+                    : !this.hasLeftChest() ? LEFT_CHEST_SLOT : -1;
+            if (slot >= 0) {
+                this.chestEquipment.setItem(slot, new ItemStack(Items.CHEST));
+                held.consume(1, player);
+                this.playChestEquipsSound();
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    public boolean hasRightChest() {
+        return this.level().isClientSide
+                ? this.entityData.get(DATA_RIGHT_CHEST)
+                : this.chestEquipment.getItem(RIGHT_CHEST_SLOT).is(Items.CHEST);
+    }
+
+    public boolean hasLeftChest() {
+        return this.level().isClientSide
+                ? this.entityData.get(DATA_LEFT_CHEST)
+                : this.chestEquipment.getItem(LEFT_CHEST_SLOT).is(Items.CHEST);
+    }
+
+    public SimpleContainer getChestEquipment() {
+        return this.chestEquipment;
+    }
+
+    private void syncChestFlags() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        boolean right = this.chestEquipment.getItem(RIGHT_CHEST_SLOT).is(Items.CHEST);
+        boolean left = this.chestEquipment.getItem(LEFT_CHEST_SLOT).is(Items.CHEST);
+        this.entityData.set(DATA_RIGHT_CHEST, right);
+        this.entityData.set(DATA_LEFT_CHEST, left);
+
+        boolean hasStoredItems = right || left;
+        for (int i = 1; !hasStoredItems && i < this.inventory.getContainerSize(); i++) {
+            hasStoredItems = !this.inventory.getItem(i).isEmpty();
+        }
+        this.setChest(hasStoredItems);
+    }
+
+    @Override
+    public void containerChanged(Container container) {
+        super.containerChanged(container);
+        if (container == this.inventory) {
+            this.syncChestFlags();
+        }
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag compound) {
+        this.syncChestFlags();
+        super.addAdditionalSaveData(compound);
+        compound.putBoolean(TAG_CHEST_EQUIPMENT_DATA, true);
+        ItemStack right = this.chestEquipment.getItem(RIGHT_CHEST_SLOT);
+        ItemStack left = this.chestEquipment.getItem(LEFT_CHEST_SLOT);
+        if (!right.isEmpty()) {
+            compound.put(TAG_RIGHT_CHEST, right.save(this.registryAccess()));
+        }
+        if (!left.isEmpty()) {
+            compound.put(TAG_LEFT_CHEST, left.save(this.registryAccess()));
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        boolean wasChested = this.hasChest();
+        boolean hasEquipmentData = compound.getBoolean(TAG_CHEST_EQUIPMENT_DATA);
+        this.chestEquipment.clearContent();
+        boolean loadedChest = false;
+        if (compound.contains(TAG_RIGHT_CHEST, Tag.TAG_COMPOUND)) {
+            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_RIGHT_CHEST))
+                    .orElse(ItemStack.EMPTY);
+            if (stack.is(Items.CHEST)) {
+                this.chestEquipment.setItem(RIGHT_CHEST_SLOT, new ItemStack(Items.CHEST));
+                loadedChest = true;
+            }
+        }
+        if (compound.contains(TAG_LEFT_CHEST, Tag.TAG_COMPOUND)) {
+            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_LEFT_CHEST))
+                    .orElse(ItemStack.EMPTY);
+            if (stack.is(Items.CHEST)) {
+                this.chestEquipment.setItem(LEFT_CHEST_SLOT, new ItemStack(Items.CHEST));
+                loadedChest = true;
+            }
+        }
+        if (wasChested && !loadedChest && !hasEquipmentData) {
+            // Migrate the old single-chest horse state to the right visual slot.
+            this.chestEquipment.setItem(RIGHT_CHEST_SLOT, new ItemStack(Items.CHEST));
+        }
+        this.syncChestFlags();
+    }
+
+    @Override
+    protected void dropEquipment() {
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            this.dropEquipmentStack(this.inventory.getItem(i));
+        }
+        this.dropEquipmentStack(this.chestEquipment.getItem(RIGHT_CHEST_SLOT));
+        this.dropEquipmentStack(this.chestEquipment.getItem(LEFT_CHEST_SLOT));
+    }
+
+    private void dropEquipmentStack(ItemStack stack) {
+        if (!stack.isEmpty() && !EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+            this.spawnAtLocation(stack);
+        }
+    }
+
+    @Override
+    public void openCustomInventoryScreen(Player player) {
+        if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(player)) && this.isTamed()) {
+            player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
+        }
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return this.getName();
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
+        return new MegaChickenMenu(id, playerInventory, this);
     }
 
     @Override
@@ -165,5 +335,12 @@ public class MegaChicken extends AbstractChestedHorse {
     public static boolean checkSpawnRules(EntityType<MegaChicken> type, LevelAccessor level,
                                            MobSpawnType reason, BlockPos pos, RandomSource random) {
         return random.nextInt(128) == 0 && Animal.checkAnimalSpawnRules(type, level, reason, pos, random);
+    }
+
+    @Override
+    public int getInventoryColumns() {
+        // AbstractHorse allocates three rows per column; the custom screen renders
+        // those 54 cargo slots as a 9x6 grid.
+        return 18;
     }
 }

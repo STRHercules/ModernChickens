@@ -9,6 +9,7 @@ import strhercules.chickens.menu.BreederMenu;
 import strhercules.chickens.menu.CollectorMenu;
 import strhercules.chickens.menu.IncubatorMenu;
 import strhercules.chickens.menu.HenhouseMenu;
+import strhercules.chickens.menu.MegaChickenMenu;
 import strhercules.chickens.menu.RoostMenu;
 import strhercules.chickens.menu.NestMenu;
 import strhercules.chickens.menu.RoosterMenu;
@@ -49,6 +50,8 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(AvianDousingMachineMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<IncubatorMenu>> INCUBATOR = MENU_TYPES.register("incubator",
             () -> IMenuTypeExtension.create(IncubatorMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<MegaChickenMenu>> MEGA_CHICKEN = MENU_TYPES.register("mega_chicken",
+            () -> IMenuTypeExtension.create(MegaChickenMenu::new));
 
     private ModMenuTypes() {
     }
