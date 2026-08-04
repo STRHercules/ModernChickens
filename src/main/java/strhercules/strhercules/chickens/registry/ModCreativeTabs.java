@@ -71,6 +71,7 @@ public final class ModCreativeTabs {
 
                         // Huevo de flux
                         output.accept(ModRegistry.FLUX_EGG.get());
+                        output.accept(ModRegistry.FLYING_EGG.get());
 
                         // Huevos de fluido (si está habilitado en config)
                         if (ChickensConfigHolder.get().isFluidChickensEnabled()) {

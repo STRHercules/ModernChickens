@@ -2,9 +2,16 @@
 
 This document is for cataloguing and detailing potential ideas for features.
 
-## New Scratch
-
 ## Mega Chicken
+- Modifier Items
+    - Increase Scale
+        * Nether Star
+        - Maximum uses: 5
+        - Increases scale to a total of 2x over the course of the 5 nether stars
+    - Decrease Scale
+        * Dragon's Breath
+        - Maximum uses: 5
+        - Increases scale to a total of -2x over the course of the 5 bottles
 
 ## Implemented
 

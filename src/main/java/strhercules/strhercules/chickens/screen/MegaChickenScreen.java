@@ -17,6 +17,12 @@ public final class MegaChickenScreen extends AbstractContainerScreen<MegaChicken
             "chickens", "textures/gui/megachicken_onechest.png");
     private static final ResourceLocation NO_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             "chickens", "textures/gui/megachicken_nochest.png");
+    private static final ResourceLocation SADDLE_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/saddle_outline.png");
+    private static final ResourceLocation CHEST_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/chest_outline.png");
+    private static final ResourceLocation FLYING_EGG_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/gui/flyingegg_outline.png");
 
     private final MegaChicken chicken;
     private float xMouse;
@@ -45,6 +51,22 @@ public final class MegaChickenScreen extends AbstractContainerScreen<MegaChicken
         if (leftChest && !rightChest) {
             graphics.blit(ONE_CHEST_TEXTURE, x, y + 62, 0.0F, 116.0F,
                     this.imageWidth, 54, 256, 256);
+        }
+        if (!this.chicken.isSaddled()) {
+            graphics.blit(SADDLE_OUTLINE_TEXTURE, x + 65, y + 10, 16, 16,
+                    0.0F, 0.0F, 16, 16, 16, 16);
+        }
+        if (!this.chicken.hasFlyingEgg()) {
+            graphics.blit(FLYING_EGG_OUTLINE_TEXTURE, x + 86, y + 10, 16, 16,
+                    0.0F, 0.0F, 32, 32, 32, 32);
+        }
+        if (!rightChest) {
+            graphics.blit(CHEST_OUTLINE_TEXTURE, x + 86, y + 40, 16, 16,
+                    0.0F, 0.0F, 32, 32, 32, 32);
+        }
+        if (!leftChest) {
+            graphics.blit(CHEST_OUTLINE_TEXTURE, x + 65, y + 40, 16, 16,
+                    0.0F, 0.0F, 32, 32, 32, 32);
         }
         InventoryScreen.renderEntityInInventoryFollowsMouse(graphics,
                 x + 8, y + 7, x + 60, y + 59, 17, 0.25F, this.xMouse, this.yMouse, this.chicken);

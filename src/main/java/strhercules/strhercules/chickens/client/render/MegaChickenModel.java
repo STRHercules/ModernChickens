@@ -175,9 +175,13 @@ public final class MegaChickenModel extends AgeableListModel<MegaChicken> {
         this.redThing.xRot = this.head.xRot;
         this.redThing.yRot = this.head.yRot;
 
-        this.rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-        this.leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + Mth.PI) * 1.4F * limbSwingAmount;
-        this.rightWing.zRot = ageInTicks;
-        this.leftWing.zRot = -ageInTicks;
+        boolean airborne = chicken.isFlightActive() && !chicken.onGround();
+        float legSwing = airborne ? ageInTicks * 0.6662F : limbSwing * 0.6662F;
+        float legSwingAmount = airborne ? 0.7F : Mth.clamp(limbSwingAmount, 0.0F, 1.0F);
+        this.rightLeg.xRot = Mth.cos(legSwing) * 1.4F * legSwingAmount;
+        this.leftLeg.xRot = Mth.cos(legSwing + Mth.PI) * 1.4F * legSwingAmount;
+        float wingFlap = airborne ? Mth.sin(ageInTicks * 0.45F) * 0.75F : 0.0F;
+        this.rightWing.zRot = wingFlap;
+        this.leftWing.zRot = -wingFlap;
     }
 }

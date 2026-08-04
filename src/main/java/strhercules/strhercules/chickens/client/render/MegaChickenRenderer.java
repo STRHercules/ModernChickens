@@ -63,6 +63,9 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
 
     @Override
     protected float getBob(MegaChicken chicken, float partialTicks) {
+        if (!chicken.isFlightActive() || chicken.onGround()) {
+            return 0.0F;
+        }
         float flap = net.minecraft.util.Mth.lerp(partialTicks, chicken.oFlap, chicken.flap);
         float speed = net.minecraft.util.Mth.lerp(partialTicks, chicken.oFlapSpeed, chicken.flapSpeed);
         return (net.minecraft.util.Mth.sin(flap) + 1.0F) * speed;

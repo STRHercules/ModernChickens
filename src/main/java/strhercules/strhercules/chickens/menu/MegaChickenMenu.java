@@ -2,6 +2,7 @@ package strhercules.chickens.menu;
 
 import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.registry.ModMenuTypes;
+import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -12,12 +13,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.SimpleContainer;
 
-/** Two chest equipment slots plus the mega chicken's 54 cargo slots. */
+/** Flight and chest equipment slots plus the mega chicken's 54 cargo slots. */
 public final class MegaChickenMenu extends AbstractContainerMenu {
     private static final int SADDLE_SLOT = 0;
-    private static final int RIGHT_CHEST_SLOT = 1;
-    private static final int LEFT_CHEST_SLOT = 2;
-    private static final int ANIMAL_SLOT_COUNT = 3;
+    private static final int FLYING_EGG_SLOT = 1;
+    private static final int RIGHT_CHEST_SLOT = 2;
+    private static final int LEFT_CHEST_SLOT = 3;
+    private static final int ANIMAL_SLOT_COUNT = 4;
     private static final int CARGO_COLUMNS = 9;
     private static final int CARGO_ROWS_PER_CHEST = 3;
     private static final int CARGO_SLOTS_PER_CHEST = CARGO_COLUMNS * CARGO_ROWS_PER_CHEST;
@@ -38,7 +40,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
         super(ModMenuTypes.MEGA_CHICKEN.get(), id);
         this.chicken = chicken;
         this.cargo = chicken != null ? chicken.getInventory() : new SimpleContainer(55);
-        this.chestEquipment = chicken != null ? chicken.getChestEquipment() : new SimpleContainer(2);
+        this.chestEquipment = chicken != null ? chicken.getChestEquipment() : new SimpleContainer(3);
 
         if (chicken != null) {
             this.cargo.startOpen(playerInventory.player);
@@ -46,6 +48,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
         }
 
         this.addSlot(new SaddleSlot(this.cargo, 0, chicken));
+        this.addSlot(new FlyingEggSlot(this.chestEquipment, MegaChicken.FLYING_EGG_SLOT, 86, 10, chicken));
         this.addSlot(new ChestSlot(this.chestEquipment, MegaChicken.RIGHT_CHEST_SLOT, 86, 40,
                 this.cargo, chicken, false));
         this.addSlot(new ChestSlot(this.chestEquipment, MegaChicken.LEFT_CHEST_SLOT, 65, 40,
@@ -86,6 +89,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
                 && this.cargo.stillValid(player)
                 && this.chestEquipment.stillValid(player)
                 && this.chicken.isAlive()
+                && (this.chicken.level().isClientSide || this.chicken.isOwnedByPlayer(player))
                 && player.canInteractWithEntity(this.chicken, 4.0D));
     }
 
@@ -101,6 +105,9 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, PLAYER_START, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
+            } else if (this.getSlot(FLYING_EGG_SLOT).mayPlace(stack)
+                    && this.moveItemStackTo(stack, FLYING_EGG_SLOT, FLYING_EGG_SLOT + 1, false)) {
+                // Flying Eggs go into the dedicated flight slot.
             } else if (this.getSlot(SADDLE_SLOT).mayPlace(stack)
                     && this.moveItemStackTo(stack, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                 // Saddle goes into the dedicated saddle slot.
@@ -149,6 +156,30 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack) {
             return this.chicken != null && stack.is(Items.SADDLE) && this.chicken.isSaddleable();
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+    }
+
+    private static final class FlyingEggSlot extends Slot {
+        private final MegaChicken chicken;
+
+        private FlyingEggSlot(Container container, int index, int x, int y, MegaChicken chicken) {
+            super(container, index, x, y);
+            this.chicken = chicken;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return this.chicken != null && stack.is(ModRegistry.FLYING_EGG.get());
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return this.chicken != null && this.chicken.canRemoveFlyingEgg();
         }
 
         @Override

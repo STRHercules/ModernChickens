@@ -15,6 +15,7 @@ import strhercules.chickens.item.AnalyzerItem;
 import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.item.ColoredEggItem;
 import strhercules.chickens.item.FluxEggItem;
+import strhercules.chickens.item.FlyingEggItem;
 import strhercules.chickens.item.ChickenItem;
 import strhercules.chickens.item.ChickenCatcherItem;
 import strhercules.chickens.item.CreativeCatcherItem;
@@ -72,6 +73,8 @@ public final class ModRegistry {
             () -> new GasEggItem(new Item.Properties().stacksTo(64)));
     public static final DeferredItem<FluxEggItem> FLUX_EGG = ITEMS.register("flux_egg",
             () -> new FluxEggItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<FlyingEggItem> FLYING_EGG = ITEMS.register("flying_egg",
+            () -> new FlyingEggItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
     public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());

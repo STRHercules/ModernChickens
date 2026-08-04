@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -53,6 +54,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import strhercules.chickens.menu.MegaChickenMenu;
 
 import javax.annotation.Nullable;
@@ -66,15 +68,19 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             MegaChicken.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_LEFT_CHEST = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_FLYING_EGG = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.BOOLEAN);
 
     public static final int RIGHT_CHEST_SLOT = 0;
     public static final int LEFT_CHEST_SLOT = 1;
+    public static final int FLYING_EGG_SLOT = 2;
     private static final String TAG_RIGHT_CHEST = "RightChest";
     private static final String TAG_LEFT_CHEST = "LeftChest";
     private static final String TAG_CHEST_EQUIPMENT_DATA = "MegaChickenChestEquipment";
     private static final String TAG_APPEARANCE_TYPE = "MegaChickenAppearanceType";
     private static final String TAG_TAMING_SEEDS_REQUIRED = "TamingSeedsRequired";
     private static final String TAG_TAMING_SEEDS_GIVEN = "TamingSeedsGiven";
+    private static final String TAG_FLYING_EGG = "FlyingEgg";
     private static final int DEFAULT_APPEARANCE_TYPE = -1;
     private static final int MIN_TAMING_SEEDS = 16;
     private static final int MAX_TAMING_SEEDS = 64;
@@ -84,8 +90,13 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             MegaChicken.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TAMING_SEEDS_GIVEN = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_FLIGHT_ACTIVE = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.BOOLEAN);
 
-    private final SimpleContainer chestEquipment = new SimpleContainer(2);
+    private final SimpleContainer chestEquipment = new SimpleContainer(3);
+    private boolean jumpRequested;
+    private boolean diveRequested;
+    private boolean airbrakeRequested;
 
     public float flap;
     public float flapSpeed;
@@ -103,9 +114,11 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         super.defineSynchedData(builder);
         builder.define(DATA_RIGHT_CHEST, false);
         builder.define(DATA_LEFT_CHEST, false);
+        builder.define(DATA_FLYING_EGG, false);
         builder.define(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
         builder.define(DATA_TAMING_SEEDS_REQUIRED, 0);
         builder.define(DATA_TAMING_SEEDS_GIVEN, 0);
+        builder.define(DATA_FLIGHT_ACTIVE, false);
     }
 
     @Override
@@ -209,6 +222,41 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
                 : this.chestEquipment.getItem(LEFT_CHEST_SLOT).is(Items.CHEST);
     }
 
+    public boolean hasFlyingEgg() {
+        return this.level().isClientSide
+                ? this.entityData.get(DATA_FLYING_EGG)
+                : this.chestEquipment.getItem(FLYING_EGG_SLOT).is(ModRegistry.FLYING_EGG.get());
+    }
+
+    public boolean isFlightActive() {
+        return this.entityData.get(DATA_FLIGHT_ACTIVE);
+    }
+
+    private void setFlightActive(boolean active) {
+        if (!this.level().isClientSide || this.isControlledByLocalInstance()) {
+            this.entityData.set(DATA_FLIGHT_ACTIVE, active);
+        }
+    }
+
+    public boolean isOwnedByPlayer(Player player) {
+        return this.isTamed() && this.getOwnerUUID() != null && this.getOwnerUUID().equals(player.getUUID());
+    }
+
+    public boolean canRemoveFlyingEgg() {
+        return true;
+    }
+
+    @Override
+    public boolean causeFallDamage(float fallDistance, float damageMultiplier, DamageSource source) {
+        return false;
+    }
+
+    public static void preventRiderFallDamage(LivingFallEvent event) {
+        if (event.getEntity() instanceof Player player && player.getVehicle() instanceof MegaChicken) {
+            event.setCanceled(true);
+        }
+    }
+
     public SimpleContainer getChestEquipment() {
         return this.chestEquipment;
     }
@@ -219,8 +267,10 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         }
         boolean right = this.chestEquipment.getItem(RIGHT_CHEST_SLOT).is(Items.CHEST);
         boolean left = this.chestEquipment.getItem(LEFT_CHEST_SLOT).is(Items.CHEST);
+        boolean flyingEgg = this.chestEquipment.getItem(FLYING_EGG_SLOT).is(ModRegistry.FLYING_EGG.get());
         this.entityData.set(DATA_RIGHT_CHEST, right);
         this.entityData.set(DATA_LEFT_CHEST, left);
+        this.entityData.set(DATA_FLYING_EGG, flyingEgg);
 
         boolean hasStoredItems = right || left;
         for (int i = 1; !hasStoredItems && i < this.inventory.getContainerSize(); i++) {
@@ -251,6 +301,10 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         if (!left.isEmpty()) {
             compound.put(TAG_LEFT_CHEST, left.save(this.registryAccess()));
         }
+        ItemStack flyingEgg = this.chestEquipment.getItem(FLYING_EGG_SLOT);
+        if (!flyingEgg.isEmpty()) {
+            compound.put(TAG_FLYING_EGG, flyingEgg.save(this.registryAccess()));
+        }
         compound.putInt(TAG_TAMING_SEEDS_REQUIRED, this.getTamingSeedsRequired());
         compound.putInt(TAG_TAMING_SEEDS_GIVEN, this.entityData.get(DATA_TAMING_SEEDS_GIVEN));
     }
@@ -280,6 +334,13 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
                 loadedChest = true;
             }
         }
+        if (compound.contains(TAG_FLYING_EGG, Tag.TAG_COMPOUND)) {
+            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_FLYING_EGG))
+                    .orElse(ItemStack.EMPTY);
+            if (stack.is(ModRegistry.FLYING_EGG.get())) {
+                this.chestEquipment.setItem(FLYING_EGG_SLOT, stack.copyWithCount(1));
+            }
+        }
         if (wasChested && !loadedChest && !hasEquipmentData) {
             // Migrate the old single-chest horse state to the right visual slot.
             this.chestEquipment.setItem(RIGHT_CHEST_SLOT, new ItemStack(Items.CHEST));
@@ -302,6 +363,7 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         }
         this.dropEquipmentStack(this.chestEquipment.getItem(RIGHT_CHEST_SLOT));
         this.dropEquipmentStack(this.chestEquipment.getItem(LEFT_CHEST_SLOT));
+        this.dropEquipmentStack(this.chestEquipment.getItem(FLYING_EGG_SLOT));
     }
 
     private void dropEquipmentStack(ItemStack stack) {
@@ -312,7 +374,8 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
 
     @Override
     public void openCustomInventoryScreen(Player player) {
-        if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(player)) && this.isTamed()) {
+        if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(player))
+                && this.isOwnedByPlayer(player)) {
             player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
         }
     }
@@ -327,22 +390,117 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         return new MegaChickenMenu(id, playerInventory, this);
     }
 
+    public void setJumpRequested(boolean jumping) {
+        this.jumpRequested = jumping;
+    }
+
+    public void setDiveRequested(boolean diving) {
+        this.diveRequested = diving;
+    }
+
+    public void setAirbrakeRequested(boolean airbraking) {
+        this.airbrakeRequested = airbraking;
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (this.hasFlyingEgg() && this.isVehicle() && this.isControlledByLocalInstance()
+                && !this.onGround() && this.getControllingPassenger() instanceof Player player) {
+            this.setFlightActive(true);
+            this.travelFlying(player);
+            return;
+        }
+        this.setFlightActive(false);
+        if (this.hasFlyingEgg() && this.onGround()) {
+            this.diveRequested = false;
+            this.airbrakeRequested = false;
+            this.setDeltaMovement(Vec3.ZERO);
+        }
+        super.travel(travelVector);
+    }
+
+    private void travelFlying(Player player) {
+        this.setYRot(player.getYRot());
+        this.setYHeadRot(player.getYRot());
+
+        Vec3 look = player.getLookAngle();
+        Vec3 forward = new Vec3(look.x, 0.0D, look.z);
+        if (forward.lengthSqr() < 1.0E-6D) {
+            float yaw = player.getYRot() * Mth.DEG_TO_RAD;
+            forward = new Vec3(-Mth.sin(yaw), 0.0D, Mth.cos(yaw));
+        } else {
+            forward = forward.normalize();
+        }
+        Vec3 right = new Vec3(forward.z, 0.0D, -forward.x);
+        Vec3 input = forward.scale(player.zza).add(right.scale(player.xxa));
+        boolean hasInput = input.lengthSqr() > 1.0E-4D;
+        if (hasInput) {
+            input = input.normalize();
+        } else if (this.diveRequested) {
+            input = forward;
+        }
+
+        Vec3 current = this.getDeltaMovement();
+        if (this.airbrakeRequested) {
+            Vec3 horizontal = new Vec3(current.x, 0.0D, current.z).scale(0.88D);
+            double vertical = Mth.lerp(0.18D, current.y, -0.08D);
+            this.setDeltaMovement(horizontal.x, vertical, horizontal.z);
+        } else if (this.diveRequested) {
+            Vec3 horizontal = input.scale(1.2D);
+            this.setDeltaMovement(current.lerp(new Vec3(horizontal.x, -0.65D, horizontal.z), 0.18D));
+        } else {
+            Vec3 currentHorizontal = new Vec3(current.x, 0.0D, current.z);
+            double currentHorizontalSpeed = currentHorizontal.length();
+            double targetSpeed = hasInput
+                    ? Math.max(0.55D, Math.min(Math.max(currentHorizontalSpeed, 0.55D) * 0.995D, 1.2D))
+                    : currentHorizontalSpeed * 0.995D;
+            Vec3 targetHorizontal = hasInput
+                    ? input.scale(targetSpeed)
+                    : currentHorizontal.scale(0.995D);
+            Vec3 horizontal = currentHorizontal.lerp(targetHorizontal, 0.18D);
+            double vertical = this.jumpRequested ? 0.45D : Math.max(current.y - 0.03D, -0.08D);
+            this.setDeltaMovement(horizontal.x, vertical, horizontal.z);
+        }
+        this.move(MoverType.SELF, this.getDeltaMovement());
+        if (this.onGround()) {
+            this.setFlightActive(false);
+            this.jumpRequested = false;
+            this.diveRequested = false;
+            this.airbrakeRequested = false;
+            this.setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
     @Override
     public void aiStep() {
         super.aiStep();
 
+        if (!this.isVehicle()) {
+            this.jumpRequested = false;
+            this.diveRequested = false;
+            this.airbrakeRequested = false;
+        }
+        if (!this.isVehicle() || this.onGround()) {
+            this.setFlightActive(false);
+        }
+
         // Keep the same flap values and downward velocity reduction as vanilla chickens.
         this.oFlap = this.flap;
         this.oFlapSpeed = this.flapSpeed;
-        this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
-        this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
-        if (!this.onGround() && this.flapping < 1.0F) {
-            this.flapping = 1.0F;
+        if (this.onGround()) {
+            this.flapSpeed = 0.0F;
+            this.flapping = 0.0F;
+        } else {
+            this.flapSpeed += 4.0F * 0.3F;
+            this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
+            if (this.flapping < 1.0F) {
+                this.flapping = 1.0F;
+            }
+            this.flapping *= 0.9F;
         }
-        this.flapping *= 0.9F;
 
         Vec3 velocity = this.getDeltaMovement();
-        if (!this.onGround() && velocity.y < 0.0D) {
+        if (this.hasFlyingEgg() && !this.onGround() && velocity.y < 0.0D) {
             this.setDeltaMovement(velocity.multiply(1.0D, 0.6D, 1.0D));
         }
         this.flap += this.flapping * 2.0F;
@@ -368,7 +526,7 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
         // The 2.8-block collision height is taller than the model's saddle.
-        return super.getPassengerAttachmentPoint(passenger, dimensions, scale).add(0.0D, -0.5D, 0.0D);
+        return super.getPassengerAttachmentPoint(passenger, dimensions, scale).add(0.0D, -0.75D, 0.0D);
     }
 
     @Override

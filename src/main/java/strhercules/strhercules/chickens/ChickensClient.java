@@ -1,6 +1,7 @@
 package strhercules.chickens;
 
 import strhercules.chickens.client.ChickensConfigScreen;
+import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.ChemicalEggRegistry;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.LiquidEggRegistry;
@@ -20,6 +21,7 @@ import strhercules.chickens.client.render.blockentity.CollectorBlockEntityRender
 import strhercules.chickens.client.render.blockentity.RoostBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.NestBlockEntityRenderer;
 import strhercules.chickens.item.ChickenItemHelper;
+import strhercules.chickens.network.MegaChickenFlightPayload;
 import strhercules.chickens.registry.ModBlockEntities;
 import strhercules.chickens.registry.ModEntityTypes;
 import strhercules.chickens.registry.ModMenuTypes;
@@ -39,6 +41,10 @@ import strhercules.chickens.screen.RoosterScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.glfw.GLFW;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
@@ -48,10 +54,14 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Client-only hooks for renderer and colour registration. Static event
@@ -59,6 +69,16 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
  */
 @EventBusSubscriber(modid = ChickensMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class ChickensClient {
+    private static final KeyMapping MEGA_CHICKEN_DIVE = new KeyMapping(
+            "key.chickens.mega_chicken_dive", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT,
+            KeyMapping.CATEGORY_MOVEMENT);
+    private static final KeyMapping MEGA_CHICKEN_AIRBRAKE = new KeyMapping(
+            "key.chickens.mega_chicken_airbrake", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_CONTROL,
+            KeyMapping.CATEGORY_MOVEMENT);
+    private static boolean lastJumpDown;
+    private static boolean lastDiveDown;
+    private static boolean lastAirbrakeDown;
+
     private ChickensClient() {
     }
 
@@ -82,9 +102,49 @@ public final class ChickensClient {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        NeoForge.EVENT_BUS.addListener(ChickensClient::onClientTick);
         ModLoadingContext.get().getActiveContainer().registerExtensionPoint(IConfigScreenFactory.class,
                 (container, parent) -> new ChickensConfigScreen(parent));
         event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(ModRegistry.BREEDER.get(), RenderType.cutout()));
+    }
+
+    @SubscribeEvent
+    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+        event.register(MEGA_CHICKEN_DIVE);
+        event.register(MEGA_CHICKEN_AIRBRAKE);
+    }
+
+    private static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null || minecraft.getConnection() == null) {
+            lastJumpDown = false;
+            lastDiveDown = false;
+            lastAirbrakeDown = false;
+            return;
+        }
+
+        boolean jumping = minecraft.options.keyJump.isDown()
+                && minecraft.player.getVehicle() instanceof MegaChicken chicken
+                && chicken.hasFlyingEgg();
+        boolean diving = MEGA_CHICKEN_DIVE.isDown()
+                && minecraft.player.getVehicle() instanceof MegaChicken chicken
+                && chicken.hasFlyingEgg()
+                && !chicken.onGround();
+        boolean airbraking = MEGA_CHICKEN_AIRBRAKE.isDown()
+                && minecraft.player.getVehicle() instanceof MegaChicken chicken
+                && chicken.hasFlyingEgg()
+                && !chicken.onGround();
+        if (minecraft.player.getVehicle() instanceof MegaChicken chicken) {
+            chicken.setJumpRequested(jumping);
+            chicken.setDiveRequested(diving);
+            chicken.setAirbrakeRequested(airbraking);
+        }
+        if (jumping != lastJumpDown || diving != lastDiveDown || airbraking != lastAirbrakeDown) {
+            PacketDistributor.sendToServer(new MegaChickenFlightPayload(jumping, diving, airbraking));
+            lastJumpDown = jumping;
+            lastDiveDown = diving;
+            lastAirbrakeDown = airbraking;
+        }
     }
 
     @SubscribeEvent

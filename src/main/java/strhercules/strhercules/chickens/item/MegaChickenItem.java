@@ -54,6 +54,7 @@ public class MegaChickenItem extends Item {
     }
 
     public static ItemStack createFromDeath(MegaChicken chicken, Item storedItem) {
+        chicken.removeAllEffects();
         ItemStack stack = createFromEntity(chicken, storedItem);
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
             tag.putBoolean(REVIVAL_TAG, true);
@@ -184,6 +185,7 @@ public class MegaChickenItem extends Item {
         double safeY = Math.max(position.y(), level.getMinBuildHeight() + 0.01D);
         chicken.moveTo(position.x(), safeY, position.z(), level.random.nextFloat() * 360.0F, 0.0F);
         if (requiresActivation(stack)) {
+            chicken.removeAllEffects();
             chicken.setHealth(chicken.getMaxHealth());
         }
         chicken.setDeltaMovement(Vec3.ZERO);
