@@ -104,8 +104,8 @@ public final class ChickensDataLoader {
         // Allow external JSON definitions to extend the in-memory list before
         // configuration overrides are resolved.
         List<ChickensRegistryItem> defaults = DefaultChickens.create();
-        LegacyConfigBridge.importIfPresent(props, defaults);
         CustomChickensLoader.load(defaults);
+        LegacyConfigBridge.importIfPresent(props, defaults);
         ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
         defaults.forEach(ChickensRegistry::register);
@@ -440,11 +440,11 @@ public final class ChickensDataLoader {
 
         Map<ChickensRegistryItem, ParentNames> parentOverrides = new HashMap<>();
         for (ChickensRegistryItem chicken : chickens) {
-            String prefix = "chicken." + chicken.getEntityName().toLowerCase(java.util.Locale.ROOT) + ".";
+            String prefix = "chicken." + chicken.getEntityName() + ".";
             boolean enabled = readBoolean(props, prefix + "enabled", chicken.isEnabled());
             chicken.setEnabled(enabled);
 
-            float layCoefficient = readFloat(props, prefix + "layCoefficient", 1.0f);
+            float layCoefficient = readFloat(props, prefix + "layCoefficient", chicken.getLayCoefficient());
             chicken.setLayCoefficient(layCoefficient);
 
             // Snapshot the code-defined items BEFORE reading props so stale cfg
@@ -510,7 +510,6 @@ public final class ChickensDataLoader {
             }
         }
 
-        LegacyConfigBridge.export(props, chickens, values);
         return values;
     }
 
