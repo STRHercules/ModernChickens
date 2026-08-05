@@ -35,9 +35,10 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /** Optional Mekanism radiation integration. This class has no Mekanism imports. */
@@ -53,6 +54,7 @@ public final class MekanismRadiationCompat {
     private static final int MAX_STACK_CONTRIBUTION = 8;
     private static final Set<BlockEntity> TRACKED_CONTAINERS =
             Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Object TRACKED_CONTAINERS_LOCK = new Object();
 
     private static boolean resolutionAttempted;
     private static boolean available;
@@ -259,11 +261,12 @@ public final class MekanismRadiationCompat {
                 || !isRadiationEnabled()) {
             return;
         }
-        Iterator<BlockEntity> iterator = TRACKED_CONTAINERS.iterator();
-        while (iterator.hasNext()) {
-            BlockEntity blockEntity = iterator.next();
+        // Work from a snapshot because checking a container can synchronously load or
+        // unload chunks through another mod. Those chunk events update the tracked set
+        // and would otherwise invalidate its IdentityHashMap iterator.
+        for (BlockEntity blockEntity : trackedContainersSnapshot()) {
             if (blockEntity.isRemoved()) {
-                iterator.remove();
+                untrackContainer(blockEntity);
             } else if (blockEntity.getLevel() == level
                     && !(blockEntity instanceof AvianDousingMachineBlockEntity)) {
                 tickMachineWarning(level, blockEntity.getBlockPos(), blockEntity);
@@ -277,17 +280,33 @@ public final class MekanismRadiationCompat {
 
     private static void onChunkUnload(ChunkEvent.Unload event) {
         if (event.getChunk() instanceof LevelChunk chunk) {
-            TRACKED_CONTAINERS.removeAll(chunk.getBlockEntities().values());
+            synchronized (TRACKED_CONTAINERS_LOCK) {
+                TRACKED_CONTAINERS.removeAll(chunk.getBlockEntities().values());
+            }
         }
     }
 
     private static void trackChunkContainers(ChunkAccess chunk) {
         if (chunk instanceof LevelChunk levelChunk) {
-            for (BlockEntity blockEntity : levelChunk.getBlockEntities().values()) {
-                if (blockEntity instanceof Container) {
-                    TRACKED_CONTAINERS.add(blockEntity);
+            synchronized (TRACKED_CONTAINERS_LOCK) {
+                for (BlockEntity blockEntity : levelChunk.getBlockEntities().values()) {
+                    if (blockEntity instanceof Container) {
+                        TRACKED_CONTAINERS.add(blockEntity);
+                    }
                 }
             }
+        }
+    }
+
+    private static List<BlockEntity> trackedContainersSnapshot() {
+        synchronized (TRACKED_CONTAINERS_LOCK) {
+            return new ArrayList<>(TRACKED_CONTAINERS);
+        }
+    }
+
+    private static void untrackContainer(BlockEntity blockEntity) {
+        synchronized (TRACKED_CONTAINERS_LOCK) {
+            TRACKED_CONTAINERS.remove(blockEntity);
         }
     }
 
