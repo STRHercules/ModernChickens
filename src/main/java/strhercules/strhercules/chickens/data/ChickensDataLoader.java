@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,13 +43,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 /**
  * Handles the external configuration that drives chicken definitions.
- * The modern release stores everything in a Forge-style {@code chickens.cfg}
- * file, but still honours the old {@code chickens.properties} if it is found
- * so existing packs upgrade without losing their tweaks.
+ * The modern release stores global values in {@code chickens.toml} and stock
+ * or custom chicken tables in {@code custom_chickens.toml}. It still honours
+ * old configuration files so existing packs upgrade without losing tweaks.
  */
 public final class ChickensDataLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensData");
@@ -63,26 +63,9 @@ public final class ChickensDataLoader {
     private ChickensDataLoader() {
     }
 
-    private static void ensureDefaultConfig() {
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve("chickens.cfg");
-        if (Files.exists(configPath)) {
-            return;
-        }
-        try (InputStream in = ChickensDataLoader.class.getResourceAsStream("/defaultconfigs/chickens.cfg")) {
-            if (in == null) {
-                return;
-            }
-            Files.createDirectories(configPath.getParent());
-            Files.copy(in, configPath);
-        } catch (IOException ex) {
-            LOGGER.warn("Failed to copy default chickens.cfg", ex);
-        }
-    }
-
     public static void bootstrap() {
-        ensureDefaultConfig();
         Properties props = loadLegacyProperties();
-        LegacyConfigBridge.importIfPresent(props, List.of());
+        TomlConfigBridge.load(props);
 
         ChickensConfigValues preview = readGeneralSettings(props);
         if (preview.isFluidChickensEnabled()) {
@@ -101,11 +84,10 @@ public final class ChickensDataLoader {
             LOGGER.info("Skipping gas egg registration because general.enableGasChickens is false");
         }
 
-        // Allow external JSON definitions to extend the in-memory list before
-        // configuration overrides are resolved.
+        // Allow external TOML definitions to extend the in-memory list before
+        // per-chicken configuration overrides are resolved.
         List<ChickensRegistryItem> defaults = DefaultChickens.create();
         CustomChickensLoader.load(defaults);
-        LegacyConfigBridge.importIfPresent(props, defaults);
         ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
         defaults.forEach(ChickensRegistry::register);
@@ -433,7 +415,7 @@ public final class ChickensDataLoader {
 
     private static ChickensConfigValues applyConfiguration(Properties props, List<ChickensRegistryItem> chickens) {
         ChickensConfigValues values = readGeneralSettings(props);
-        Map<String, ChickensRegistryItem> byName = new HashMap<>();
+        Map<String, ChickensRegistryItem> byName = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (ChickensRegistryItem chicken : chickens) {
             byName.put(chicken.getEntityName(), chicken);
         }
@@ -837,7 +819,7 @@ public final class ChickensDataLoader {
         if (Files.exists(legacyProps)) {
             try (Reader reader = Files.newBufferedReader(legacyProps)) {
                 props.load(reader);
-                LOGGER.info("Loaded configuration overrides from legacy chickens.properties; future saves only update chickens.cfg");
+                LOGGER.info("Loaded configuration overrides from legacy chickens.properties; future saves only update chickens.toml");
             } catch (IOException e) {
                 LOGGER.warn("Failed to migrate chickens.properties; continuing with defaults", e);
             }

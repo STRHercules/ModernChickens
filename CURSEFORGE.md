@@ -18,7 +18,7 @@ Mod-specific chickens and dynamic content are registered only when the relevant 
 - **Analyse and breed.** Right-click chickens with the **Analyzer** to view Growth, Gain, and Strength. Combine chickens in the **Breeder** to unlock higher tiers.
 - **Automate production.** Put chickens in **Roosts** and use **Collectors**, hoppers, and item pipes to move their drops into storage.
 - **Scale the coop.** Use **Henhouses**, **Nests**, **Roosters**, the **Incubator**, and the Avian converters to build hands-free production lines.
-- **Tune the pack.** Edit `config/chickens.cfg` to adjust lay rates, breeder speed, drop scaling, spawn behavior, vanilla egg suppression, and integration settings.
+- **Tune the pack.** Edit `config/chickens.toml` for global options and `config/custom_chickens.toml` for stock/custom chicken tables, lay rates, drops, breeding, and spawn behavior.
 
 The roster, drops, parents, spawn types, textures, and lay coefficients are data-driven. Higher-tier chickens normally do not spawn naturally, so breeding remains the intended progression path.
 
@@ -32,7 +32,7 @@ The roster, drops, parents, spawn types, textures, and lay coefficients are data
 - An **Avian Flux Converter** and **Redstone Flux Chickens** for converting Flux Eggs into stored and exportable RF.
 - Runtime-generated chickens for registered fluids, Mekanism chemicals, Mekanism gases, and detected ingot resources.
 - JEI recipe categories, item subtypes, and Jade/WTHIT overlays for chickens, stats, breeding, tanks, machines, and progress.
-- Custom chicken definitions through `config/chickens_custom.json`, without recompiling the mod.
+- Custom chicken definitions through `config/custom_chickens.toml`, without recompiling the mod.
 - Datapack spawn-plan overrides and commands for inspecting or testing spawn behavior.
 
 ## Progression and natural spawning
@@ -367,29 +367,30 @@ Radioactive liquid eggs display a hazard tooltip and can apply Wither briefly wh
 
 ## Custom chicken creation
 
-After the first run, Modern Chickens generates `config/chickens_custom.json`. Add entries to its top-level `chickens` array to define bespoke chickens without recompiling the mod. The generated starter file includes an example.
+After the first run, Modern Chickens generates `config/custom_chickens.toml`. It contains every stock `[chickens.<name>]` table and is also where bespoke chickens are defined. Global options remain in `config/chickens.toml` under `[general]`.
 
 Each entry can define:
 
-- `name` - Unique registry name.
+- The quoted table name - Unique registry name; use `[chickens."Steel Chicken"]` for names containing spaces.
 - `id` - Optional positive numeric id; omitted values use the next free id.
 - `texture` - In-world texture resource location.
-- `item_texture` - Optional Chicken Item and JEI sprite resource location.
-- `lay_item` and `drop_item` - Resource item ids and optional counts.
-- `background_color` and `foreground_color` - Hex or decimal colours for generated/tinted textures.
-- `parents` - Up to two existing chicken names.
-- `spawn_type` - `normal`, `snow`, `end`, `hell`, or `none`.
-- `lay_coefficient` - Lay-time multiplier; defaults to `1.0`.
-- `display_name` - Optional in-game display name.
-- `generated_texture` - Whether the configured texture should be colour-tinted.
+- `itemTexture` - Optional Chicken Item and JEI sprite resource location.
+- `layItemName`, `layItemAmount`, and `layItemMeta` - Resource item id, count, and liquid-egg variant.
+- `dropItemName`, `dropItemAmount`, and `dropItemMeta` - Death-drop resource item id, count, and variant.
+- `backgroundColor` and `foregroundColor` - Hex or decimal colours for generated/tinted textures.
+- `parent1` and `parent2` - Existing chicken names; both must resolve for breeding to remain configured.
+- `spawnType` - `NORMAL`, `SNOW`, `END`, `HELL`, or `NONE`.
+- `layCoefficient` - Lay-time multiplier; defaults to `1.0`.
+- `displayName` - Optional in-game display name.
+- `generatedTexture` - Whether the configured texture should be colour-tinted.
 - `enabled` - Whether the chicken participates in registries and breeding; defaults to `true`.
-- `allowNaturalSpawn` - `chickens.cfg` per-chicken setting that can allow a parent-based chicken into natural spawn tables.
+- `allowNaturalSpawn` - Allows a parent-based chicken into natural spawn tables.
 
-Missing fields use the mod defaults. Resource locations are normalized to lowercase; omitting a texture falls back to the bone-chicken sprite. Custom chickens also participate in the existing `chickens.cfg` flow, so they can be enabled, disabled, reparented, or retuned alongside built-in breeds.
+Missing fields use the mod defaults. Resource locations are normalized to lowercase; omitting a texture falls back to the bone-chicken sprite when `generatedTexture = true`. Existing `chickens_custom.json` files are still read for migration compatibility, but new definitions must use TOML.
 
 ## Configuration
 
-The server configuration is generated at `config/chickens.cfg`. Stop the game before editing it, then restart the client/server to apply changes.
+The global server configuration is generated at `config/chickens.toml`; stock and custom chicken tables are generated at `config/custom_chickens.toml`. Stop the game before editing either file, then restart the client/server to apply changes.
 
 Common settings include:
 
@@ -414,6 +415,8 @@ Common settings include:
 - `general.incubatorMaxReceive`
 
 The generated file is the source of truth for the available values and comments in your installed version. Existing legacy `chickens.properties` files are read once for migration and are no longer written by current versions.
+
+See [Explanation.md](Explanation.md) for the complete TOML option reference and migration instructions.
 
 ## Links
 

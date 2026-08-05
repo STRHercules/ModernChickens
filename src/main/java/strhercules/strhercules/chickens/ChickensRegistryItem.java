@@ -68,7 +68,7 @@ public class ChickensRegistryItem {
     }
 
     /**
-     * Marks the registry item as originating from {@code chickens_custom.json}.
+     * Marks the registry item as originating from a player-defined TOML table.
      * The flag lets the client-side rendering pipeline apply stricter texture
      * handling rules so bespoke resource packs remain untouched by legacy
      * fallbacks.

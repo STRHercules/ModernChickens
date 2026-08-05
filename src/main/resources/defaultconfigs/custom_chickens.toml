@@ -1,0 +1,750 @@
+# Modern Chickens chicken definitions and per-chicken overrides
+#
+# Built-in chicken tables below are the editable stock data. Add another
+# [chickens."Name"] table to define a new chicken. See Explanation.md.
+#
+# For built-ins, the normal editable fields are enabled, layCoefficient,
+# spawnType, allowNaturalSpawn, parent1, parent2, layItemName,
+# layItemAmount, layItemMeta, dropItemName, dropItemAmount, dropItemMeta,
+# and liquidDousingCost.
+
+[chickens.WhiteChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:bone"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:bone"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.OrangeChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "RedChicken"
+parent2 = "YellowChicken"
+layItemName = "minecraft:orange_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:orange_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.MagentaChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "PurpleChicken"
+parent2 = "PinkChicken"
+layItemName = "minecraft:magenta_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:magenta_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.LightBlueChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "WhiteChicken"
+parent2 = "BlueChicken"
+layItemName = "minecraft:light_blue_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:light_blue_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.YellowChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:yellow_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:yellow_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.LimeChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "GreenChicken"
+parent2 = "WhiteChicken"
+layItemName = "minecraft:lime_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:lime_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.PinkChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "RedChicken"
+parent2 = "WhiteChicken"
+layItemName = "minecraft:pink_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:pink_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GrayChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "BlackChicken"
+parent2 = "WhiteChicken"
+layItemName = "minecraft:gray_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:gray_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.SilverDyeChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "GrayChicken"
+parent2 = "WhiteChicken"
+layItemName = "minecraft:light_gray_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:light_gray_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.CyanChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "BlueChicken"
+parent2 = "GreenChicken"
+layItemName = "minecraft:cyan_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:cyan_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.PurpleChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "BlueChicken"
+parent2 = "RedChicken"
+layItemName = "minecraft:purple_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:purple_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.BlueChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "WaterChicken"
+parent2 = "FlintChicken"
+layItemName = "minecraft:lapis_lazuli"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:lapis_lazuli"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.BrownChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "RedChicken"
+parent2 = "GreenChicken"
+layItemName = "minecraft:cocoa_beans"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:cocoa_beans"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GreenChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:green_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:green_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.RedChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:red_dye"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:red_dye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.BlackChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:ink_sac"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:ink_sac"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.SmartChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:egg"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:egg"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GunpowderChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "SandChicken"
+parent2 = "FlintChicken"
+layItemName = "minecraft:gunpowder"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:gunpowder"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.FlintChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:flint"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:flint"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.SnowballChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "SNOW"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:snowball"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:snowball"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.LavaChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "chickens:liquid_egg"
+layItemAmount = 1
+layItemMeta = 1
+dropItemName = "chickens:liquid_egg"
+dropItemAmount = 1
+dropItemMeta = 1
+liquidDousingCost = 10000
+
+[chickens.QuartzChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "HELL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:quartz"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:quartz"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.SandChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:sand"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:sand"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GlassChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "QuartzChicken"
+parent2 = "RedstoneChicken"
+layItemName = "minecraft:glass"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:glass"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.LeatherChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "StringChicken"
+parent2 = "BrownChicken"
+layItemName = "minecraft:leather"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:leather"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.LogChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NORMAL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:oak_log"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:oak_log"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.ClayChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "SnowballChicken"
+parent2 = "SandChicken"
+layItemName = "minecraft:clay_ball"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:clay_ball"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.RedstoneChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "RedChicken"
+parent2 = "SandChicken"
+layItemName = "minecraft:redstone"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:redstone"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GlowstoneChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "QuartzChicken"
+parent2 = "YellowChicken"
+layItemName = "minecraft:glowstone_dust"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:glowstone_dust"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.IronChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "FlintChicken"
+parent2 = "WhiteChicken"
+layItemName = "minecraft:iron_ingot"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:iron_ingot"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.CoalChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "FlintChicken"
+parent2 = "LogChicken"
+layItemName = "minecraft:coal"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:coal"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.SlimeChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "ClayChicken"
+parent2 = "GreenChicken"
+layItemName = "minecraft:slime_ball"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:slime_ball"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.WaterChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = ""
+parent2 = ""
+layItemName = "chickens:liquid_egg"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "chickens:liquid_egg"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.NetherwartChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "BrownChicken"
+parent2 = "GlowstoneChicken"
+layItemName = "minecraft:nether_wart"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:nether_wart"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GoldChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "IronChicken"
+parent2 = "YellowChicken"
+layItemName = "minecraft:gold_nugget"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:gold_nugget"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.DiamondChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "GlassChicken"
+parent2 = "GoldChicken"
+layItemName = "minecraft:diamond"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:diamond"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.BlazeChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "GoldChicken"
+parent2 = "LavaChicken"
+layItemName = "minecraft:blaze_rod"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:blaze_rod"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.StringChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "BlackChicken"
+parent2 = "LogChicken"
+layItemName = "minecraft:string"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:spider_eye"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.EmeraldChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "DiamondChicken"
+parent2 = "GreenChicken"
+layItemName = "minecraft:emerald"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:emerald"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.EnderChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "END"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:ender_pearl"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:ender_pearl"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.GhastChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "WhiteChicken"
+parent2 = "BlazeChicken"
+layItemName = "minecraft:ghast_tear"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:ghast_tear"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.MagmaChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "SlimeChicken"
+parent2 = "BlazeChicken"
+layItemName = "minecraft:magma_cream"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:magma_cream"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.RedstoneFluxChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "RedstoneChicken"
+parent2 = "GlowstoneChicken"
+layItemName = "chickens:flux_egg"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "chickens:flux_egg"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.pShardChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "WaterChicken"
+parent2 = "SandChicken"
+layItemName = "minecraft:prismarine_shard"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:prismarine_shard"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.pCrystalChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "pShardChicken"
+parent2 = "GlowstoneChicken"
+layItemName = "minecraft:prismarine_crystals"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:prismarine_crystals"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.soulSandChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "HELL"
+allowNaturalSpawn = true
+parent1 = ""
+parent2 = ""
+layItemName = "minecraft:soul_sand"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:soul_sand"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.obsidianChicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "WaterChicken"
+parent2 = "LavaChicken"
+layItemName = "minecraft:obsidian"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:obsidian"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+[chickens.copperchicken]
+enabled = true
+layCoefficient = 1
+spawnType = "NONE"
+allowNaturalSpawn = false
+parent1 = "YellowChicken"
+parent2 = "BrownChicken"
+layItemName = "minecraft:copper_ingot"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:copper_ingot"
+dropItemAmount = 1
+dropItemMeta = 0
+liquidDousingCost = 10000
+
+# Example new definition (uncomment and edit):
+# [chickens."CopperChicken"]
+# texture = "chickens:textures/entity/copperchicken.png"
+# itemTexture = "chickens:textures/item/chicken/copperchicken.png"
+# layItemName = "minecraft:copper_ingot"
+# layItemAmount = 1
+# layItemMeta = 0
+# dropItemName = "minecraft:copper_ingot"
+# dropItemAmount = 1
+# dropItemMeta = 0
+# backgroundColor = "#b87333"
+# foregroundColor = "#f8cfa9"
+# parent1 = "IronChicken"
+# parent2 = "WaterChicken"
+# spawnType = "NONE"
+# layCoefficient = 1.0
+# displayName = "Copper Chicken"
+# generatedTexture = false
+# enabled = true
+

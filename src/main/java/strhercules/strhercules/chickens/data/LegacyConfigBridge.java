@@ -75,9 +75,7 @@ public final class LegacyConfigBridge {
                     applyGeneralValue(props, key, value);
                 } else {
                     ChickensRegistryItem chicken = byName.get(currentSection);
-                    if (chicken != null) {
-                        applyChickenValue(props, chicken, key, value);
-                    }
+                    applyChickenValue(props, chicken != null ? chicken.getEntityName() : currentSection, key, value);
                 }
             }
         } catch (IOException ex) {
@@ -192,8 +190,8 @@ public final class LegacyConfigBridge {
         }
     }
 
-    private static void applyChickenValue(Properties props, ChickensRegistryItem chicken, String key, String value) {
-        String prefix = prefixFor(chicken.getEntityName());
+    private static void applyChickenValue(Properties props, String entityName, String key, String value) {
+        String prefix = prefixFor(entityName);
         switch (key) {
             case "enabled" -> props.setProperty(prefix + "enabled", value);
             case "layCoefficient" -> props.setProperty(prefix + "layCoefficient", value);

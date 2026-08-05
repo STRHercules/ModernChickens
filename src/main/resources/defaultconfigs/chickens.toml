@@ -1,0 +1,43 @@
+# Modern Chickens Configuration
+# Global gameplay and machine options live in this file.
+# Per-chicken data and custom chicken definitions live in custom_chickens.toml.
+# Edit the file while Minecraft is stopped, then restart to apply changes.
+
+[general]
+spawnProbability = 10
+minBroodSize = 1
+maxBroodSize = 2
+netherSpawnChanceMultiplier = 1
+overworldSpawnChance = 0.02
+netherSpawnChance = 0.05
+endSpawnChance = 0.015
+alwaysShowStats = false
+roostSpeed = 1
+breederSpeed = 1
+roosterAuraMultiplier = 1.25
+roosterAuraRange = 4
+nestMaxRoosters = 1
+nestSeedDurationTicks = 1200
+disableEggLaying = false
+collectorScanRange = 4
+avianFluxEffectsEnabled = true
+fluxEggCapacityMultiplier = 1
+avianFluxCapacity = 50000
+avianFluxMaxReceive = 4000
+avianFluxMaxExtract = 4000
+avianFluidConverterCapacity = 8000
+avianFluidConverterTransferRate = 2000
+avianFluidConverterEffectsEnabled = true
+avianChemicalConverterCapacity = 8000
+avianChemicalConverterTransferRate = 2000
+avianChemicalConverterEffectsEnabled = true
+liquidEggHazardsEnabled = true
+incubatorEnergyCost = 10000
+incubatorCapacity = 100000
+incubatorMaxReceive = 4000
+scalingDrops = true
+enableFluidChickens = true
+enableChemicalChickens = true
+enableGasChickens = true
+roostDropCount = 64
+

@@ -17,13 +17,31 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Edits the existing legacy config without introducing a second config format. */
+/** Edits the player-owned TOML config while preserving its comments and layout. */
 public final class ChickensConfigScreen extends Screen {
-    private static final Pattern SECTION = Pattern.compile("^\\s*([^{}\\s]+)\\s*\\{\\s*$");
-    private static final Pattern ENTRY = Pattern.compile("^\\s*([A-Za-z]):([^=]+)=(.*)$");
+    private static final Pattern SECTION = Pattern.compile("^\\s*\\[([^]]+)]\\s*$");
+    private static final Pattern ENTRY = Pattern.compile("^\\s*([A-Za-z][A-Za-z0-9_]*)\\s*=\\s*(.*)$");
+    private static final Set<String> BOOLEAN_KEYS = Set.of(
+            "alwaysShowStats", "disableEggLaying", "avianFluxEffectsEnabled",
+            "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
+            "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
+            "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn", "generatedTexture");
+    private static final Set<String> INTEGER_KEYS = Set.of(
+            "spawnProbability", "minBroodSize", "maxBroodSize", "roosterAuraRange",
+            "nestMaxRoosters", "nestSeedDurationTicks", "collectorScanRange", "avianFluxCapacity",
+            "avianFluxMaxReceive", "avianFluxMaxExtract", "avianFluidConverterCapacity",
+            "avianFluidConverterTransferRate", "avianChemicalConverterCapacity",
+            "avianChemicalConverterTransferRate", "incubatorEnergyCost", "incubatorCapacity",
+            "incubatorMaxReceive", "roostDropCount", "layItemAmount", "layItemMeta",
+            "dropItemAmount", "dropItemMeta", "liquidDousingCost", "id");
+    private static final Set<String> DECIMAL_KEYS = Set.of(
+            "netherSpawnChanceMultiplier", "overworldSpawnChance", "netherSpawnChance",
+            "endSpawnChance", "roostSpeed", "breederSpeed", "roosterAuraMultiplier",
+            "fluxEggCapacityMultiplier", "layCoefficient");
     private static final int ROW_HEIGHT = 24;
     private static final int CONTENT_TOP = 54;
     private static final int CONTENT_BOTTOM = 28;
@@ -48,7 +66,7 @@ public final class ChickensConfigScreen extends Screen {
     private Component error;
 
     public ChickensConfigScreen(Screen parent) {
-        this(parent, ConfigDocument.load(), false);
+        this(parent, ConfigDocument.load("chickens.toml"), false);
     }
 
     private ChickensConfigScreen(Screen parent, ConfigDocument document, boolean chickenSettings) {
@@ -90,7 +108,8 @@ public final class ChickensConfigScreen extends Screen {
             saveButton = addRenderableWidget(Button.builder(Component.translatable("screen.chickens.config.save"),
                     button -> saveAndClose()).bounds(chickenSettingsX - 96, 24, 88, 20).build());
             addRenderableWidget(Button.builder(Component.translatable("screen.chickens.config.chickens_button"),
-                    button -> minecraft.setScreen(new ChickensConfigScreen(this, document, true)))
+                    button -> minecraft.setScreen(new ChickensConfigScreen(this,
+                            ConfigDocument.load("custom_chickens.toml"), true)))
                     .bounds(chickenSettingsX, 24, 140, 20).build());
             addRenderableWidget(Button.builder(Component.translatable("gui.cancel"), button -> onClose())
                     .bounds(cancelX, 24, 88, 20).build());
@@ -250,7 +269,7 @@ public final class ChickensConfigScreen extends Screen {
             document.save();
             minecraft.setScreen(parent);
         } catch (IOException ex) {
-            error = Component.translatable("screen.chickens.config.error.save", ex.getMessage());
+            error = Component.translatable("screen.chickens.config.error.save", document.fileName, ex.getMessage());
         }
     }
 
@@ -321,25 +340,28 @@ public final class ChickensConfigScreen extends Screen {
 
     private static final class ConfigDocument {
         private final Path path;
+        private final String fileName;
         private final List<DocumentLine> lines;
         private final List<ConfigEntry> entries;
         private final Component loadError;
 
-        private ConfigDocument(Path path, List<DocumentLine> lines, List<ConfigEntry> entries, Component loadError) {
+        private ConfigDocument(Path path, String fileName, List<DocumentLine> lines, List<ConfigEntry> entries,
+                Component loadError) {
             this.path = path;
+            this.fileName = fileName;
             this.lines = lines;
             this.entries = entries;
             this.loadError = loadError;
         }
 
-        private static ConfigDocument load() {
-            Path path = FMLPaths.CONFIGDIR.get().resolve("chickens.cfg");
+        private static ConfigDocument load(String fileName) {
+            Path path = FMLPaths.CONFIGDIR.get().resolve(fileName);
             List<String> source;
             try {
                 if (Files.exists(path)) {
                     source = Files.readAllLines(path, StandardCharsets.UTF_8);
                 } else {
-                    try (InputStream stream = ChickensConfigScreen.class.getResourceAsStream("/defaultconfigs/chickens.cfg")) {
+                    try (InputStream stream = ChickensConfigScreen.class.getResourceAsStream("/defaultconfigs/" + fileName)) {
                         if (stream == null) {
                             throw new IOException("default config is missing");
                         }
@@ -347,8 +369,8 @@ public final class ChickensConfigScreen extends Screen {
                     }
                 }
             } catch (IOException ex) {
-                return new ConfigDocument(path, new ArrayList<>(), new ArrayList<>(),
-                        Component.translatable("screen.chickens.config.error.read", ex.getMessage()));
+                return new ConfigDocument(path, fileName, new ArrayList<>(), new ArrayList<>(),
+                        Component.translatable("screen.chickens.config.error.read", fileName, ex.getMessage()));
             }
 
             List<DocumentLine> lines = new ArrayList<>();
@@ -357,21 +379,30 @@ public final class ChickensConfigScreen extends Screen {
             for (String text : source) {
                 Matcher sectionMatch = SECTION.matcher(text);
                 if (sectionMatch.matches()) {
-                    section = sectionMatch.group(1);
-                } else if (text.trim().equals("}")) {
-                    section = null;
+                    String table = sectionMatch.group(1).trim();
+                    section = table.equalsIgnoreCase("general") ? "general"
+                            : table.regionMatches(true, 0, "chickens.", 0, "chickens.".length())
+                                    ? unquote(table.substring("chickens.".length()))
+                                    : null;
                 }
 
                 ConfigEntry entry = null;
                 Matcher entryMatch = ENTRY.matcher(text);
                 if (section != null && entryMatch.matches()) {
-                    entry = new ConfigEntry(section, entryMatch.group(2).trim(),
-                            entryMatch.group(1).charAt(0), entryMatch.group(3));
+                    String key = entryMatch.group(1).trim();
+                    char type = typeFor(key);
+                    entry = new ConfigEntry(section, key, type, decodeValue(entryMatch.group(2).trim(), type));
                     entries.add(entry);
                 }
                 lines.add(new DocumentLine(text, entry));
             }
-            return new ConfigDocument(path, lines, entries, null);
+            return new ConfigDocument(path, fileName, lines, entries, null);
+        }
+
+        private static String unquote(String value) {
+            return value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"'
+                    ? value.substring(1, value.length() - 1)
+                    : value;
         }
 
         private Component validate() {
@@ -413,7 +444,8 @@ public final class ChickensConfigScreen extends Screen {
             Files.createDirectories(path.getParent());
             List<String> output = new ArrayList<>(lines.size());
             for (DocumentLine line : lines) {
-                output.add(line.entry == null ? line.text : line.text.substring(0, line.text.indexOf('=') + 1) + line.entry.value);
+                output.add(line.entry == null ? line.text
+                        : line.text.substring(0, line.text.indexOf('=') + 1) + " " + formatValue(line.entry));
             }
             Files.write(path, output, StandardCharsets.UTF_8);
         }
@@ -445,5 +477,34 @@ public final class ChickensConfigScreen extends Screen {
         private String searchText() {
             return (section + "." + key).toLowerCase(Locale.ROOT);
         }
+    }
+
+    private static char typeFor(String key) {
+        if (BOOLEAN_KEYS.contains(key)) {
+            return 'B';
+        }
+        if (INTEGER_KEYS.contains(key)) {
+            return 'I';
+        }
+        if (DECIMAL_KEYS.contains(key)) {
+            return 'D';
+        }
+        return 'S';
+    }
+
+    private static String decodeValue(String raw, char type) {
+        if (type != 'S' || raw.length() < 2 || raw.charAt(0) != '"' || raw.charAt(raw.length() - 1) != '"') {
+            return raw;
+        }
+        return raw.substring(1, raw.length() - 1)
+                .replace("\\\\", "\\")
+                .replace("\\\"", "\"");
+    }
+
+    private static String formatValue(ConfigEntry entry) {
+        if (entry.type != 'S') {
+            return entry.value;
+        }
+        return "\"" + entry.value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }

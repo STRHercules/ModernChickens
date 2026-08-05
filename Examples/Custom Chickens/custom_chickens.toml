@@ -1,0 +1,60 @@
+# Place this file in config/custom_chickens.toml.
+# It contains new chicken definitions; the installed file also contains all stock tables.
+# Keep every table name unique. See Explanation.md for all fields.
+
+[chickens."Whipped Cream Chicken"]
+texture = "chickens:textures/entity/gunpowderchicken.png"
+itemTexture = "chickens:textures/item/chicken/gunpowderchicken.png"
+layItemName = "minecraft:cake"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:cake"
+dropItemAmount = 1
+dropItemMeta = 0
+backgroundColor = "#ad2cdb"
+foregroundColor = "#0bd1e3"
+parent1 = "SnowballChicken"
+parent2 = "SlimeChicken"
+spawnType = "NONE"
+layCoefficient = 1.25
+displayName = "Whipped Cream Chicken"
+generatedTexture = false
+enabled = true
+
+[chickens."Booger Chicken"]
+itemTexture = "chickens:textures/item/chicken/slimechicken.png"
+layItemName = "minecraft:cake"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:cake"
+dropItemAmount = 1
+dropItemMeta = 0
+backgroundColor = "#195e2c"
+foregroundColor = "#15291a"
+parent1 = "SnowballChicken"
+parent2 = "SlimeChicken"
+spawnType = "NONE"
+layCoefficient = 1.25
+displayName = "Booger Chicken"
+generatedTexture = true
+enabled = true
+
+[chickens."Burnt Toast Chicken"]
+texture = "chickens:textures/entity/glasschicken.png"
+itemTexture = "chickens:textures/item/chicken/glasschicken.png"
+layItemName = "minecraft:cake"
+layItemAmount = 1
+layItemMeta = 0
+dropItemName = "minecraft:cake"
+dropItemAmount = 1
+dropItemMeta = 0
+backgroundColor = "#1c632f"
+foregroundColor = "#b86c2e"
+parent1 = "SnowballChicken"
+parent2 = "SlimeChicken"
+spawnType = "NONE"
+layCoefficient = 1.25
+displayName = "Burnt Toast Chicken"
+generatedTexture = false
+enabled = true
+

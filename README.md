@@ -13,12 +13,12 @@ Modern Chickens is a NeoForge port of the classic Chickens and Roost mods for Mi
 1. **Collect basic chickens.** Use spawn eggs or natural spawns to gather Tier 1 breeds, then throw coloured eggs to obtain dyed variants.
 2. **Analyse and breed.** Right-click chickens with the analyzer to view stats, use roosts for passive production, and combine chickens in the breeder to unlock higher tiers.
 3. **Automate collection.** Set up collectors next to roosts and henhouses to sweep drops into inventories or item pipes.
-4. **Scale production.** Tune [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) to adjust lay rates, breeder speed multipliers, vanilla egg suppression, and natural spawn toggles to match your pack’s balance goals.
+4. **Scale production.** Tune [chickens.toml](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.toml) for global options and [custom_chickens.toml](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Custom%20Chickens/custom_chickens.toml) for stock/custom chicken tables.
 5. **Avian Domination!**
 
 ## Feature Highlights
 	
-- **Comprehensive and Customizable chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and a persistent [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) configuration file. Chickens can be customised, disabled, or reparented without recompiling the mod.
+- **Comprehensive and Customizable chicken roster** - Ports the entire legacy chicken catalogue with stats, drops, and breeding trees exposed through data-driven registries and persistent TOML files. Chickens can be customised, disabled, or reparented without recompiling the mod.
 - **Dynamic material coverage** - Generates placeholder chickens for any ingot item detected at runtime, using a shared fallback texture and Smart Chicken lineage to keep mod packs covered without manual config tweaks.
 - **Automation blocks** - Roosts, breeders, collectors, the Avian Flux Converter, the Avian Fluid Converter, the Avian Chemical Converter, and the Avian Dousing Machine ship with their original block entities, menus, and renderers so farms can incubate, store, transmute, and harvest chickens hands-free.
 - **Dedicated items** - Spawn eggs, coloured eggs, liquid eggs, chemical and gas eggs, chicken catchers, and analyzer tools keep the legacy progression loop intact while adopting modern capability and tooltip systems.
@@ -86,7 +86,7 @@ _Chickens available in ATM10!_
 > Modded Chickens will choose random assets for the item version, and use a texture that is generated on the fly for them in the overworld
 
 
-> Configuration and breeding data live in `config/chickens.cfg`. The file is generated on first run and can be safely edited while the game is stopped. Restart the client or server—or run `/chickens export breeding`—to reload breeding graphs after making changes. 
+> Global options live in `config/chickens.toml`; stock and custom chicken tables live in `config/custom_chickens.toml`. Both files are generated on first run and can be safely edited while the game is stopped. Restart the client or server to reload breeding graphs after making changes. 
 
 
 > Need a quieter base? Flip `general.avianFluxEffectsEnabled=false` to disable the Avian Flux Converter's light and particle effects without touching code.
@@ -96,6 +96,8 @@ _Chickens available in ATM10!_
 > Prefer gentler handling? Set `general.liquidEggHazardsEnabled=false` to suppress the liquid egg status effects, and tune `general.avianFluidConverterCapacity` / `general.avianFluidConverterTransferRate` to balance fluid throughput.
 
 > Existing `chickens.properties` files are loaded once (for migration) but are no longer written—feel free to delete them after confirming the upgrade. (only if upgrading from an old version that used this file)
+
+See [Explanation.md](Explanation.md) for the complete TOML option reference, migration behavior, and editing examples.
 
 ## New Egg Assets
 
@@ -124,7 +126,7 @@ Liquid eggs no longer require hand-placing to deploy their contents. Drop a liqu
 - **Discovery**: JEI adds an “Avian Fluid/Chemical Converter” category that lists every liquid/chemical egg and the fluid/chemical volume it produces. The converter block is registered as a catalyst, so recipes are only a click away.
 - **Catch ’em all**: Modern Chickens now creates a dedicated chicken for every fluid and chemical detected at runtime—if a mod ships a new liquid or chemical, you get a matching bird and egg automatically.
 - **Monitoring**: WTHIT and Jade overlays mirror the in-block gauge with the current fluid/chemical name, stored amount, and tank capacity. You can check the converter’s status without opening the GUI.
-- **Balancing**: Server owners can adjust `general.avianFluidConverterCapacity`, `general.avianFluidConverterTransferRate`, and `general.liquidEggHazardsEnabled` in `config/chickens.cfg` to match the rest of their tech progression.
+- **Balancing**: Server owners can adjust `general.avianFluidConverterCapacity`, `general.avianFluidConverterTransferRate`, and `general.liquidEggHazardsEnabled` in `config/chickens.toml` to match the rest of their tech progression.
 	
 Pair the converter with standard fluid/chemical transport (pipes, tubes, tanks, or machines) to integrate chickens into modded processing lines—experience, biofuel, radioactive waste, and other tech fluids now flow straight from the coop.
 
@@ -164,13 +166,13 @@ Roosters are utility birds inspired by Hatchery’s rooster: they never lay eggs
 - **Item form**: Using the Chicken Catcher on a rooster turns it into a specialised chicken item marked as a rooster. That item can be placed back into the world as a rooster, or dropped into a Nest to contribute aura.
 - **Roost synergy**: Roosts scan the area around them for active nests. Each rooster in an active nest adds a production bonus on top of the base roost speed.
 
-Rooster-related configuration entries live in the `general` section of `config/chickens.cfg`:
+Rooster-related configuration entries live in the `general` section of `config/chickens.toml`:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `general.roosterAuraMultiplier` | Double | `1.25` | Multiplier applied to roost production when exactly one active rooster is found. Additional roosters scale linearly on top of this (e.g., `1.25` with three roosters yields `1 + 3 × 0.25 = 1.75` times the base rate). Values at or below `1.0` effectively disable the aura bonus. |
 | `general.roosterAuraRange` | Integer | `4` | Horizontal search radius (in blocks) used by roosts to find active nests. `0` disables rooster aura entirely; negative values are treated as `0`. |
-| `general.roostSpeedMultiplier` | Double | `1.0` | Global speed multiplier applied to all roosts before the rooster aura is considered. Use this to fine-tune overall production pacing; roosters then stack on top of the adjusted baseline. |
+| `general.roostSpeed` | Double | `1.0` | Global speed multiplier applied to all roosts before the rooster aura is considered. Use this to fine-tune overall production pacing; roosters then stack on top of the adjusted baseline. |
 
 ## Nest
 
@@ -183,14 +185,14 @@ The Nest is a small block that turns captured roosters and seeds into an aura th
 - **Aura fuel**: When at least one rooster is present and seeds are available, the Nest consumes one seed at a time and converts it into “aura time”. As long as the internal timer has time remaining, the nest is considered active and will be picked up by nearby roosts.
 - **Rooster cap**: Only a limited number of roosters are counted per nest; any extra birds above the configured cap are ignored for aura strength, though they still occupy item space.
 
-Nest behaviour is controlled by these `general` entries in `config/chickens.cfg`:
+Nest behaviour is controlled by these `general` entries in `config/chickens.toml`:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `general.nestMaxRoosters` | Integer | `1` | Maximum number of roosters a single nest will count towards aura strength. Values are clamped to the range `1–16` when read from the config, so malformed values cannot create excessively large stacks. |
 | `general.nestSeedDurationTicks` | Integer | `1200` | How long (in ticks) a single consumed seed keeps the nest’s aura active. There are 20 ticks per real-time second, so the default of `1200` equals 60 seconds per seed. Setting this to `0` disables aura production from nests entirely (they will hold roosters but never turn seeds into aura). |
 
-Nests and roosters together form a flexible tuning knob for roost-based farms: you can keep `roostSpeedMultiplier` near `1.0` for baseline balance, then use nests plus roosters to introduce optional “booster stations” for higher-end automation builds.
+Nests and roosters together form a flexible tuning knob for roost-based farms: you can keep `roostSpeed` near `1.0` for baseline balance, then use nests plus roosters to introduce optional “booster stations” for higher-end automation builds.
 
 ## Incubator
 
@@ -207,7 +209,7 @@ The Incubator is a compact RF-powered machine that turns chicken spawn eggs into
 - **Processing**: Each operation advances over a fixed progress bar (200 ticks by default). Once both the progress bar and the reserved energy meet the configured cost for the current egg, the machine outputs a chicken item and moves on to the next egg.
 - **Automation**: The Incubator exposes a standard sided inventory – eggs can be inserted from the top or sides, and completed chicken items are extracted from the bottom. This makes it easy to chain breeders → incubators → roosts in fully automated setups.
 
-All Incubator tuning lives under `general` in `config/chickens.cfg`:
+All Incubator tuning lives under `general` in `config/chickens.toml`:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -249,7 +251,7 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 | 1× max-stat Redstone Flux Chicken (stats 10/10/10) | ≈4.11 | ≈41.11 | ≈82.22 | ≈123.33 |
 | 16× max-stat Redstone Flux Chickens (full roost of 10/10/10) | ≈65.78 | ≈657.78 | ≈1,315.56 | ≈1,973.33 |
 
-> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeedMultiplier` tweaks in [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg).
+> **Assumptions:** RF/t values use the average lay time and treat each Flux Egg as delivering its entire stored energy (1,000 RF for base birds, 3,700 RF ×3 eggs for maxed birds). Actual outputs fluctuate slightly with the random lay timer and any custom `roostSpeed` tweaks in [chickens.toml](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.toml).
 
 ### Same graph in RF/s:
 
@@ -264,11 +266,11 @@ Roost production scales with both chicken stats and stack size. Each cycle takes
 
 ![Custom Chickens](https://i.imgur.com/3jxZfxf.gif)
 
-- After first run, the mod will generate a `chickens_custom.json` file in the `config` directory where you can add bespoke chickens without recompiling the mod. The starter file will also have an example baked in.
-- Each entry in the `chickens` array controls the chicken name, texture, lay/drop items, breeding parents, lay coefficient, and optional display name. Any missing field falls back to the mod defaults so you can tweak as much or as little as you like.
-- Custom chickens participate in the existing [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) flow, meaning you can still fine-tune them (enable/disable, change drops, reparent) alongside the built-in roster.
+- Modern Chickens creates `config/custom_chickens.toml`. It contains every stock `[chickens.<name>]` table and is also where new chicken definitions are added.
+- `config/chickens.toml` contains only global `[general]` options. Edit either file while the game is stopped, then restart to apply changes.
+- Stock tables can be enabled or disabled, reparented, retuned, or given different lay/drop items. New tables use the same shape and are loaded into the game during startup.
 
-Example [chickens_custom.json](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Custom%20Chickens/chickens_custom.json) entries (place inside the top-level `chickens` array):
+Older installations may still have `config/chickens_custom.json`; it remains read for migration compatibility, but new work belongs in `custom_chickens.toml`. See the [TOML example](Examples/Custom%20Chickens/custom_chickens.toml); the JSON block below is legacy syntax only:
 
 
 ```json
@@ -336,7 +338,7 @@ Natural spawning now reads tuning data from `ChickensSpawnManager`, and datapack
 | Field | Type | Behaviour |
 | --- | --- | --- |
 | `spawn_type` | String (required) | One of `normal`, `snow`, or `hell`. Determines which biome bucket the override applies to. |
-| `spawn_weight` | Integer | Absolute weight for the biome bucket. When omitted, the value derived from [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg) is used. |
+| `spawn_weight` | Integer | Absolute weight for the biome bucket. When omitted, the value derived from [chickens.toml](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.toml) is used. |
 | `weight_multiplier` | Float | Multiplies the config-derived weight instead of overriding it. Cannot be combined with `spawn_weight`. |
 | `min_brood_size` | Integer | Overrides the minimum flock size inserted into the biome modifier. |
 | `max_brood_size` | Integer | Overrides the maximum flock size. Automatically clamps to the configured minimum when smaller. |
@@ -363,7 +365,9 @@ The legacy `overworldSpawnChance`, `netherSpawnChance`, and `endSpawnChance` con
 For on-the-fly testing, `/chickens spawn multiplier <value>` multiplies every biome weight (set back to `1` to restore defaults) and `/chickens spawn debug <true|false>` toggles chat spam that reports each natural chicken spawn with its breed and coordinates.
 When you need an immediate test subject, `/chickens spawn summon <chickenNameOrId>` spawns that breed at your feet and `/chickens spawn summon_random [normal|snow|end|hell]` picks a random chicken from the requested biome bucket.
 
-### `chickens_custom.json` Field Reference:
+### Legacy `chickens_custom.json` Field Reference:
+
+This table documents the backward-compatible JSON reader only. Current TOML field names and stock-table behavior are documented in [Explanation.md](Explanation.md).
 
 | Field | Required | Type | Accepted values and behaviour |
 |-------|----------|------|-------------------------------|
@@ -383,7 +387,7 @@ When you need an immediate test subject, `/chickens spawn summon <chickenNameOrI
 | `generated_texture` | No | Boolean | Set to `true` to tint the configured texture (or the base white chicken if the texture is missing) using the `background_color`/`foreground_color` pair. When `false`, the renderer uses the texture as-is and only falls back to tinting if that texture cannot be loaded. Defaults to `false`. |
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
-| *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. Only exposed through [chickens.cfg](https://github.com/STRHercules/ModernChickens/blob/main/Examples/Config/chickens.cfg); defaults to `false` for breeds with parents. |
+| *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. It lives in the matching `[chickens.<name>]` table in `custom_chickens.toml`; defaults to `false` for breeds with parents. |
 
 ## Project layout
 

@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
+import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
@@ -21,10 +24,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,15 +39,14 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Loads the optional JSON configuration that allows players to define their
- * own chickens without touching the core mod jar. The structure embraces a
- * compact schema so server owners can script new breeds with just a text
- * editor while still validating the fields enough to catch typos early.
+ * Loads the TOML chicken tables that allow players to define new chickens and
+ * override stock chicken values without touching the core mod jar. Legacy JSON
+ * is still accepted for existing installations.
  */
 public final class CustomChickensLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensCustomData");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String CONFIG_FILE = "chickens_custom.json";
+    private static final String LEGACY_CONFIG_FILE = "chickens_custom.json";
 
     private CustomChickensLoader() {
     }
@@ -57,16 +59,17 @@ public final class CustomChickensLoader {
     public static void load(List<ChickensRegistryItem> chickens) {
         Objects.requireNonNull(chickens, "chickens");
 
-        Path configFile = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);
-        ensureTemplateExists(configFile);
-        LOGGER.info("Loading custom chickens from {}", configFile.toAbsolutePath());
-
-        if (!Files.exists(configFile)) {
-            return;
+        Path configFile = TomlConfigBridge.customConfigPath();
+        List<CustomChickenDefinition> definitions = readTomlConfig(configFile);
+        Path legacyConfigFile = FMLPaths.CONFIGDIR.get().resolve(LEGACY_CONFIG_FILE);
+        CustomConfigFile legacyConfig = Files.exists(legacyConfigFile) ? readConfig(legacyConfigFile) : null;
+        if (legacyConfig != null) {
+            definitions = new ArrayList<>(definitions);
+            definitions.addAll(legacyConfig.chickens());
         }
+        LOGGER.info("Loading custom chicken definitions from {}", configFile.toAbsolutePath());
 
-        CustomConfigFile config = readConfig(configFile);
-        if (config == null || config.chickens().isEmpty()) {
+        if (definitions.isEmpty()) {
             return;
         }
 
@@ -81,7 +84,13 @@ public final class CustomChickensLoader {
 
         Map<ChickensRegistryItem, ParentNames> parentsToResolve = new HashMap<>();
         int loaded = 0;
-        for (CustomChickenDefinition definition : config.chickens()) {
+        for (CustomChickenDefinition definition : definitions) {
+            if (definition.name() != null && byName.containsKey(definition.name())) {
+                // Built-in entries are represented in custom_chickens.toml so
+                // their editable fields live in one file. They are applied by
+                // ChickensDataLoader; only new names are constructed here.
+                continue;
+            }
             try {
                 Optional<CreatedChicken> created = createChicken(definition, byName, usedIds, nextId + 1);
                 if (created.isEmpty()) {
@@ -118,7 +127,7 @@ public final class CustomChickensLoader {
             }
         }
         LOGGER.info("Loaded {} custom chickens from {} ({} rejected)", loaded, configFile.toAbsolutePath(),
-                config.chickens().size() - loaded);
+                definitions.size() - loaded);
     }
 
     private static Optional<CreatedChicken> createChicken(CustomChickenDefinition definition,
@@ -352,44 +361,142 @@ public final class CustomChickensLoader {
         return namespace + ":" + path;
     }
 
-    private static void ensureTemplateExists(Path configFile) {
-        if (Files.exists(configFile)) {
-            return;
+    private static List<CustomChickenDefinition> readTomlConfig(Path configFile) {
+        if (!Files.exists(configFile)) {
+            return List.of();
         }
-        String template = """
-                {
-                  "_comment": "Add entries to the chickens array. Copy the sample block from _example to get started.",
-                  "chickens": [],
-                  "_example": [
-                    {
-                      "name": "CopperChicken",
-                      "texture": "chickens:textures/entity/CopperChicken.png",
-                      "item_texture": "chickens:textures/item/chicken/copperchicken.png",
-                      "lay_item": {
-                        "item": "minecraft:copper_ingot"
-                      },
-                      "drop_item": {
-                        "item": "minecraft:copper_ingot",
-                        "count": 2
-                      },
-                      "background_color": "#b87333",
-                      "foreground_color": "#f8cfa9",
-                      "parents": ["IronChicken", "WaterChicken"],
-                      "spawn_type": "normal",
-                      "lay_coefficient": 1.0,
-                      "display_name": "Copper Chicken"
-                    }
-                  ]
-                }
-                """;
-        try {
-            Files.createDirectories(configFile.getParent());
-            try (Writer writer = Files.newBufferedWriter(configFile, StandardCharsets.UTF_8)) {
-                writer.write(template);
+        try (CommentedFileConfig config = CommentedFileConfig.builder(configFile, TomlFormat.instance()).build()) {
+            config.load();
+            Object rawChickens = config.getRaw("chickens");
+            if (!(rawChickens instanceof UnmodifiableConfig tables)) {
+                return List.of();
             }
-        } catch (IOException ex) {
-            LOGGER.warn("Unable to create custom chicken configuration template", ex);
+
+            List<CustomChickenDefinition> definitions = new ArrayList<>();
+            for (UnmodifiableConfig.Entry entry : tables.entrySet()) {
+                if (entry.getRawValue() instanceof UnmodifiableConfig table) {
+                    definitions.add(definitionFromToml(entry.getKey(), table));
+                }
+            }
+            return List.copyOf(definitions);
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to parse {}; entries will be ignored", configFile.getFileName(), ex);
+            return List.of();
         }
+    }
+
+    private static CustomChickenDefinition definitionFromToml(String name, UnmodifiableConfig table) {
+        return new CustomChickenDefinition(
+                name,
+                integer(table, "id"),
+                string(table, "texture"),
+                itemStack(table, "layItemName", "lay_item"),
+                itemStack(table, "dropItemName", "drop_item"),
+                string(table, "backgroundColor", "background_color"),
+                string(table, "foregroundColor", "foreground_color"),
+                parents(table),
+                string(table, "spawnType", "spawn_type"),
+                decimal(table, "layCoefficient", "lay_coefficient"),
+                string(table, "displayName", "display_name"),
+                bool(table, "generatedTexture", "generated_texture"),
+                bool(table, "enabled"),
+                string(table, "itemTexture", "item_texture"));
+    }
+
+    @Nullable
+    private static CustomItemStackDefinition itemStack(UnmodifiableConfig table, String flatKey, String nestedKey) {
+        Object nested = value(table, nestedKey);
+        if (nested instanceof UnmodifiableConfig nestedConfig) {
+            String item = string(nestedConfig, "item");
+            if (item != null) {
+                return new CustomItemStackDefinition(item, integer(nestedConfig, "count"),
+                        integer(nestedConfig, "type"));
+            }
+        }
+
+        String item = string(table, flatKey);
+        return item == null ? null : new CustomItemStackDefinition(item,
+                integer(table, flatKey.replace("Name", "Amount")),
+                integer(table, flatKey.replace("Name", "Meta")));
+    }
+
+    @Nullable
+    private static List<String> parents(UnmodifiableConfig table) {
+        Object raw = value(table, "parents");
+        if (raw instanceof List<?> values) {
+            List<String> parents = new ArrayList<>();
+            for (Object value : values) {
+                if (value != null) {
+                    parents.add(String.valueOf(value));
+                }
+            }
+            return List.copyOf(parents);
+        }
+
+        String parent1 = string(table, "parent1");
+        String parent2 = string(table, "parent2");
+        if (parent1 == null && parent2 == null) {
+            return null;
+        }
+        return List.of(parent1 != null ? parent1 : "", parent2 != null ? parent2 : "");
+    }
+
+    @Nullable
+    private static Object value(UnmodifiableConfig table, String... keys) {
+        for (String key : keys) {
+            Object value = table.getRaw(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String string(UnmodifiableConfig table, String... keys) {
+        Object raw = value(table, keys);
+        return raw == null ? null : String.valueOf(raw);
+    }
+
+    @Nullable
+    private static Integer integer(UnmodifiableConfig table, String... keys) {
+        Object raw = value(table, keys);
+        if (raw instanceof Number number) {
+            return number.intValue();
+        }
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(String.valueOf(raw));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Float decimal(UnmodifiableConfig table, String... keys) {
+        Object raw = value(table, keys);
+        if (raw instanceof Number number) {
+            return number.floatValue();
+        }
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return Float.valueOf(String.valueOf(raw));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Boolean bool(UnmodifiableConfig table, String... keys) {
+        Object raw = value(table, keys);
+        if (raw instanceof Boolean booleanValue) {
+            return booleanValue;
+        }
+        return raw == null ? null : Boolean.valueOf(String.valueOf(raw));
     }
 
     @Nullable
@@ -397,9 +504,9 @@ public final class CustomChickensLoader {
         try (Reader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
             return GSON.fromJson(reader, CustomConfigFile.class);
         } catch (JsonParseException ex) {
-            LOGGER.warn("Failed to parse custom chicken configuration; entries will be ignored", ex);
+            LOGGER.warn("Failed to parse legacy custom chicken JSON; entries will be ignored", ex);
         } catch (IOException ex) {
-            LOGGER.warn("Unable to read custom chicken configuration", ex);
+            LOGGER.warn("Unable to read legacy custom chicken JSON", ex);
         }
         return null;
     }
