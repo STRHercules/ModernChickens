@@ -1,0 +1,63 @@
+{
+  "parent": "chickens:block/nest",
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        30,
+        -90,
+        25
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ],
+      "translation": [
+        0,
+        4,
+        2
+      ]
+    },
+    "ground": {
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ]
+    },
+    "gui": {
+      "rotation": [
+        12,
+        45,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "translation": [
+        0.5,
+        1,
+        0
+      ]
+    },
+    "thirdperson_righthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "translation": [
+        0,
+        4,
+        -2.75
+      ]
+    }
+  }
+}

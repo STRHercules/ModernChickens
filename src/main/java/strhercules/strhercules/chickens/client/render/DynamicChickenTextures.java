@@ -19,17 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Generates simple tinted textures for dynamically created chickens so the
- * overworld entity mirrors the item's colour scheme. Textures are derived
- * from the base white chicken sprite and cached per chicken id.
- */
+
 public final class DynamicChickenTextures {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensDynamicTextures");
     private static final ResourceLocation BASE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             "minecraft", "textures/entity/chicken.png");
     private static final Map<Integer, ResourceLocation> CACHE = new HashMap<>();
-    private static final Map<ResourceLocation, NativeImage> BASE_CACHE = new HashMap<>();
+    private static NativeImage baseImageCache;
 
     private DynamicChickenTextures() {
     }
@@ -39,12 +35,7 @@ public final class DynamicChickenTextures {
     }
 
     private static ResourceLocation generateTexture(ChickensRegistryItem chicken) {
-        ResourceLocation template = chicken.getTexture();
-        NativeImage base = getBaseImage(template);
-        if (base == null && !template.equals(BASE_TEXTURE)) {
-            LOGGER.warn("Falling back to default template for chicken {} because {} was unavailable", chicken.getEntityName(), template);
-            base = getBaseImage(BASE_TEXTURE);
-        }
+        NativeImage base = getBaseImage();
         if (base == null) {
             return BASE_TEXTURE;
         }
@@ -109,30 +100,30 @@ public final class DynamicChickenTextures {
         return (alpha << 24) | (b << 16) | (g << 8) | r;
     }
 
-    private static NativeImage getBaseImage(ResourceLocation location) {
-        NativeImage cached = BASE_CACHE.get(location);
-        if (cached != null) {
-            return cached;
+    private static NativeImage getBaseImage() {
+        if (baseImageCache != null) {
+            return baseImageCache;
         }
-        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(location);
+        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(BASE_TEXTURE);
         if (resource.isEmpty()) {
-            LOGGER.warn("Unable to load template chicken texture {}", location);
+            LOGGER.warn("Unable to load vanilla chicken texture {}", BASE_TEXTURE);
             return null;
         }
         try (InputStream stream = resource.get().open()) {
-            NativeImage image = NativeImage.read(stream);
-            BASE_CACHE.put(location, image);
-            return image;
+            baseImageCache = NativeImage.read(stream);
+            return baseImageCache;
         } catch (IOException e) {
-            LOGGER.warn("Failed to read template chicken texture {}", location, e);
+            LOGGER.warn("Failed to read vanilla chicken texture {}", BASE_TEXTURE, e);
             return null;
         }
     }
 
     public static void clear() {
         CACHE.clear();
-        BASE_CACHE.values().forEach(NativeImage::close);
-        BASE_CACHE.clear();
+        if (baseImageCache != null) {
+            baseImageCache.close();
+            baseImageCache = null;
+        }
     }
 
     public static SimplePreparableReloadListener<Void> reloadListener() {

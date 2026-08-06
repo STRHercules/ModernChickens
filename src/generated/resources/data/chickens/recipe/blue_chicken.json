@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:egg"
+    },
+    {
+      "item": "minecraft:blue_dye"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "ChickenType": 11
+      },
+      "minecraft:custom_model_data": 11
+    },
+    "count": 1,
+    "id": "chickens:colored_egg"
+  }
+}

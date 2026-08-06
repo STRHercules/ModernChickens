@@ -19,37 +19,6 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    maven { url = 'https://maven.neoforged.net/releases' }
-    maven { url = 'https://maven.blamejared.com' }
-    maven {
-        url = 'https://maven2.bai.lol'
-        content {
-            includeGroup 'lol.bai'
-            includeGroup 'mcp.mobius.waila'
-        }
-    }
-    maven {
-        url = 'https://api.modrinth.com/maven'
-        content {
-            includeGroup 'maven.modrinth'
-        }
-    }
-    maven {
-        name = "Curse Maven"
-        url = "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven {
-        name = "ModMaven"
-        url = "https://modmaven.dev"
-    }
-}
-
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neoforge_version
@@ -98,6 +67,39 @@ neoForge {
     }
 }
 
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url = 'https://maven.neoforged.net/releases' }
+    maven { url = 'https://maven.blamejared.com' }
+    maven {
+        url = 'https://maven2.bai.lol'
+        content {
+            includeGroup 'lol.bai'
+            includeGroup 'mcp.mobius.waila'
+        }
+    }
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
+    maven {
+        name = "Curse Maven"
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+}
+
+
 dependencies {
     // JEI
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
@@ -116,6 +118,13 @@ dependencies {
 
     // ultimate foods
     implementation "curse.maven:ultimate-foods-1455067:${ultimatefoods_version}"
+
+  // ------ [   DATAGEN DEPENDENCY MODS ] ------ //
+
+    // Mekanism
+    implementation("mekanism:Mekanism:${minecraft_version}-${mekanism_version}")
+    runtimeOnly("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators")
+    compileOnly("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators")
 }
 
 test {

@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFluidConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-            "textures/gui/fluxconverter.png");
+        "textures/gui/douser.png");
     private static final int TANK_X = 103;
     private static final int TANK_Y = 14;
     private static final int TANK_WIDTH = 13;

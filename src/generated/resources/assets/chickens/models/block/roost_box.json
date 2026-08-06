@@ -1,0 +1,169 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        135,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    }
+  },
+  "elements": [
+    {
+      "faces": {
+        "east": {
+          "texture": "#hay_side"
+        },
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        }
+      },
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        3,
+        13,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "north": {
+          "texture": "#hay_side"
+        },
+        "south": {
+          "texture": "#wood"
+        }
+      },
+      "from": [
+        3,
+        3,
+        13
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "east": {
+          "texture": "#wood"
+        },
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#wood",
+          "uv": [
+            14.0,
+            3.0,
+            16.0,
+            13.0
+          ]
+        },
+        "west": {
+          "texture": "#hay_side"
+        }
+      },
+      "from": [
+        13,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#wood"
+        },
+        "west": {
+          "texture": "#wood"
+        }
+      },
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "faces": {
+        "down": {
+          "texture": "#wood"
+        },
+        "east": {
+          "texture": "#wood"
+        },
+        "north": {
+          "texture": "#front"
+        },
+        "south": {
+          "texture": "#wood"
+        },
+        "up": {
+          "texture": "#hay"
+        },
+        "west": {
+          "texture": "#wood"
+        }
+      },
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ]
+    }
+  ],
+  "textures": {
+    "front": "chickens:block/curtain_side",
+    "hay": "chickens:block/hay_floor",
+    "hay_side": "chickens:block/hay_side",
+    "particle": "chickens:block/plain_face",
+    "wood": "chickens:block/plain_face"
+  }
+}

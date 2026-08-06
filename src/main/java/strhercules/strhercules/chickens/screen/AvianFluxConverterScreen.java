@@ -8,14 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-/**
- * Client screen that renders the bespoke fluxconverter.png layout and overlays
- * a vertical battery gauge. The tooltip surfaces the precise RF totals so
- * players can monitor charge levels without opening external probes.
- */
+
 public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-            "textures/gui/fluxconverter.png");
+        "textures/gui/generator_gui.png");
     private static final int ENERGY_BAR_X = 103;
     private static final int ENERGY_BAR_Y = 14;
     private static final int ENERGY_BAR_WIDTH = 13;

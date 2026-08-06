@@ -1,8 +1,0 @@
-{
-    "parent": "block/orientable",
-    "textures": {
-        "top": "chickens:block/henhouse_top",
-        "front": "chickens:block/henhouse_front",
-        "side": "chickens:block/henhouse_side"
-    }
-}

@@ -1,6 +1,0 @@
-{
-  "parent": "chickens:block/breeder_privacy",
-  "textures": {
-    "curtain": "chickens:block/curtain_empty"
-  }
-}

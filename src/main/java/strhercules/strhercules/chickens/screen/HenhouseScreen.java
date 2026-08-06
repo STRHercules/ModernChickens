@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class HenhouseScreen extends AbstractContainerScreen<HenhouseMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-            "textures/gui/henhouse.png");
+        "textures/gui/henhouse.png");
 
     public HenhouseScreen(HenhouseMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

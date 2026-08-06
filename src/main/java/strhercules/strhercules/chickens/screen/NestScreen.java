@@ -7,13 +7,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-/**
- * Client screen for the rooster nest. It uses the bespoke nest.png layout and
- * mirrors the Roost GUI's dimensions so the slot coordinates align cleanly.
- */
+
 public class NestScreen extends AbstractContainerScreen<NestMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
-            "textures/gui/nest.png");
+    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens", "textures/gui/nest.png");
 
     public NestScreen(NestMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

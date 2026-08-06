@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "chickens:block/henhouse_front_jungle",
+    "side": "chickens:block/henhouse_side_jungle",
+    "top": "chickens:block/henhouse_top_jungle"
+  }
+}

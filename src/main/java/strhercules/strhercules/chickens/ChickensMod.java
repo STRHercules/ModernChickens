@@ -5,7 +5,6 @@ import strhercules.chickens.data.ChickensDataLoader;
 import strhercules.chickens.RoostEggPreventer;
 import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.registry.ModRegistry;
-import strhercules.chickens.data.ChickenItemModelProvider;
 import strhercules.chickens.spawn.SpawnPlanDataLoader;
 import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.network.MegaChickenFlightPayload;
@@ -13,15 +12,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Entry point for the modernised Chickens mod. At this stage we bootstrap
- * the NeoForge event listeners and leave placeholders for the extensive
- * content port that will follow.
- */
 @Mod(ChickensMod.MOD_ID)
 public final class ChickensMod {
     public static final String MOD_ID = "chickens";
@@ -39,18 +32,10 @@ public final class ChickensMod {
         NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener(MegaChicken::preventRiderFallDamage);
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
-        modBus.addListener(this::onGatherData);
     }
 
     public void onCommonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("Running common setup for Modern Chickens");
-        // Defer the heavy registry bootstrap so it runs on the correct thread
-        // once NeoForge has finished initialising its data tables.
         event.enqueueWork(ChickensDataLoader::bootstrap);
-    }
-
-    private void onGatherData(GatherDataEvent event) {
-        var generator = event.getGenerator();
-        generator.getVanillaPack(true).addProvider(ChickenItemModelProvider::new);
     }
 }

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "chickens:block/fertil_dirt_top",
+    "particle": "minecraft:block/dirt",
+    "side": "chickens:block/fertil_dirt_side",
+    "top": "chickens:block/fertil_dirt_top"
+  }
+}

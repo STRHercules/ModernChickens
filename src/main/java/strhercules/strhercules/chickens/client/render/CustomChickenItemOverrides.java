@@ -17,23 +17,15 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Override handler that mirrors the behaviour of the baked chicken item model
- * but adds support for custom chickens defined in {@code custom_chickens.toml}.
- * When the vanilla override list does not contain a matching entry the handler
- * falls back to dynamically baking a sprite model derived from the chicken's
- * configured item texture.
- */
+
 final class CustomChickenItemOverrides extends ItemOverrides {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensCustomItemModels");
 
-    private final ItemOverrides delegate;
     private final ModelBakery bakery;
     private final Map<Integer, BakedModel> cache = new HashMap<>();
 
-    CustomChickenItemOverrides(ItemOverrides delegate, ModelBakery bakery) {
+    CustomChickenItemOverrides(@Nullable ItemOverrides delegate, ModelBakery bakery) {
         super();
-        this.delegate = delegate;
         this.bakery = bakery;
     }
 
@@ -63,22 +55,8 @@ final class CustomChickenItemOverrides extends ItemOverrides {
         }
 
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
-        boolean hasExplicitTexture = chicken != null && chicken.getItemTexture() != null;
-        boolean forceCustomSprite = chicken != null && chicken.isCustom() && hasExplicitTexture;
-        // Vanilla custom model overrides treat the predicate value as a lower bound, so unknown ids
-        // inherit the last baked model. Datapack chickens must bypass that behaviour so the bespoke
-        // Sprite defined in custom_chickens.toml always renders instead of reusing the final override.
-        //
-        // Built-in chickens that supply a bespoke sprite should also bypass the baked override list so
-        // they stitch the requested PNG rather than falling back to the tinted placeholder icon.
-
-        BakedModel resolved = delegate != null ? delegate.resolve(originalModel, stack, level, entity, seed) : null;
-        if (!forceCustomSprite && !hasExplicitTexture && resolved != null && resolved != originalModel) {
-            return resolved;
-        }
-
         if (chicken == null) {
-            return resolved != null ? resolved : originalModel;
+            return originalModel;
         }
 
         BakedModel cached = cache.get(chicken.getId());

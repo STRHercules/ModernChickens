@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "chickens:block/collector_plain",
+    "east": "chickens:block/collector_slats",
+    "north": "chickens:block/collector_slats",
+    "particle": "chickens:block/collector_slats",
+    "south": "chickens:block/collector_slats",
+    "up": "chickens:block/collector_plain",
+    "west": "chickens:block/collector_slats"
+  }
+}

@@ -1,9 +1,0 @@
-{
-    "parent": "block/cube_bottom_top",
-    "textures": {
-	    "particle": "blocks/dirt",
-        "bottom": "chickens:block/fertil_dirt_top",
-        "top": "chickens:block/fertil_dirt_top",
-        "side": "chickens:block/fertil_dirt_side"
-    }
-}

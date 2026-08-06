@@ -1,0 +1,8 @@
+{
+  "parent": "chickens:block/fertilized_farmland",
+  "textures": {
+    "ftop": "chickens:block/fertil_farmland_dry",
+    "particle": "minecraft:block/dirt",
+    "side": "chickens:block/fertil_dirt_side"
+  }
+}
