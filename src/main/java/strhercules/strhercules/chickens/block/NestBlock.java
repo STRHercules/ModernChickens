@@ -42,7 +42,11 @@ public class NestBlock extends HorizontalDirectionalBlock implements EntityBlock
     public static final MapCodec<NestBlock> CODEC = simpleCodec(NestBlock::new);
 
     public NestBlock() {
-        this(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 5.0F).sound(SoundType.WOOD));
+        this(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(2.0F, 5.0F)
+                .sound(SoundType.WOOD)
+                .noOcclusion());
     }
 
     public NestBlock(BlockBehaviour.Properties properties) {

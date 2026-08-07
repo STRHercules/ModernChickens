@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-        "textures/gui/generator_gui.png");
+            "textures/gui/fluxconverter.png");
     private static final int ENERGY_BAR_X = 103;
     private static final int ENERGY_BAR_Y = 14;
     private static final int ENERGY_BAR_WIDTH = 13;
