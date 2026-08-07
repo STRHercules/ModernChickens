@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public final class ChickenItemModelProvider implements DataProvider {
+    private static final String FALLBACK_ITEM_TEXTURE = ChickensMod.MOD_ID + ":item/chicken/whitechicken";
     private final PackOutput packOutput;
 
     public ChickenItemModelProvider(PackOutput packOutput) {
@@ -46,7 +47,7 @@ public final class ChickenItemModelProvider implements DataProvider {
             String modelName = chicken.getEntityName().toLowerCase(Locale.ROOT);
             String itemTexture = chicken.getItemTexture() != null
                     ? toModelTexture(chicken.getItemTexture())
-                    : ChickensMod.MOD_ID + ":item/chicken/" + modelName;
+                    : FALLBACK_ITEM_TEXTURE;
 
             JsonObject override = new JsonObject();
             JsonObject predicate = new JsonObject();

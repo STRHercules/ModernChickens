@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "chickens:item/chicken/cherrylogchicken"
+    "layer0": "chickens:item/chicken/whitechicken"
   }
 }
