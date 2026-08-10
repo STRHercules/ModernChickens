@@ -475,6 +475,9 @@ public final class ChickensDataLoader {
             boolean allowNatural = readBoolean(props, prefix + "allowNaturalSpawn", chicken.hasNaturalSpawnOverride());
             chicken.setNaturalSpawnOverride(allowNatural);
 
+            boolean allowDousing = readBoolean(props, prefix + "allowDousing", chicken.isDousingAllowed());
+            chicken.setDousingAllowed(allowDousing);
+
             int liquidDousingCost = ensurePositive(props, prefix + "liquidDousingCost",
                     readInt(props, prefix + "liquidDousingCost", chicken.getLiquidDousingCost()), 1);
             chicken.setLiquidDousingCost(liquidDousingCost);
@@ -836,6 +839,7 @@ public final class ChickensDataLoader {
             DynamicChemicalChickens.refresh();
             DynamicGasChickens.refresh();
             ChickensSpawnManager.refreshFromRegistry();
+            BreedingGraphExporter.export(ChickensRegistry.getItems());
         }
     }
 

@@ -55,6 +55,7 @@
   "config.chickens.option.layCoefficient": "Lay Coefficient",
   "config.chickens.option.spawnType": "Spawn Type",
   "config.chickens.option.allowNaturalSpawn": "Allow Natural Spawning",
+  "config.chickens.option.allowDousing": "Allow Avian Dousing",
   "config.chickens.option.parent1": "Parent 1",
   "config.chickens.option.parent2": "Parent 2",
   "config.chickens.option.liquidDousingCost": "Liquid Dousing Cost",

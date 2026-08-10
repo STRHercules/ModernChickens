@@ -4,7 +4,7 @@
 # [chickens."Name"] table to define a new chicken. See Explanation.md.
 #
 # For built-ins, the normal editable fields are enabled, layCoefficient,
-# spawnType, allowNaturalSpawn, parent1, parent2, layItemName,
+# spawnType, allowNaturalSpawn, allowDousing, parent1, parent2, layItemName,
 # layItemAmount, layItemMeta, dropItemName, dropItemAmount, dropItemMeta,
 # and liquidDousingCost.
 
@@ -313,6 +313,7 @@ enabled = true
 layCoefficient = 1
 spawnType = "NONE"
 allowNaturalSpawn = false
+allowDousing = true
 parent1 = ""
 parent2 = ""
 layItemName = "chickens:liquid_egg"
@@ -493,6 +494,7 @@ enabled = true
 layCoefficient = 1
 spawnType = "NONE"
 allowNaturalSpawn = false
+allowDousing = true
 parent1 = ""
 parent2 = ""
 layItemName = "chickens:liquid_egg"
@@ -747,4 +749,3 @@ liquidDousingCost = 10000
 # displayName = "Copper Chicken"
 # generatedTexture = false
 # enabled = true
-

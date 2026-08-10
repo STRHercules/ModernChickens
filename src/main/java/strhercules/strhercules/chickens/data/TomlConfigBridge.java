@@ -31,7 +31,7 @@ public final class TomlConfigBridge {
             "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
             "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
             "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn",
-            "generatedTexture");
+            "allowDousing", "generatedTexture");
     private static final Set<String> INTEGER_KEYS = Set.of(
             "spawnProbability", "minBroodSize", "maxBroodSize", "roosterAuraRange",
             "nestMaxRoosters", "nestSeedDurationTicks", "collectorScanRange", "avianFluxCapacity",
@@ -345,4 +345,3 @@ public final class TomlConfigBridge {
         return FMLPaths.CONFIGDIR.get().resolve(LEGACY_FILE);
     }
 }
-

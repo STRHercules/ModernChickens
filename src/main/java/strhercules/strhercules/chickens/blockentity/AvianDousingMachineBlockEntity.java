@@ -893,7 +893,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         Integer cached = LIQUID_CHICKEN_CACHE.get(fluidId);
         if (cached != null) {
             ChickensRegistryItem cachedChicken = ChickensRegistry.getByType(cached);
-            if (cachedChicken != null) {
+            if (cachedChicken != null && cachedChicken.isDousingAllowed()) {
                 return cachedChicken;
             }
             LIQUID_CHICKEN_CACHE.remove(fluidId);
@@ -905,10 +905,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         ItemStack target = LiquidEggItem.createFor(entry);
         ChickensRegistryItem chicken = findChickenByLayItem(target);
-        if (chicken != null) {
+        if (chicken != null && chicken.isDousingAllowed()) {
             LIQUID_CHICKEN_CACHE.put(fluidId, chicken.getId());
+            return chicken;
         }
-        return chicken;
+        return null;
     }
 
     public int getLiquidCostForStoredFluid() {
@@ -928,7 +929,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         Integer cached = CHEMICAL_CHICKEN_CACHE.get(id);
         if (cached != null) {
             ChickensRegistryItem cachedChicken = ChickensRegistry.getByType(cached);
-            if (cachedChicken != null) {
+            if (cachedChicken != null && cachedChicken.isDousingAllowed()) {
                 return cachedChicken;
             }
             CHEMICAL_CHICKEN_CACHE.remove(id);
@@ -940,10 +941,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         ItemStack target = ChemicalEggItem.createFor(entry);
         ChickensRegistryItem chicken = findChickenByLayItem(target);
-        if (chicken != null) {
+        if (chicken != null && chicken.isDousingAllowed()) {
             CHEMICAL_CHICKEN_CACHE.put(id, chicken.getId());
+            return chicken;
         }
-        return chicken;
+        return null;
     }
 
     @Nullable

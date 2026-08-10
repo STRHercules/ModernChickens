@@ -29,7 +29,8 @@ public final class ChickensConfigScreen extends Screen {
             "alwaysShowStats", "disableEggLaying", "avianFluxEffectsEnabled",
             "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
             "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
-            "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn", "generatedTexture");
+            "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn", "allowDousing",
+            "generatedTexture");
     private static final Set<String> INTEGER_KEYS = Set.of(
             "spawnProbability", "minBroodSize", "maxBroodSize", "roosterAuraRange",
             "nestMaxRoosters", "nestSeedDurationTicks", "collectorScanRange", "avianFluxCapacity",

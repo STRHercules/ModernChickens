@@ -385,6 +385,7 @@ Each entry can define:
 - `generatedTexture` - Whether the configured texture should be colour-tinted.
 - `enabled` - Whether the chicken participates in registries and breeding; defaults to `true`.
 - `allowNaturalSpawn` - Allows a parent-based chicken into natural spawn tables.
+- `allowDousing` - Allows the Avian Dousing Machine to create this chicken from its registered fluid or chemical. Keep it limited to intentional progression starters.
 
 Missing fields use the mod defaults. Resource locations are normalized to lowercase; omitting a texture falls back to the bone-chicken sprite when `generatedTexture = true`. Existing `chickens_custom.json` files are still read for migration compatibility, but new definitions must use TOML.
 

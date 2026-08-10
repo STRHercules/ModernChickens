@@ -212,6 +212,9 @@ public final class CustomChickensLoader {
         if (definition.enabled() != null) {
             chicken.setEnabled(definition.enabled());
         }
+        if (definition.allowDousing() != null) {
+            chicken.setDousingAllowed(definition.allowDousing());
+        }
 
         ParentNames parents = new ParentNames(normaliseParent(definition.parents(), 0),
                 normaliseParent(definition.parents(), 1));
@@ -400,6 +403,7 @@ public final class CustomChickensLoader {
                 string(table, "displayName", "display_name"),
                 bool(table, "generatedTexture", "generated_texture"),
                 bool(table, "enabled"),
+                bool(table, "allowDousing", "allow_dousing"),
                 string(table, "itemTexture", "item_texture"));
     }
 
@@ -553,6 +557,7 @@ public final class CustomChickensLoader {
             @SerializedName("display_name") @Nullable String displayName,
             @SerializedName("generated_texture") @Nullable Boolean generatedTexture,
             @SerializedName("enabled") @Nullable Boolean enabled,
+            @SerializedName("allow_dousing") @Nullable Boolean allowDousing,
             @SerializedName("item_texture") @Nullable String itemTexture) {
     }
 

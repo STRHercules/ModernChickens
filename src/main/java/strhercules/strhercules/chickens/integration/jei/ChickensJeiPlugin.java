@@ -301,6 +301,9 @@ public class ChickensJeiPlugin implements IModPlugin {
     @Nullable
     private static ChickensJeiRecipeTypes.AvianDousingRecipe createDousingRecipe(ChickensRegistryItem chicken,
             ItemStack smartEgg, ItemStack smartChicken) {
+        if (!chicken.isDousingAllowed()) {
+            return null;
+        }
         ItemStack layItem = chicken.createLayItem();
         if (layItem.isEmpty() || layItem.getItem() != ModRegistry.CHEMICAL_EGG.get()) {
             return null;
@@ -329,6 +332,9 @@ public class ChickensJeiPlugin implements IModPlugin {
     @Nullable
     private static ChickensJeiRecipeTypes.AvianDousingRecipe createLiquidDousingRecipe(ChickensRegistryItem chicken,
             ItemStack smartEgg, ItemStack smartChicken) {
+        if (!chicken.isDousingAllowed()) {
+            return null;
+        }
         ItemStack layItem = chicken.createLayItem();
         if (layItem.isEmpty() || !(layItem.getItem() instanceof LiquidEggItem)) {
             return null;

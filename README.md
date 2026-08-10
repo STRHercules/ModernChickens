@@ -388,6 +388,7 @@ This table documents the backward-compatible JSON reader only. Current TOML fiel
 | `enabled` | No | Boolean | Toggles whether the chicken participates in registries and breeding. Defaults to `true` and cascades with parent availability. |
 | `item_texture` | No | Resource location | Optional namespaced path pointing at the item sprite (`namespace:textures/item/...png`). When omitted, the loader assumes a sprite lives at `chickens:textures/item/chicken/<lowercase name>.png`. Custom sprites supplied through the JSON file remain authoritative; missing resources log a warning and display Minecraft’s purple-and-black placeholder instead of swapping back to the tinted fallback. When the referenced art already ships with a baked model (for example, reusing an existing Modern Chickens texture), the runtime reuses that model directly; otherwise it now generates a vanilla `minecraft:item/generated` quad on the fly so datapack-only textures render as expected. |
 | *(config only)* `allowNaturalSpawn` | No | Boolean | When `true`, higher-tier chickens are allowed to join natural spawn tables even if they have parents. It lives in the matching `[chickens.<name>]` table in `custom_chickens.toml`; defaults to `false` for breeds with parents. |
+| *(config only)* `allowDousing` | No | Boolean | When `true`, the Avian Dousing Machine and its JEI recipe may create this chicken from its registered fluid or chemical. Defaults to `false`; use it only for intentional progression starters. |
 
 ## Project layout
 

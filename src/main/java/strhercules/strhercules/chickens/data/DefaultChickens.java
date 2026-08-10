@@ -217,7 +217,8 @@ public final class DefaultChickens {
                 // correct fluid variant without additional lookups.
                 waterEgg,
                 0x000099, 0x8080ff,
-                gunpowderChicken, sandChicken);
+                gunpowderChicken, sandChicken)
+                .allowDousing();
         chickens.add(waterChicken);
 
         ChickensRegistryItem iceChicken = new ChickensRegistryItem(
@@ -246,7 +247,8 @@ public final class DefaultChickens {
                 lavaEgg,
                 0xcc3300, 0xffff00,
                 coalChicken, quartzChicken).setSpawnType(SpawnType.HELL)
-                .allowNaturalSpawn();
+                .allowNaturalSpawn()
+                .allowDousing();
         chickens.add(lavaChicken);
 
         ChickensRegistryItem clayChicken = new ChickensRegistryItem(

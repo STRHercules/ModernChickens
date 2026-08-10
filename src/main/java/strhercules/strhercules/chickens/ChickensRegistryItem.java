@@ -40,6 +40,7 @@ public class ChickensRegistryItem {
     private boolean tintItem = true;
     private boolean custom;
     private boolean naturalSpawnOverride;
+    private boolean dousingAllowed;
     private int liquidDousingCost = DEFAULT_LIQUID_DOUSING_COST;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
@@ -243,6 +244,19 @@ public class ChickensRegistryItem {
 
     public boolean hasNaturalSpawnOverride() {
         return naturalSpawnOverride;
+    }
+
+    public ChickensRegistryItem allowDousing() {
+        dousingAllowed = true;
+        return this;
+    }
+
+    public void setDousingAllowed(boolean value) {
+        dousingAllowed = value;
+    }
+
+    public boolean isDousingAllowed() {
+        return dousingAllowed;
     }
 
     public boolean isBreedable() {

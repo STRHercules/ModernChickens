@@ -126,6 +126,7 @@ These options are valid in every `[chickens.<name>]` table. If a key is omitted,
 | `layCoefficient` | Decimal | `1.0` | Multiplies lay time. 1 is normal, below 1 is faster, above 1 is slower. Negative custom values are clamped. |
 | `spawnType` | String | Definition value | Natural-spawn bucket: `NORMAL`, `SNOW`, `END`, `HELL`, or `NONE`. |
 | `allowNaturalSpawn` | Boolean | Definition value | Allows a parent-based chicken to enter natural spawn candidates. This is separate from `spawnType`. |
+| `allowDousing` | Boolean | `false` | Allows the Avian Dousing Machine to create this chicken from its registered fluid or chemical. Keep this limited to intentional progression starters. |
 | `parent1` | String | Definition value or empty | First breeding parent. Empty means no parent. Names are case-insensitive. |
 | `parent2` | String | Definition value or empty | Second breeding parent. Both parents must resolve to keep the lineage. |
 | `layItemName` | String | Definition value | Namespaced item id produced by the chicken, such as `minecraft:bone` or `chickens:liquid_egg`. It must exist in the item registry. |
@@ -163,6 +164,7 @@ A new table uses the table name instead of a JSON `name` field.
 | `generatedTexture` | No | Boolean | When true, permits the white-chicken texture fallback and generated/tinted presentation. |
 | `enabled` | No | Boolean | Enables the new chicken. Defaults to true. |
 | `allowNaturalSpawn` | No | Boolean | Allows a parent-based custom chicken into natural spawn candidates. |
+| `allowDousing` | No | Boolean | Allows the Avian Dousing Machine to create this custom chicken from its registered fluid or chemical. |
 
 The parser also accepts the legacy JSON-style nested keys `lay_item`, `drop_item`, `background_color`, `foreground_color`, `spawn_type`, `lay_coefficient`, `display_name`, `generated_texture`, and `item_texture` when they are represented as TOML tables/keys. The shipped TOML examples use the flatter camelCase names above because they match the stock tables and are easier to edit.
 
@@ -244,4 +246,3 @@ The file is not hot-reloaded. If a custom definition is not visible, verify the 
 - Keep a backup before large edits. If a change causes unexpected behavior, restore the previous TOML file, restart, and check the server log.
 
 TOML basics: tables use brackets, quoted strings use quotes, comments start with `#`, and each assignment uses `key = value`. Do not use legacy `B:`, `I:`, `D:`, or `S:` prefixes in the new files.
-
