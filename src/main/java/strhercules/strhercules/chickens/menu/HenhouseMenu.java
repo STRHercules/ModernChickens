@@ -43,12 +43,12 @@ public class HenhouseMenu extends AbstractContainerMenu {
                 : ContainerLevelAccess.NULL;
 
         // Henhouse internals: hay bale fuel, dirt output, and 3x3 storage for eggs.
-        this.addSlot(new Slot(henhouse, HenhouseBlockEntity.HAY_SLOT, 25, 19));
-        this.addSlot(new Slot(henhouse, HenhouseBlockEntity.DIRT_SLOT, 25, 55));
+        this.addSlot(createHenhouseSlot(HenhouseBlockEntity.HAY_SLOT, 25, 19));
+        this.addSlot(createHenhouseSlot(HenhouseBlockEntity.DIRT_SLOT, 25, 55));
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 3; column++) {
                 int index = HenhouseBlockEntity.FIRST_OUTPUT_SLOT + row * 3 + column;
-                this.addSlot(new Slot(henhouse, index, 98 + column * 18, 17 + row * 18));
+                this.addSlot(createHenhouseSlot(index, 98 + column * 18, 17 + row * 18));
             }
         }
 
@@ -63,6 +63,15 @@ public class HenhouseMenu extends AbstractContainerMenu {
         }
 
         this.addDataSlots(data);
+    }
+
+    private Slot createHenhouseSlot(int index, int x, int y) {
+        return new Slot(henhouse, index, x, y) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return henhouse.canPlaceItem(index, stack);
+            }
+        };
     }
 
     private static HenhouseBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {

@@ -79,6 +79,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         public void set(int index, int value) {
             if (index == 0) {
                 energy = Mth.clamp(value, 0, ENERGY_CAPACITY);
+                hayEnergy = Math.min(hayEnergy, energy);
             }
         }
 
@@ -89,6 +90,8 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     };
 
     private int energy;
+    /** Portion of the shared energy buffer that came from spent hay bales. */
+    private int hayEnergy;
     private final IEnergyStorage energyStorage = new IEnergyStorage() {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
@@ -256,8 +259,19 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     private boolean consumeEnergy(int amount) {
+        if (amount <= 0) {
+            return true;
+        }
+        // Refuse the whole transfer when the available energy or dirt capacity
+        // cannot satisfy it. This keeps a failed insertion from consuming only
+        // part of its fuel and then dropping the item into the world.
+        if (amount > getEffectiveCapacity()) {
+            return false;
+        }
+
+        int remaining = amount;
         boolean modified = false;
-        while (amount > 0) {
+        while (remaining > 0) {
             if (energy == 0) {
                 if (!chargeFromHay()) {
                     break;
@@ -265,28 +279,57 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
                 modified = true;
             }
 
-            int consumed = Math.min(amount, energy);
-            if (consumed <= 0) {
+            // FE is consumed before hay energy. That makes the source boundary
+            // deterministic and prevents FE-only operation from creating dirt.
+            int externalEnergy = Math.max(energy - hayEnergy, 0);
+            int consumed = Math.min(remaining, externalEnergy);
+            if (consumed > 0) {
+                energy -= consumed;
+                remaining -= consumed;
+                modified = true;
+                continue;
+            }
+
+            if (hayEnergy <= 0) {
                 break;
             }
-            energy -= consumed;
-            amount -= consumed;
-            modified = true;
 
-            if (energy <= 0) {
-                ItemStack dirtStack = items.get(DIRT_SLOT);
-                if (dirtStack.isEmpty()) {
-                    items.set(DIRT_SLOT, new ItemStack(Blocks.DIRT));
-                } else if (dirtStack.is(Blocks.DIRT.asItem()) && dirtStack.getCount() < dirtStack.getMaxStackSize()) {
-                    dirtStack.grow(1);
-                }
-                modified = true;
+            consumed = Math.min(remaining, hayEnergy);
+            int hayEnergyBefore = hayEnergy;
+            hayEnergy -= consumed;
+            energy -= consumed;
+            remaining -= consumed;
+
+            int dirtCount = completedHayBales(hayEnergyBefore, hayEnergy);
+            if (dirtCount > 0) {
+                addDirt(dirtCount);
             }
+            modified = true;
         }
         if (modified) {
             sync();
         }
-        return modified;
+        return remaining == 0;
+    }
+
+    private static int completedHayBales(int energyBefore, int energyAfter) {
+        return representedHayBales(energyBefore) - representedHayBales(energyAfter);
+    }
+
+    private static int representedHayBales(int hayEnergy) {
+        if (hayEnergy <= 0) {
+            return 0;
+        }
+        return (hayEnergy + HAY_BALE_ENERGY - 1) / HAY_BALE_ENERGY;
+    }
+
+    private void addDirt(int count) {
+        ItemStack dirtStack = items.get(DIRT_SLOT);
+        if (dirtStack.isEmpty()) {
+            items.set(DIRT_SLOT, new ItemStack(Blocks.DIRT, count));
+        } else {
+            dirtStack.grow(count);
+        }
     }
 
     private boolean chargeFromHay() {
@@ -298,8 +341,10 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         if (hayStack.isEmpty()) {
             items.set(HAY_SLOT, ItemStack.EMPTY);
         }
-        energy = Math.min(energy + HAY_BALE_ENERGY, ENERGY_CAPACITY);
-        return true;
+        int charged = Math.min(HAY_BALE_ENERGY, ENERGY_CAPACITY - energy);
+        energy += charged;
+        hayEnergy += charged;
+        return charged > 0;
     }
 
     private int canAdd(ItemStack slotStack, ItemStack input) {
@@ -317,27 +362,31 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     private int getEffectiveCapacity() {
-        return Math.min(getInputCapacity(), getOutputCapacity());
-    }
-
-    private int getInputCapacity() {
-        int potential = energy;
+        int externalEnergy = Math.max(energy - hayEnergy, 0);
+        int hayPotential = hayEnergy;
         ItemStack hayStack = items.get(HAY_SLOT);
         if (isHayFuel(hayStack)) {
-            potential += hayStack.getCount() * HAY_BALE_ENERGY;
+            hayPotential += hayStack.getCount() * HAY_BALE_ENERGY;
         }
-        return potential;
+        // Only hay energy needs reserved dirt space. FE remains usable even
+        // when the dirt byproduct slot is full.
+        return externalEnergy + Math.min(hayPotential, getOutputCapacity());
     }
 
     private int getOutputCapacity() {
+        return getAvailableDirtSlots() * HAY_BALE_ENERGY;
+    }
+
+    private int getAvailableDirtSlots() {
         ItemStack dirtStack = items.get(DIRT_SLOT);
         if (dirtStack.isEmpty()) {
-            return getMaxStackSize() * HAY_BALE_ENERGY;
+            return getMaxStackSize();
         }
         if (!dirtStack.is(Blocks.DIRT.asItem())) {
             return 0;
         }
-        return (dirtStack.getMaxStackSize() - dirtStack.getCount()) * HAY_BALE_ENERGY;
+        int stackLimit = Math.min(getMaxStackSize(), dirtStack.getMaxStackSize());
+        return Math.max(stackLimit - dirtStack.getCount(), 0);
     }
 
     private void sync() {
@@ -354,6 +403,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         super.saveAdditional(tag, provider);
         ContainerHelper.saveAllItems(tag, items, provider);
         tag.putInt("Energy", energy);
+        tag.putInt("HayEnergy", hayEnergy);
         if (customName != null) {
             ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
                     .result()
@@ -363,8 +413,10 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
         energy = Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY);
+        hayEnergy = Mth.clamp(tag.getInt("HayEnergy"), 0, energy);
         customName = null;
         if (tag.contains("CustomName")) {
             ComponentSerialization.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.get("CustomName"))
@@ -457,7 +509,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return true;
+        return index == DIRT_SLOT || index >= FIRST_OUTPUT_SLOT;
     }
 
     @Override
@@ -466,13 +518,9 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     private boolean isItemValid(int index, ItemStack stack) {
-        if (index == HAY_SLOT) {
-            return isHayFuel(stack);
-        }
-        if (index == DIRT_SLOT) {
-            return false;
-        }
-        return true;
+        // Hay is the only player/automation input. Dirt and the 3x3 grid are
+        // machine-owned outputs and must not accept arbitrary inserted items.
+        return index == HAY_SLOT && isHayFuel(stack);
     }
 
     @Override

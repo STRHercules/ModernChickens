@@ -15,6 +15,8 @@ import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.LiquidEggItem;
 import strhercules.chickens.menu.AvianDousingMachineMenu;
+import strhercules.chickens.recipe.DousingRecipe;
+import strhercules.chickens.registry.ModRecipeTypes;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,6 +34,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,6 +42,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -121,6 +126,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     private int chemicalEntryId = -1;
     private SpecialInfusion specialInfusion = SpecialInfusion.NONE;
     private int specialAmount;
+    private ItemStack itemReagent = ItemStack.EMPTY;
+    private int itemReagentCount;
     private int progress;
     private InfusionMode mode = InfusionMode.NONE;
     private boolean cachedActiveState;
@@ -194,35 +201,65 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return OperationPlan.none();
         }
 
-        if (specialInfusion == SpecialInfusion.DRAGON_BREATH && specialAmount >= SPECIAL_LIQUID_CAPACITY
-                && isChicken(inputChicken, "obsidianChicken")) {
-            ChickensRegistryItem dragon = findChickenByName("dragonChicken");
-            if (dragon != null && canOutput(output, dragon)) {
-                return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0);
-            }
-        }
-        if (specialInfusion == SpecialInfusion.NETHER_STAR && specialAmount >= SPECIAL_LIQUID_CAPACITY
-                && isChicken(inputChicken, "soulSandChicken")) {
-            ChickensRegistryItem wither = findChickenByName("witherChicken");
-            if (wither != null && canOutput(output, wither)) {
-                return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0);
+        boolean hasCustomItemRecipe = hasCustomRecipe(inputChicken, DousingRecipe.ReagentType.ITEM);
+        DousingRecipe itemRecipe = findAvailableItemRecipe(inputChicken);
+        if (itemRecipe != null && hasItemReagent(itemRecipe)) {
+            ChickensRegistryItem result = itemRecipe.resultChicken();
+            if (result != null && canOutput(output, result)) {
+                return new OperationPlan(InfusionMode.ITEM, result, SpecialInfusion.NONE, 0, itemRecipe);
             }
         }
 
-        if (chemicalAmount >= CHEMICAL_COST && chemicalId != null) {
-            ChickensRegistryItem chicken = resolveChemicalChicken(chemicalId);
-            if (chicken != null && canOutput(output, chicken)) {
-                return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0);
+        if (!hasCustomItemRecipe) {
+            if (specialInfusion == SpecialInfusion.DRAGON_BREATH && specialAmount >= SPECIAL_LIQUID_CAPACITY
+                    && isChicken(inputChicken, "obsidianChicken")) {
+                ChickensRegistryItem dragon = findChickenByName("dragonChicken");
+                if (dragon != null && canOutput(output, dragon)) {
+                    return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0, null);
+                }
+            }
+            if (specialInfusion == SpecialInfusion.NETHER_STAR && specialAmount >= SPECIAL_LIQUID_CAPACITY
+                    && isChicken(inputChicken, "soulSandChicken")) {
+                ChickensRegistryItem wither = findChickenByName("witherChicken");
+                if (wither != null && canOutput(output, wither)) {
+                    return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0, null);
+                }
+            }
+        }
+
+        if (chemicalAmount > 0 && chemicalId != null) {
+            DousingRecipe custom = findCustomRecipe(inputChicken, DousingRecipe.ReagentType.CHEMICAL, chemicalId);
+            if (custom != null && chemicalAmount >= custom.reagentAmount()) {
+                ChickensRegistryItem result = custom.resultChicken();
+                if (result != null && canOutput(output, result)) {
+                    return new OperationPlan(InfusionMode.CHEMICAL, result, SpecialInfusion.NONE, custom.reagentAmount(), custom);
+                }
+            }
+            if (custom == null && chemicalAmount >= CHEMICAL_COST) {
+                ChickensRegistryItem chicken = resolveChemicalChicken(chemicalId);
+                if (chicken != null && canOutput(output, chicken)) {
+                    return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0, null);
+                }
             }
         }
 
         FluidStack stored = liquidTank.getFluid();
         if (!stored.isEmpty()) {
-            ChickensRegistryItem chicken = resolveLiquidChicken(stored);
-            if (chicken != null) {
-                int liquidCost = chicken.getLiquidDousingCost();
-                if (stored.getAmount() >= liquidCost && canOutput(output, chicken)) {
-                    return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost);
+            ResourceLocation fluidId = stored.getFluid().builtInRegistryHolder().key().location();
+            DousingRecipe custom = findCustomRecipe(inputChicken, DousingRecipe.ReagentType.FLUID, fluidId);
+            if (custom != null && stored.getAmount() >= custom.reagentAmount()) {
+                ChickensRegistryItem result = custom.resultChicken();
+                if (result != null && canOutput(output, result)) {
+                    return new OperationPlan(InfusionMode.LIQUID, result, SpecialInfusion.NONE, custom.reagentAmount(), custom);
+                }
+            }
+            if (custom == null) {
+                ChickensRegistryItem chicken = resolveLiquidChicken(stored);
+                if (chicken != null) {
+                    int liquidCost = chicken.getLiquidDousingCost();
+                    if (stored.getAmount() >= liquidCost && canOutput(output, chicken)) {
+                        return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost, null);
+                    }
                 }
             }
         }
@@ -231,6 +268,17 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private boolean hasResourcesFor(OperationPlan plan) {
+        if (plan.recipe() != null) {
+            if (energyStorage.getEnergyStored() < plan.recipe().energyCost()) {
+                return false;
+            }
+            return switch (plan.recipe().reagentType()) {
+                case ITEM -> hasItemReagent(plan.recipe());
+                case FLUID -> hasFluidReagent(plan.recipe());
+                case CHEMICAL -> chemicalId != null && chemicalId.equals(plan.recipe().reagentId())
+                        && chemicalAmount >= plan.recipe().reagentAmount();
+            };
+        }
         if (plan.mode() == InfusionMode.CHEMICAL) {
             return energyStorage.getEnergyStored() >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
         }
@@ -238,19 +286,66 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= plan.liquidCost();
         }
         if (plan.mode() == InfusionMode.SPECIAL) {
-            return energyStorage.getEnergyStored() >= SPECIAL_ENERGY_COST && specialAmount >= SPECIAL_LIQUID_CAPACITY;
+            return energyStorage.getEnergyStored() >= SPECIAL_ENERGY_COST
+                    && specialInfusion == plan.special() && specialAmount >= SPECIAL_LIQUID_CAPACITY;
         }
         return false;
+    }
+
+    private boolean hasFluidReagent(DousingRecipe recipe) {
+        FluidStack stored = liquidTank.getFluid();
+        return !stored.isEmpty()
+                && stored.getFluid().builtInRegistryHolder().key().location().equals(recipe.reagentId())
+                && stored.getAmount() >= recipe.reagentAmount();
     }
 
     private void completeOperation(OperationPlan plan) {
         ItemStack input = items.get(INPUT_SLOT);
         ItemStack output = items.get(OUTPUT_SLOT);
-        if (!isDousableChicken(input)) {
+        ChickensRegistryItem resultChicken = plan.chicken();
+        if (resultChicken == null || !isDousableChicken(input) || !canOutput(output, resultChicken)
+                || (plan.recipe() != null && (level == null
+                        || !plan.recipe().matches(new SingleRecipeInput(input), level)))
+                || !hasResourcesFor(plan)) {
             return;
         }
 
-        ItemStack result = ChickensSpawnEggItem.createFor(plan.chicken());
+        int energyCost = plan.recipe() != null ? plan.recipe().energyCost()
+                : plan.mode() == InfusionMode.CHEMICAL ? CHEMICAL_ENERGY_COST
+                : plan.mode() == InfusionMode.SPECIAL ? SPECIAL_ENERGY_COST : LIQUID_ENERGY_COST;
+        if (!energyStorage.consumeEnergy(energyCost)) {
+            return;
+        }
+
+        if (plan.recipe() != null) {
+            switch (plan.recipe().reagentType()) {
+                case ITEM -> consumeItemReagent(plan.recipe());
+                case FLUID -> liquidTank.drain(plan.recipe().reagentAmount(), IFluidHandler.FluidAction.EXECUTE);
+                case CHEMICAL -> {
+                    chemicalAmount -= plan.recipe().reagentAmount();
+                    if (chemicalAmount <= 0) {
+                        clearChemical();
+                    }
+                    invalidateChemicalHandlers();
+                    markChemicalDirty();
+                }
+            }
+        } else if (plan.mode() == InfusionMode.CHEMICAL) {
+            chemicalAmount -= CHEMICAL_COST;
+            if (chemicalAmount <= 0) {
+                clearChemical();
+            }
+            invalidateChemicalHandlers();
+            markChemicalDirty();
+        } else if (plan.mode() == InfusionMode.LIQUID) {
+            liquidTank.drain(plan.liquidCost(), IFluidHandler.FluidAction.EXECUTE);
+        } else if (plan.mode() == InfusionMode.SPECIAL) {
+            specialAmount = 0;
+            specialInfusion = SpecialInfusion.NONE;
+            markLiquidDirty();
+        }
+
+        ItemStack result = ChickensSpawnEggItem.createFor(resultChicken);
         if (!output.isEmpty()) {
             output.grow(1);
         } else {
@@ -260,30 +355,6 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         input.shrink(1);
         if (input.isEmpty()) {
             items.set(INPUT_SLOT, ItemStack.EMPTY);
-        }
-
-        if (plan.mode() == InfusionMode.CHEMICAL) {
-            if (!energyStorage.consumeEnergy(CHEMICAL_ENERGY_COST)) {
-                return;
-            }
-            chemicalAmount -= CHEMICAL_COST;
-            if (chemicalAmount <= 0) {
-                clearChemical();
-            }
-            invalidateChemicalHandlers();
-            markChemicalDirty();
-        } else if (plan.mode() == InfusionMode.LIQUID) {
-            if (!energyStorage.consumeEnergy(LIQUID_ENERGY_COST)) {
-                return;
-            }
-            liquidTank.drain(plan.liquidCost(), IFluidHandler.FluidAction.EXECUTE);
-        } else if (plan.mode() == InfusionMode.SPECIAL) {
-            if (!energyStorage.consumeEnergy(SPECIAL_ENERGY_COST)) {
-                return;
-            }
-            specialAmount = 0;
-            specialInfusion = SpecialInfusion.NONE;
-            markLiquidDirty();
         }
 
         mode = plan.mode();
@@ -313,7 +384,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (chicken.getId() == ChickensRegistry.SMART_CHICKEN_ID) {
             return true;
         }
-        return isChicken(chicken, "obsidianChicken") || isChicken(chicken, "soulSandChicken");
+        return isChicken(chicken, "obsidianChicken") || isChicken(chicken, "soulSandChicken")
+                || hasCustomRecipeForInput(stack);
     }
 
     private boolean canOutput(ItemStack output, ChickensRegistryItem chicken) {
@@ -628,6 +700,29 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return specialAmount;
     }
 
+    public ItemStack getItemReagent() {
+        return itemReagent.copy();
+    }
+
+    public int getItemReagentCount() {
+        return itemReagent.isEmpty() ? 0 : itemReagentCount;
+    }
+
+    /** Drops custom item reagents that are held outside the two visible slots. */
+    public void dropItemReagent() {
+        if (level == null || level.isClientSide || itemReagent.isEmpty() || itemReagentCount <= 0) {
+            return;
+        }
+        ItemStack remaining = itemReagent.copyWithCount(itemReagentCount);
+        while (!remaining.isEmpty()) {
+            ItemStack drop = remaining.split(Math.min(remaining.getMaxStackSize(), remaining.getCount()));
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                    worldPosition.getZ() + 0.5D, drop);
+        }
+        itemReagent = ItemStack.EMPTY;
+        itemReagentCount = 0;
+    }
+
     public int getComparatorOutput() {
         if (ENERGY_CAPACITY <= 0) {
             return 0;
@@ -671,6 +766,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         tag.putString("Mode", mode.name());
         tag.putString("SpecialInfusion", specialInfusion.name());
         tag.putInt("SpecialAmount", specialAmount);
+        if (!itemReagent.isEmpty() && itemReagentCount > 0) {
+            tag.put("ItemReagent", itemReagent.save(provider));
+            tag.putInt("ItemReagentCount", itemReagentCount);
+        }
 
         CompoundTag liquid = new CompoundTag();
         liquidTank.writeToNBT(provider, liquid);
@@ -698,6 +797,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         mode = parseMode(tag.getString("Mode"));
         specialInfusion = parseSpecial(tag.getString("SpecialInfusion"));
         specialAmount = Mth.clamp(tag.getInt("SpecialAmount"), 0, SPECIAL_LIQUID_CAPACITY);
+        itemReagent = tag.contains("ItemReagent", Tag.TAG_COMPOUND)
+                ? ItemStack.parse(provider, tag.getCompound("ItemReagent")).orElse(ItemStack.EMPTY)
+                : ItemStack.EMPTY;
+        itemReagentCount = Math.max(0, tag.getInt("ItemReagentCount"));
+        if (itemReagent.isEmpty() || itemReagentCount <= 0) {
+            itemReagent = ItemStack.EMPTY;
+            itemReagentCount = 0;
+        }
 
         if (tag.contains("Liquid", Tag.TAG_COMPOUND)) {
             liquidTank.readFromNBT(provider, tag.getCompound("Liquid"));
@@ -917,6 +1024,12 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (stored.isEmpty()) {
             return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
         }
+        ChickensRegistryItem input = getChicken(items.get(INPUT_SLOT));
+        ResourceLocation fluidId = stored.getFluid().builtInRegistryHolder().key().location();
+        DousingRecipe custom = findCustomRecipe(input, DousingRecipe.ReagentType.FLUID, fluidId);
+        if (custom != null) {
+            return custom.reagentAmount();
+        }
         ChickensRegistryItem chicken = resolveLiquidChicken(stored);
         if (chicken == null) {
             return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
@@ -984,26 +1097,186 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return null;
     }
 
+    @Nullable
+    private DousingRecipe findCustomRecipe(ChickensRegistryItem input, DousingRecipe.ReagentType reagentType,
+            @Nullable ResourceLocation reagentId) {
+        if (level == null || input == null) {
+            return null;
+        }
+        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
+            DousingRecipe recipe = holder.value();
+            if (recipe.reagentType() != reagentType
+                    || !recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())) {
+                continue;
+            }
+            if (reagentId == null || reagentId.equals(recipe.reagentId())) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    private boolean hasCustomRecipe(ChickensRegistryItem input, DousingRecipe.ReagentType reagentType) {
+        return findCustomRecipe(input, reagentType, null) != null;
+    }
+
+    @Nullable
+    private DousingRecipe findAvailableItemRecipe(ChickensRegistryItem input) {
+        if (level == null) {
+            return null;
+        }
+        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
+            DousingRecipe recipe = holder.value();
+            if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
+                    && recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())
+                    && hasItemReagent(recipe)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private DousingRecipe findCustomRecipeForItem(ItemStack stack) {
+        if (level == null || stack.isEmpty()) {
+            return null;
+        }
+        ChickensRegistryItem input = getChicken(items.get(INPUT_SLOT));
+        if (input == null) {
+            return null;
+        }
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
+            DousingRecipe recipe = holder.value();
+            if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
+                    && recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())
+                    && recipe.reagentId().equals(itemId)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    private boolean hasCustomRecipeForInput(ItemStack stack) {
+        ChickensRegistryItem input = getChicken(stack);
+        if (level == null || input == null) {
+            return false;
+        }
+        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
+            if (holder.value().inputChickenName().equalsIgnoreCase(input.getEntityName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasItemReagent(DousingRecipe recipe) {
+        ItemStack required = recipe.reagentItem();
+        if (required == null) {
+            return false;
+        }
+        if (isSpecialInfusionItem(required)) {
+            if (!itemReagent.isEmpty()
+                    && ItemStack.isSameItemSameComponents(itemReagent, required)
+                    && itemReagentCount >= recipe.reagentAmount()) {
+                return true;
+            }
+            SpecialInfusion requiredInfusion = SpecialInfusion.fromItem(required);
+            long requiredAmount = (long) recipe.reagentAmount() * SPECIAL_PER_ITEM;
+            return specialInfusion == requiredInfusion && specialAmount >= requiredAmount;
+        }
+        return !itemReagent.isEmpty()
+                && ItemStack.isSameItemSameComponents(itemReagent, required)
+                && itemReagentCount >= recipe.reagentAmount();
+    }
+
+    private void consumeItemReagent(DousingRecipe recipe) {
+        ItemStack required = recipe.reagentItem();
+        if (required == null) {
+            return;
+        }
+        if (isSpecialInfusionItem(required)) {
+            if (!itemReagent.isEmpty()
+                    && ItemStack.isSameItemSameComponents(itemReagent, required)
+                    && itemReagentCount >= recipe.reagentAmount()) {
+                itemReagentCount = Math.max(0, itemReagentCount - recipe.reagentAmount());
+                if (itemReagentCount == 0) {
+                    itemReagent = ItemStack.EMPTY;
+                }
+                markLiquidDirty();
+                return;
+            }
+            specialAmount = Math.max(0, specialAmount - recipe.reagentAmount() * SPECIAL_PER_ITEM);
+            if (specialAmount == 0) {
+                specialInfusion = SpecialInfusion.NONE;
+            }
+            markLiquidDirty();
+            return;
+        }
+        itemReagentCount = Math.max(0, itemReagentCount - recipe.reagentAmount());
+        if (itemReagentCount == 0) {
+            itemReagent = ItemStack.EMPTY;
+        }
+        markLiquidDirty();
+    }
+
     public boolean isSpecialInfusionItem(ItemStack stack) {
         return stack.is(Items.DRAGON_BREATH) || stack.is(Items.NETHER_STAR);
     }
 
+    public boolean canInsertItemReagent(ItemStack stack) {
+        if (stack.isEmpty() || level == null) {
+            return false;
+        }
+        DousingRecipe recipe = findCustomRecipeForItem(stack);
+        if (recipe == null) {
+            return isSpecialInfusionItem(stack) && canStoreSpecialInfusion(stack);
+        }
+        if (isSpecialInfusionItem(stack)
+                && recipe.reagentAmount() <= SPECIAL_LIQUID_CAPACITY / SPECIAL_PER_ITEM) {
+            return canStoreSpecialInfusion(stack);
+        }
+        return canStoreItemReagent(stack);
+    }
+
+    public boolean tryStoreItemReagent(ItemStack stack, Player player) {
+        DousingRecipe recipe = findCustomRecipeForItem(stack);
+        if (recipe == null && isSpecialInfusionItem(stack)) {
+            return tryStoreSpecialInfusion(stack, player);
+        }
+        if (recipe == null || !canInsertItemReagent(stack)) {
+            return false;
+        }
+        if (isSpecialInfusionItem(stack) && recipe.reagentAmount() <= SPECIAL_LIQUID_CAPACITY / SPECIAL_PER_ITEM) {
+            return tryStoreSpecialInfusion(stack, player);
+        }
+        if (!canStoreItemReagent(stack)) {
+            return false;
+        }
+        if (itemReagent.isEmpty()) {
+            itemReagent = stack.copyWithCount(1);
+        }
+        itemReagentCount++;
+        markLiquidDirty();
+        if (!player.getAbilities().instabuild) {
+            stack.shrink(1);
+            if (stack.is(Items.DRAGON_BREATH)) {
+                ItemStack remainder = new ItemStack(Items.GLASS_BOTTLE);
+                if (!player.addItem(remainder.copy())) {
+                    player.drop(remainder.copy(), false);
+                }
+            }
+        }
+        return true;
+    }
+
     public boolean tryStoreSpecialInfusion(ItemStack stack, Player player) {
-        if (stack.isEmpty() || !isSpecialInfusionItem(stack)) {
-            return false;
-        }
-        if (liquidTank.getFluidAmount() > 0) {
-            return false;
-        }
-        if (specialInfusion != SpecialInfusion.NONE && specialInfusion != SpecialInfusion.fromItem(stack)) {
+        if (!canStoreSpecialInfusion(stack)) {
             return false;
         }
         SpecialInfusion type = SpecialInfusion.fromItem(stack);
-        if (type == SpecialInfusion.NONE) {
-            return false;
-        }
         specialInfusion = type;
-        specialAmount = Math.min(SPECIAL_LIQUID_CAPACITY, specialAmount + SPECIAL_PER_ITEM);
+        specialAmount += SPECIAL_PER_ITEM;
         markLiquidDirty();
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
@@ -1017,10 +1290,26 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return true;
     }
 
+    private boolean canStoreItemReagent(ItemStack stack) {
+        return !stack.isEmpty() && specialInfusion == SpecialInfusion.NONE
+                && (itemReagent.isEmpty() || ItemStack.isSameItemSameComponents(itemReagent, stack))
+                && itemReagentCount < Integer.MAX_VALUE;
+    }
+
+    private boolean canStoreSpecialInfusion(ItemStack stack) {
+        if (stack.isEmpty() || !isSpecialInfusionItem(stack) || liquidTank.getFluidAmount() > 0
+                || !itemReagent.isEmpty() || specialAmount >= SPECIAL_LIQUID_CAPACITY) {
+            return false;
+        }
+        SpecialInfusion type = SpecialInfusion.fromItem(stack);
+        return type != SpecialInfusion.NONE
+                && (specialInfusion == SpecialInfusion.NONE || specialInfusion == type);
+    }
+
     private record OperationPlan(InfusionMode mode, @Nullable ChickensRegistryItem chicken,
-                                 SpecialInfusion special, int liquidCost) {
+                                 SpecialInfusion special, int liquidCost, @Nullable DousingRecipe recipe) {
         static OperationPlan none() {
-            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0);
+            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0, null);
         }
     }
 
@@ -1028,13 +1317,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         NONE,
         LIQUID,
         CHEMICAL,
+        ITEM,
         SPECIAL
     }
 
     public enum SpecialInfusion {
         NONE(""),
         DRAGON_BREATH("Dragon's Breath"),
-        NETHER_STAR("Wither Essence");
+        NETHER_STAR("Nether Star");
 
         private final String displayName;
 

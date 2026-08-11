@@ -23,7 +23,19 @@ enum AvianDousingMachineDataProvider implements IServerDataProvider<BlockAccesso
         }
         HudData.Builder builder = HudData.builder();
         builder.addFluid(machine.getFluid().copy(), machine.getLiquidCapacity());
+        if (machine.getChemicalAmount() > 0 || machine.getChemicalEntryId() >= 0) {
+            builder.addChemical(machine.getChemicalEntryId(), machine.getChemicalAmount(), machine.getChemicalCapacity());
+        }
         builder.addEnergy(machine.getEnergyStored(), machine.getEnergyCapacity());
+        if (machine.getSpecialInfusion() != AvianDousingMachineBlockEntity.SpecialInfusion.NONE
+                && machine.getSpecialAmount() > 0) {
+            builder.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.special",
+                    machine.getSpecialInfusion().getDisplayName(), machine.getSpecialAmount()));
+        }
+        if (!machine.getItemReagent().isEmpty() && machine.getItemReagentCount() > 0) {
+            builder.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.item_reagent",
+                    machine.getItemReagent().getHoverName(), machine.getItemReagentCount()));
+        }
         int maxProgress = Math.max(machine.getMaxProgress(), 1);
         int percent = Math.max(machine.getProgress(), 0) * 100 / maxProgress;
         builder.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.progress", percent));

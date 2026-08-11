@@ -90,6 +90,9 @@ AdditionalAssets/
 Examples/*
 !Examples/Config/
 !Examples/Config/chickens.toml
+!Examples/KubeJS/
+!Examples/KubeJS/server_scripts/
+!Examples/KubeJS/server_scripts/modern_chickens_dousing.js
 !Examples/Custom Chickens/
 Examples/Custom Chickens/*
 !Examples/Custom Chickens/custom_chickens.toml

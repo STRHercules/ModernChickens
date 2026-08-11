@@ -1,0 +1,10 @@
+{
+  "type": "chickens:avian_dousing",
+  "input": "soulSandChicken",
+  "reagent": {
+    "type": "item",
+    "amount": 10,
+    "id": "minecraft:nether_star"
+  },
+  "result": "witherChicken"
+}

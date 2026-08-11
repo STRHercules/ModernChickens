@@ -7,6 +7,7 @@ import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
@@ -16,6 +17,8 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -39,6 +42,7 @@ import net.minecraft.world.level.block.Mirror;
 import net.neoforged.neoforge.common.extensions.IPlayerExtension;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Block wrapper for the Avian Dousing Machine. The block mirrors the existing
@@ -111,10 +115,10 @@ public class AvianDousingMachineBlock extends HorizontalDirectionalBlock impleme
         if (stack.isEmpty()) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        if (!level.isClientSide && machine.tryStoreSpecialInfusion(stack, player)) {
+        if (!level.isClientSide && machine.tryStoreItemReagent(stack, player)) {
             return ItemInteractionResult.SUCCESS;
         }
-        return machine.isSpecialInfusionItem(stack)
+        return machine.canInsertItemReagent(stack)
                 ? ItemInteractionResult.sidedSuccess(level.isClientSide)
                 : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
@@ -125,6 +129,7 @@ public class AvianDousingMachineBlock extends HorizontalDirectionalBlock impleme
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof AvianDousingMachineBlockEntity machine) {
                 MekanismRadiationCompat.spillDousingRadiation(level, pos, machine);
+                machine.dropItemReagent();
                 Containers.dropContents(level, pos, machine);
                 level.updateNeighbourForOutputSignal(pos, this);
             }
@@ -151,6 +156,15 @@ public class AvianDousingMachineBlock extends HorizontalDirectionalBlock impleme
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.chickens.avian_dousing_machine"));
+        tooltip.add(Component.translatable("tooltip.chickens.avian_dousing_machine.insert"));
+        tooltip.add(Component.translatable("tooltip.chickens.avian_dousing_machine.dragon"));
+        tooltip.add(Component.translatable("tooltip.chickens.avian_dousing_machine.wither"));
+        tooltip.add(Component.translatable("tooltip.chickens.avian_dousing_machine.custom"));
     }
 
     @Override

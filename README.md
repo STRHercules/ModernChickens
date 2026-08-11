@@ -64,6 +64,7 @@ You cannot breed these; you must infuse them in the **Avian Dousing Machine**.
    - Dragon: insert **Dragon’s Breath** bottles.
    - Wither: insert **Nether Stars**.
    - Each item adds **100 mB**; you need **1000 mB** total (10 items).
+   - Insert these by right-clicking the machine while holding the item; they do not go into the two visible inventory slots.
 
 3. **Supply RF**
    - Ensure the dousing machine is powered; it consumes the listed RF during infusion.
@@ -147,6 +148,28 @@ _Converting Liquids!_
 - **Outputs**: When it has enough energy and reagent, the Dousing Machine consumes one Smart Chicken plus a chunk of stored liquid or chemical and creates the corresponding liquid or chemical chicken spawn egg in the output slot. Each egg hatches into a chicken that lays the matching liquid or chemical egg item.
 - **Discovery tools**: With Mekanism and JEI installed, an “Avian Dousing Machine” recipe category lists each supported chemical egg, its Smart Chicken input, reagent cost, RF cost, and the resulting chemical chicken spawn egg so you can plan your automation chain.
 - **Status at a glance**: WTHIT overlays mirror the machine’s stored fluid and energy plus its infusion progress, so you can confirm whether a cycle is about to complete without opening the GUI.
+
+### Dousing recipes and KubeJS
+
+The machine registers the `chickens:avian_dousing` recipe type. It is a normal server recipe, so datapacks and KubeJS can add or replace dousing recipes without a KubeJS dependency in the mod. Chicken names are the configured registry names (case-insensitive), not item IDs.
+
+```js
+ServerEvents.recipes(event => {
+  event.custom({
+    type: 'chickens:avian_dousing',
+    input: 'IronChicken',
+    result: 'GoldChicken',
+    reagent: {
+      type: 'item',
+      id: 'minecraft:gold_ingot',
+      amount: 4
+    },
+    energy: 10000
+  }).id('example:iron_to_gold_chicken')
+})
+```
+
+`reagent.type` accepts `item`, `fluid`, or `chemical`; `reagent.id` is the normal namespaced registry ID and `amount` is the consumed item count or stored mB. Chemical recipes require Mekanism at runtime, but the recipe type itself remains safe to load without Mekanism. Right-click the machine with item reagents after placing the base chicken in the left slot. The built-in Dragon/Wither recipes use the same data path and can be replaced by removing `chickens:avian_dousing_dragon` or `chickens:avian_dousing_wither` first.
 
 Combining the Dousing Machine with the Fluid and Chemical Converters lets you go from liquids or Mekanism chemicals → eggs → buffered tanks → dedicated chickens entirely inside the Modern Chickens ecosystem.
 

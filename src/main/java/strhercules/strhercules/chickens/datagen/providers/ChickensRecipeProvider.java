@@ -1,5 +1,6 @@
 package strhercules.chickens.datagen.providers;
 
+import strhercules.chickens.recipe.DousingRecipe;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
@@ -185,11 +186,16 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .define('F', item("chickens:avian_fluid_converter"))
                 .define('B', Items.BUCKET)
                 .define('R', Items.REDSTONE_BLOCK)
-                .define('C', item("chickens:avian_chemical_converter"))
+                .define('C', item("chickens:collector"))
                 .define('I', Items.IRON_INGOT)
                 .define('G', Items.GOLD_INGOT)
-                .unlockedBy("has_avian_chemical_converter", has(item("chickens:avian_chemical_converter")))
+                .unlockedBy("has_collector", has(item("chickens:collector")))
                 .save(output, id("avian_dousing_machine"));
+
+        dousingRecipe(output, "avian_dousing_dragon", "obsidianChicken", "dragonChicken",
+                "minecraft:dragon_breath", 10);
+        dousingRecipe(output, "avian_dousing_wither", "soulSandChicken", "witherChicken",
+                "minecraft:nether_star", 10);
     }
 
     private static void henhouse(RecipeOutput output, String recipeName, Item planks) {
@@ -202,6 +208,15 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .define('Y', Items.HAY_BLOCK)
                 .unlockedBy("has_hay_block", has(Items.HAY_BLOCK))
                 .save(output, id(recipeName));
+    }
+
+    private static void dousingRecipe(RecipeOutput output, String recipeName, String inputChicken,
+            String resultChicken, String reagentId, int amount) {
+        output.accept(id(recipeName), new DousingRecipe(
+                inputChicken,
+                resultChicken,
+                new DousingRecipe.Reagent(DousingRecipe.ReagentType.ITEM, ResourceLocation.parse(reagentId), amount),
+                10_000), null);
     }
 
     private static void coloredEgg(RecipeOutput output, String recipeName, Item dye, int chickenType) {

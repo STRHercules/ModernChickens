@@ -51,19 +51,19 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected void spawnChickenItem(RandomSource random) {
+    protected boolean spawnChickenItem(RandomSource random) {
         Level level = getLevel();
         if (!(level instanceof ServerLevel serverLevel)) {
-            return;
+            return false;
         }
         ChickensChicken parentA = createParentFromSlot(serverLevel, LEFT_CHICKEN_SLOT);
         ChickensChicken parentB = createParentFromSlot(serverLevel, RIGHT_CHICKEN_SLOT);
         if (parentA == null || parentB == null) {
-            return;
+            return false;
         }
         ChickensChicken child = parentA.getBreedOffspring(serverLevel, parentB);
         if (child == null) {
-            return;
+            return false;
         }
         ItemStack stack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
         ChickenItemHelper.copyFromEntity(stack, child);
@@ -74,13 +74,12 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
         parentB.discard();
         // Only produce if there is room in the output slots.
         // Never drop to the floor when full — just skip this cycle.
-        if (outputIsFull()) {
-            return;
-        }
         ItemStack remaining = pushIntoOutput(stack);
         if (remaining.isEmpty()) {
             playSpawnEffects(serverLevel);
+            return true;
         }
+        return false;
     }
     
 

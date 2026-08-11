@@ -2,6 +2,7 @@ package strhercules.chickens.integration.jei;
 
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.ChemicalEggRegistryItem;
+import strhercules.chickens.SpawnType;
 import mezz.jei.api.recipe.RecipeType;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +28,8 @@ public final class ChickensJeiRecipeTypes {
             ChickensMod.MOD_ID, "incubator", IncubatorRecipe.class);
     public static final RecipeType<TeachingRecipe> TEACHING = RecipeType.create(
             ChickensMod.MOD_ID, "teaching", TeachingRecipe.class);
+    public static final RecipeType<WildChickenRecipe> WILD_CHICKENS = RecipeType.create(
+            ChickensMod.MOD_ID, "wild_chickens", WildChickenRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -73,5 +76,8 @@ public final class ChickensJeiRecipeTypes {
 
     // book + vanilla chicken → smart chicken, right-click interaction
     public record TeachingRecipe(ItemStack book, ItemStack vanillaChicken, ItemStack smartChicken) {
+    }
+
+    public record WildChickenRecipe(ItemStack chicken, SpawnType spawnType) {
     }
 }

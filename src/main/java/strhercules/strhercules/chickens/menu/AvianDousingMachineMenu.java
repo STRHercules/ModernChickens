@@ -52,6 +52,8 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
     private int clientChemicalEntryId = -1;
     private int clientSpecialAmount;
     private int clientSpecialType;
+    private int clientItemReagentId = -1;
+    private int clientItemReagentCount;
     private int clientLiquidCost;
     private InfusionMode clientMode = InfusionMode.NONE;
 
@@ -80,6 +82,10 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.clientChemicalEntryId = machine.getChemicalEntryId();
         this.clientSpecialAmount = machine.getSpecialAmount();
         this.clientSpecialType = machine.getSpecialInfusion().ordinal();
+        this.clientItemReagentId = machine.getItemReagent().isEmpty()
+                ? -1
+                : BuiltInRegistries.ITEM.getId(machine.getItemReagent().getItem());
+        this.clientItemReagentCount = machine.getItemReagentCount();
         this.clientLiquidCost = machine.getLiquidCostForStoredFluid();
         this.clientMode = machine.getMode();
 
@@ -230,6 +236,20 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
                 clientMode = InfusionMode.values()[Math.max(0, Math.min(value, InfusionMode.values().length - 1))];
             }
         });
+
+        // Custom item reagent buffer
+        this.addDataSlot(splitGetter(
+                () -> getServerItemReagentCount(),
+                value -> clientItemReagentCount = (clientItemReagentCount & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerItemReagentCount() >>> 16,
+                value -> clientItemReagentCount = (clientItemReagentCount & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+        this.addDataSlot(splitGetter(
+                () -> getServerItemReagentId(),
+                value -> clientItemReagentId = (clientItemReagentId & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerItemReagentId() >>> 16,
+                value -> clientItemReagentId = (clientItemReagentId & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
     }
 
     private static AvianDousingMachineBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
@@ -339,6 +359,24 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         return isServerSide() ? machine.getSpecialAmount() : clientSpecialAmount;
     }
 
+    public ItemStack getItemReagent() {
+        if (isServerSide()) {
+            ItemStack reagent = machine.getItemReagent();
+            return reagent.isEmpty() ? ItemStack.EMPTY
+                    : reagent.copyWithCount(Math.min(machine.getItemReagentCount(), reagent.getMaxStackSize()));
+        }
+        if (clientItemReagentId < 0 || clientItemReagentCount <= 0) {
+            return ItemStack.EMPTY;
+        }
+        var item = BuiltInRegistries.ITEM.byId(clientItemReagentId);
+        return item == null ? ItemStack.EMPTY
+                : new ItemStack(item, Math.min(clientItemReagentCount, item.getDefaultMaxStackSize()));
+    }
+
+    public int getItemReagentCount() {
+        return isServerSide() ? machine.getItemReagentCount() : clientItemReagentCount;
+    }
+
     public ChemicalEggRegistryItem getStoredChemical() {
         if (isServerSide()) {
             return ChemicalEggRegistry.findById(machine.getChemicalEntryId());
@@ -425,6 +463,17 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
     private int getServerSpecialType() {
         return machine != null ? machine.getSpecialInfusion().ordinal() : 0;
+    }
+
+    private int getServerItemReagentCount() {
+        return machine != null ? machine.getItemReagentCount() : 0;
+    }
+
+    private int getServerItemReagentId() {
+        if (machine == null || machine.getItemReagent().isEmpty()) {
+            return -1;
+        }
+        return BuiltInRegistries.ITEM.getId(machine.getItemReagent().getItem());
     }
 
     private int getServerChemicalAmount() {

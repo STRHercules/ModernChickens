@@ -34,7 +34,7 @@ public class HenhouseScreen extends AbstractContainerScreen<HenhouseMenu> {
         int energy = this.menu.getEnergy();
         final int barHeight = 57;
         int offset = barHeight - Math.min(barHeight,
-                energy * barHeight / Math.max(HenhouseBlockEntity.HAY_BALE_ENERGY, 1));
+                energy * barHeight / Math.max(HenhouseBlockEntity.ENERGY_CAPACITY, 1));
         if (offset < barHeight) {
             graphics.blit(GUI_TEXTURE, x + 75, y + 14 + offset, 195, offset, 12, barHeight - offset, 256, 256);
         }

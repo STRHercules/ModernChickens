@@ -39,8 +39,9 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected void spawnChickenItem(RandomSource random) {
+    protected boolean spawnChickenItem(RandomSource random) {
         // No-op: the collector never generates drops on its own.
+        return false;
     }
 
     @Override

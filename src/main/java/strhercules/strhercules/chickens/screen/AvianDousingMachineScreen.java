@@ -32,6 +32,9 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
     private static final int ENERGY_BAR_Y = 13;
     private static final int PROGRESS_X = 82;
     private static final int PROGRESS_Y = 36;
+    private static final int REAGENT_X = 80;
+    private static final int REAGENT_Y = 54;
+    private static final int REAGENT_SIZE = 20;
     private static final int BAR_WIDTH = 12;
     private static final int BAR_HEIGHT = 57;
     private static final int PROGRESS_WIDTH = 18;
@@ -59,6 +62,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         renderLiquidBar(graphics, x, y);
         renderEnergyBar(graphics, x, y);
         renderProgressArrow(graphics, x, y);
+        renderItemReagent(graphics, x, y);
     }
 
     @Override
@@ -237,6 +241,14 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }
+        if (isHoveringReagent(mouseX, mouseY)) {
+            var reagent = menu.getItemReagent();
+            Component tooltip = reagent.isEmpty()
+                    ? Component.translatable("gui.chickens.avian_dousing_machine.reagent.empty")
+                    : Component.translatable("gui.chickens.avian_dousing_machine.reagent",
+                            reagent.getHoverName(), menu.getItemReagentCount());
+            graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
+        }
     }
 
     private boolean isHoveringChemical(int mouseX, int mouseY) {
@@ -265,6 +277,21 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         int y = (this.height - this.imageHeight) / 2;
         return mouseX >= x + PROGRESS_X && mouseX <= x + PROGRESS_X + PROGRESS_WIDTH
                 && mouseY >= y + PROGRESS_Y && mouseY <= y + PROGRESS_Y + PROGRESS_HEIGHT;
+    }
+
+    private boolean isHoveringReagent(int mouseX, int mouseY) {
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
+        return mouseX >= x + REAGENT_X && mouseX <= x + REAGENT_X + REAGENT_SIZE
+                && mouseY >= y + REAGENT_Y && mouseY <= y + REAGENT_Y + REAGENT_SIZE;
+    }
+
+    private void renderItemReagent(GuiGraphics graphics, int originX, int originY) {
+        var reagent = menu.getItemReagent();
+        if (!reagent.isEmpty()) {
+            graphics.renderItem(reagent, originX + REAGENT_X + 2, originY + REAGENT_Y + 2);
+            graphics.renderItemDecorations(this.font, reagent, originX + REAGENT_X + 2, originY + REAGENT_Y + 2);
+        }
     }
 
     private int colorForSpecial(AvianDousingMachineMenu menu) {

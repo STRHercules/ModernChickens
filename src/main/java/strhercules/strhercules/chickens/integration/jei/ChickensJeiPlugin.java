@@ -8,6 +8,7 @@ import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.GasEggRegistry;
 import strhercules.chickens.LiquidEggRegistry;
 import strhercules.chickens.LiquidEggRegistryItem;
+import strhercules.chickens.SpawnType;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.integration.jei.category.AvianChemicalConverterCategory;
 import strhercules.chickens.integration.jei.category.AvianDousingCategory;
@@ -22,6 +23,7 @@ import strhercules.chickens.integration.jei.category.LayingCategory;
 import strhercules.chickens.integration.jei.category.RoostingCategory;
 import strhercules.chickens.integration.jei.category.TeachingCategory;
 import strhercules.chickens.integration.jei.category.ThrowingCategory;
+import strhercules.chickens.integration.jei.category.WildChickensCategory;
 import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.item.ColoredEggItem;
 import strhercules.chickens.item.ChemicalEggItem;
@@ -49,6 +51,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -92,7 +95,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new AvianChemicalConverterCategory(guiHelper),
                 new AvianDousingCategory(guiHelper),
                 new IncubatorCategory(guiHelper),
-                new TeachingCategory(guiHelper)
+                new TeachingCategory(guiHelper),
+                new WildChickensCategory(guiHelper)
         );
     }
 
@@ -111,12 +115,14 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.AVIAN_DOUSING, buildAvianDousingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.INCUBATOR, buildIncubatorRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.TEACHING, buildTeachingRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.WILD_CHICKENS, buildWildChickenRecipes());
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.SPAWN_EGG.get()),
-                ChickensJeiRecipeTypes.LAYING, ChickensJeiRecipeTypes.DROPS, ChickensJeiRecipeTypes.BREEDING);
+                ChickensJeiRecipeTypes.LAYING, ChickensJeiRecipeTypes.DROPS, ChickensJeiRecipeTypes.BREEDING,
+                ChickensJeiRecipeTypes.WILD_CHICKENS);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.COLORED_EGG.get()), ChickensJeiRecipeTypes.THROWING);
         for (ItemStack itemStack : buildHenhouseCatalysts()) {
             registration.addRecipeCatalyst(itemStack, ChickensJeiRecipeTypes.HENHOUSE);
@@ -439,6 +445,15 @@ public class ChickensJeiPlugin implements IModPlugin {
         }
 
         return list;
+    }
+
+    private static List<ChickensJeiRecipeTypes.WildChickenRecipe> buildWildChickenRecipes() {
+        return ChickensRegistry.getItems().stream()
+                .filter(chicken -> chicken.isEnabled() && chicken.canSpawn() && chicken.getSpawnType() != SpawnType.NONE)
+                .sorted(Comparator.comparing(chicken -> chicken.getDisplayName().getString()))
+                .map(chicken -> new ChickensJeiRecipeTypes.WildChickenRecipe(
+                        ChickensSpawnEggItem.createFor(chicken), chicken.getSpawnType()))
+                .toList();
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

@@ -52,6 +52,7 @@ public final class ModRegistry {
         ModEntityTypes.init(modBus);
         ModBlockEntities.init(modBus);
         ModMenuTypes.init(modBus);
+        ModRecipeTypes.init(modBus);
         ModSpawns.init(modBus);
         ModBiomeModifiers.init(modBus);
         ModCapabilities.init(modBus);

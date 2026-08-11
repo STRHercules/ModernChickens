@@ -99,6 +99,7 @@ public class RoostBlock extends HorizontalDirectionalBlock implements EntityBloc
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof RoostBlockEntity roost) {
+                roost.dropBufferedOutput();
                 Containers.dropContents(level, pos, roost.getItems());
                 level.updateNeighbourForOutputSignal(pos, this);
             }

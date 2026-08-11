@@ -12,6 +12,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -118,6 +119,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     private int progress = 0;
     private boolean fullOfChickens = false;
     private boolean fullOfSeeds = false;
+    private ItemStack pendingOutput = ItemStack.EMPTY;
 
     protected AbstractChickenContainerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
             int inventorySize, int chickenSlotCount) {
@@ -154,6 +156,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         if (level.isClientSide) {
             return;
         }
+        flushPendingOutput();
         updateChickenInfoIfNeeded(level);
         updateTimerIfNeeded(level);
         spawnChickenItemIfNeeded(level);
@@ -179,7 +182,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     }
 
     private void updateTimerIfNeeded(Level level) {
-        if (fullOfChickens && fullOfSeeds && !outputIsFull()) {
+        if (fullOfChickens && fullOfSeeds && pendingOutput.isEmpty() && !outputIsFull()) {
             timeElapsed += getTimeElapsed();
             setChanged();
         }
@@ -188,8 +191,13 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     private void spawnChickenItemIfNeeded(Level level) {
         if (fullOfChickens && fullOfSeeds && timeElapsed >= timeUntilNextDrop) {
             if (timeUntilNextDrop > 0) {
+                if (!pendingOutput.isEmpty()) {
+                    return;
+                }
+                if (!spawnChickenItem(level.random)) {
+                    return;
+                }
                 consumeSeeds();
-                spawnChickenItem(level.random);
             }
             resetTimer(level);
             timeElapsed = 0;
@@ -251,7 +259,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
      * spawns the item that should be spawned during @method runTick
      * @param random
      */
-    protected abstract void spawnChickenItem(RandomSource random);
+    protected abstract boolean spawnChickenItem(RandomSource random);
 
     protected abstract int requiredSeedsForDrop();
 
@@ -427,6 +435,43 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         return remaining;
     }
 
+    /** Stores a generated stack in the visible slots or in one persisted overflow slot. */
+    protected final boolean queueOutput(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return true;
+        }
+        ItemStack remaining = pushIntoOutput(stack);
+        if (remaining.isEmpty()) {
+            return true;
+        }
+        if (pendingOutput.isEmpty()) {
+            pendingOutput = remaining;
+            setChanged();
+            return true;
+        }
+        return false;
+    }
+
+    private void flushPendingOutput() {
+        if (pendingOutput.isEmpty()) {
+            return;
+        }
+        pendingOutput = pushIntoOutput(pendingOutput);
+        if (pendingOutput.isEmpty()) {
+            setChanged();
+        }
+    }
+
+    /** Drops the persisted overflow stack when the container itself is removed. */
+    public void dropBufferedOutput() {
+        if (pendingOutput.isEmpty() || level == null || level.isClientSide) {
+            return;
+        }
+        Containers.dropItemStack(level, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                worldPosition.getZ() + 0.5D, pendingOutput);
+        pendingOutput = ItemStack.EMPTY;
+    }
+
     private ItemStack insertStack(ItemStack stack, int slot) {
         if (stack.isEmpty()) {
             return ItemStack.EMPTY;
@@ -563,6 +608,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     @Override
     public void clearContent() {
         items.clear();
+        pendingOutput = ItemStack.EMPTY;
         setChanged();
         markChickenDataDirty();
     }
@@ -582,6 +628,9 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
+        if (!pendingOutput.isEmpty()) {
+            tag.put("PendingOutput", pendingOutput.save(registries));
+        }
         tag.putInt("TimeUntilNextDrop", timeUntilNextDrop);
         tag.putInt("TimeElapsed", timeElapsed);
         tag.putInt("Progress", progress);
@@ -591,6 +640,9 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, items, registries);
+        pendingOutput = tag.contains("PendingOutput", net.minecraft.nbt.Tag.TAG_COMPOUND)
+                ? ItemStack.parse(registries, tag.getCompound("PendingOutput")).orElse(ItemStack.EMPTY)
+                : ItemStack.EMPTY;
         timeUntilNextDrop = tag.getInt("TimeUntilNextDrop");
         timeElapsed = tag.getInt("TimeElapsed");
         progress = tag.getInt("Progress");

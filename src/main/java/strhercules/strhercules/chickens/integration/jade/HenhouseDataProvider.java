@@ -25,7 +25,7 @@ enum HenhouseDataProvider implements IServerDataProvider<BlockAccessor> {
             return;
         }
         HudData.Builder builder = HudData.builder();
-        builder.addEnergy(henhouse.getEnergy(), HenhouseBlockEntity.HAY_BALE_ENERGY * HenhouseBlockEntity.SLOT_COUNT);
+        builder.addEnergy(henhouse.getEnergy(), HenhouseBlockEntity.ENERGY_CAPACITY);
         ItemStack hayStack = henhouse.getItem(HenhouseBlockEntity.HAY_SLOT);
         int hayCount = isHayFuel(hayStack) ? hayStack.getCount() : 0;
         if (hayCount > 0) {
