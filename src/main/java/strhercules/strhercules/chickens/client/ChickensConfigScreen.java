@@ -29,6 +29,7 @@ public final class ChickensConfigScreen extends Screen {
             "alwaysShowStats", "disableEggLaying", "avianFluxEffectsEnabled",
             "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
             "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
+            "autoRegisterFluidChickens",
             "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn", "allowDousing",
             "generatedTexture");
     private static final Set<String> INTEGER_KEYS = Set.of(

@@ -1,0 +1,7 @@
+# Optional fluid equivalence rules for automatic fluid-chicken discovery.
+# The left side is an alias registry ID and the right side is the canonical
+# registry ID to use for one visible chicken. Both IDs must exist in the pack.
+# A trailing * matches the remainder of a fluid path.
+
+[aliases]
+# "examplemod:molten_*" = "canonicalmod:molten_*"

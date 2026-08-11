@@ -66,6 +66,7 @@ public final class ChickensDataLoader {
     public static void bootstrap() {
         Properties props = loadLegacyProperties();
         TomlConfigBridge.load(props);
+        FluidChickenAliases.load();
 
         ChickensConfigValues preview = readGeneralSettings(props);
         if (preview.isFluidChickensEnabled()) {
@@ -84,12 +85,18 @@ public final class ChickensDataLoader {
             LOGGER.info("Skipping gas egg registration because general.enableGasChickens is false");
         }
 
+        // Dynamic chicken generators read the published snapshot while the
+        // default roster is being assembled. Publish the parsed settings first
+        // so opt-in generators honor the server's config on initial bootstrap.
+        ChickensConfigHolder.set(preview);
+
         // Allow external TOML definitions to extend the in-memory list before
         // per-chicken configuration overrides are resolved.
         List<ChickensRegistryItem> defaults = DefaultChickens.create();
         CustomChickensLoader.load(defaults);
         ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
+        DynamicFluidChickens.register(defaults, indexByName(defaults));
         defaults.forEach(ChickensRegistry::register);
 
         LOGGER.info("Loaded {} chickens ({} enabled, {} disabled)",
@@ -509,6 +516,14 @@ public final class ChickensDataLoader {
         return parent;
     }
 
+    private static Map<String, ChickensRegistryItem> indexByName(List<ChickensRegistryItem> chickens) {
+        Map<String, ChickensRegistryItem> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (ChickensRegistryItem chicken : chickens) {
+            result.put(chicken.getEntityName(), chicken);
+        }
+        return result;
+    }
+
     private static SpawnType parseSpawnType(String value, SpawnType fallback) {
         try {
             return SpawnType.valueOf(value);
@@ -702,6 +717,7 @@ public final class ChickensDataLoader {
         boolean avianChemicalEffects = readBoolean(props, "general.avianChemicalConverterEffectsEnabled", true);
         boolean liquidEggHazards = readBoolean(props, "general.liquidEggHazardsEnabled", true);
         boolean fluidChickensEnabled = readBoolean(props, "general.enableFluidChickens", true);
+        boolean automaticFluidChickensEnabled = readBoolean(props, "general.autoRegisterFluidChickens", false);
         boolean chemicalChickensEnabled = readBoolean(props, "general.enableChemicalChickens", true);
         boolean gasChickensEnabled = readBoolean(props, "general.enableGasChickens", true);
         int incubatorCapacity = ensurePositive(props, "general.incubatorCapacity",
@@ -722,7 +738,8 @@ public final class ChickensDataLoader {
                 avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
                 avianChemicalCapacity, avianChemicalTransfer, avianChemicalEffects,
                 liquidEggHazards,
-                fluidChickensEnabled, chemicalChickensEnabled, gasChickensEnabled, incubatorEnergyCost,
+                fluidChickensEnabled, automaticFluidChickensEnabled,
+                chemicalChickensEnabled, gasChickensEnabled, incubatorEnergyCost,
                 incubatorCapacity, incubatorMaxReceive,
                 dropCount, scalingDrops);
     }

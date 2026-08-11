@@ -396,6 +396,7 @@ The global server configuration is generated at `config/chickens.toml`; stock an
 Common settings include:
 
 - `general.enableFluidChickens`
+- `general.autoRegisterFluidChickens`
 - `general.enableChemicalChickens`
 - `general.enableGasChickens`
 - `general.disableEggLaying`

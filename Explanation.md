@@ -1,18 +1,20 @@
 # Modern Chickens TOML configuration
 
-Modern Chickens uses two player-owned TOML files:
+Modern Chickens uses three player-owned TOML files:
 
 - `config/chickens.toml` contains global gameplay, spawning, machine, and integration options under `[general]`.
 - `config/custom_chickens.toml` contains all packaged stock chicken tables and every player-defined chicken under `[chickens.<name>]`.
+- `config/fluid_chicken_aliases.toml` contains optional pack-owned equivalence rules for automatic fluid-chicken discovery.
 
 The installed files are the source of truth for that client or server. The repository copies are starter examples:
 
 - [`Examples/Config/chickens.toml`](Examples/Config/chickens.toml)
+- [`Examples/Config/fluid_chicken_aliases.toml`](Examples/Config/fluid_chicken_aliases.toml)
 - [`Examples/Custom Chickens/custom_chickens.toml`](Examples/Custom%20Chickens/custom_chickens.toml)
 
 ## Basic workflow
 
-1. Start the client or dedicated server once. Both files are created in its `config` directory.
+1. Start the client or dedicated server once. The configuration files are created in its `config` directory.
 2. Stop Minecraft completely before editing either file.
 3. Keep TOML types correct: booleans are `true`/`false`, numbers are unquoted, and text is quoted.
 4. Save the file and restart the client or server. Chicken definitions and gameplay configuration are read during startup.
@@ -28,6 +30,7 @@ The in-game configuration screen edits `chickens.toml` for global options and `c
 [general]
 roostSpeed = 1.0
 enableFluidChickens = true
+autoRegisterFluidChickens = false
 liquidEggHazardsEnabled = true
 ~~~
 
@@ -105,7 +108,8 @@ These are the packaged defaults. Values are validated or clamped by the runtime 
 | `incubatorCapacity` | Integer | `100000` | Incubator internal energy capacity. Values below 1 become 1. |
 | `incubatorMaxReceive` | Integer | `4000` | Maximum Incubator energy received per tick. Values below 1 become 1. |
 | `scalingDrops` | Boolean | `true` | Applies chicken gain to production output. Default gains 1-10 produce 1, 3, 6, 10, 16, 23, 31, 41, 52, or 64 items. |
-| `enableFluidChickens` | Boolean | `true` | Registers predefined and discovered fluid eggs/chickens. |
+| `enableFluidChickens` | Boolean | `true` | Registers predefined and discovered fluid eggs. |
+| `autoRegisterFluidChickens` | Boolean | `false` | Opts into automatic fluid-chicken discovery. Existing authored fluid chickens win, and configured aliases share one canonical chicken. |
 | `enableChemicalChickens` | Boolean | `true` | Registers Mekanism chemical eggs/chickens when Mekanism is available. |
 | `enableGasChickens` | Boolean | `true` | Registers Mekanism gas eggs/chickens when Mekanism is available. |
 | `roostDropCount` | Integer | `64` | Legacy fixed Roost output setting retained for compatibility. Current production uses configured lay stacks and gain scaling. |
@@ -115,6 +119,21 @@ These are the packaged defaults. Values are validated or clamped by the runtime 
 Modern natural spawning uses the chicken's `spawnType`, the shared creature cap, and the generated spawn plan. Birds are added only to biomes that already support vanilla chickens. The three legacy chance values above do not issue player-adjacent spawn commands.
 
 For precise spawn tuning, use datapack files in `data/<namespace>/chickens/spawn_plans/`. Those files can override weight, brood size, spawn charge, and energy budget.
+
+## Fluid discovery and aliases
+
+Automatic fluid discovery is disabled by default because different mods can register separate fluid IDs for the same named material. Enable `general.autoRegisterFluidChickens` only when the pack wants registry-wide discovery.
+
+When discovery is enabled, Modern Chickens keeps the first authored or code-defined chicken for a canonical fluid and does not create another visible chicken for an alias. Alias rules live in `config/fluid_chicken_aliases.toml`:
+
+~~~toml
+[aliases]
+"evolvedmekanism:molten_*" = "alltheores:molten_*"
+~~~
+
+The left side is an alias registry ID and the right side is the canonical registry ID. A trailing `*` matches the remainder of a fluid path. Rules are exact unless a trailing wildcard is used. If the canonical fluid is not loaded, the source fluid remains independent so optional mods do not silently lose coverage.
+
+Alias rules use registry IDs, not localized display names. Existing generated alias IDs are retained as disabled compatibility descriptors after a canonical rule is added, so old saved Chicken Items and entities can still resolve without adding another JEI-visible chicken.
 
 ## Per-chicken options in custom_chickens.toml
 

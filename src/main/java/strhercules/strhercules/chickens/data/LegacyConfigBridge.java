@@ -119,6 +119,7 @@ public final class LegacyConfigBridge {
                 getBool(props, "general.avianChemicalConverterEffectsEnabled", current.isAvianChemicalConverterEffectsEnabled()),
                 getBool(props, "general.liquidEggHazardsEnabled",   current.isLiquidEggHazardsEnabled()),
                 getBool(props, "general.enableFluidChickens",       current.isFluidChickensEnabled()),
+                getBool(props, "general.autoRegisterFluidChickens", current.isAutomaticFluidChickensEnabled()),
                 getBool(props, "general.enableChemicalChickens",    current.isChemicalChickensEnabled()),
                 getBool(props, "general.enableGasChickens",         current.isGasChickensEnabled()),
                 getInt(props, "general.incubatorEnergyCost",        current.getIncubatorEnergyCost()),
@@ -183,6 +184,7 @@ public final class LegacyConfigBridge {
             case "incubatorMaxReceive" -> props.setProperty("general.incubatorMaxReceive", value);
             case "scalingDrops" -> props.setProperty("general.scalingDrops", value);
             case "enableFluidChickens" -> props.setProperty("general.enableFluidChickens", value);
+            case "autoRegisterFluidChickens" -> props.setProperty("general.autoRegisterFluidChickens", value);
             case "enableChemicalChickens" -> props.setProperty("general.enableChemicalChickens", value);
             case "enableGasChickens" -> props.setProperty("general.enableGasChickens", value);
             default -> {

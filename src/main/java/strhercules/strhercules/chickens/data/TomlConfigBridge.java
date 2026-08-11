@@ -30,6 +30,7 @@ public final class TomlConfigBridge {
             "alwaysShowStats", "disableEggLaying", "disableVanillaEggLaying", "avianFluxEffectsEnabled",
             "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
             "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
+            "autoRegisterFluidChickens",
             "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn",
             "allowDousing", "generatedTexture");
     private static final Set<String> INTEGER_KEYS = Set.of(
@@ -135,7 +136,7 @@ public final class TomlConfigBridge {
         }
     }
 
-    private static boolean ensureResource(Path target, String resource) {
+    static boolean ensureResource(Path target, String resource) {
         if (Files.exists(target)) {
             return false;
         }
@@ -339,6 +340,10 @@ public final class TomlConfigBridge {
 
     public static Path customConfigPath() {
         return FMLPaths.CONFIGDIR.get().resolve(CUSTOM_CONFIG_FILE);
+    }
+
+    static Path configDirectory() {
+        return FMLPaths.CONFIGDIR.get();
     }
 
     private static Path legacyConfigPath() {

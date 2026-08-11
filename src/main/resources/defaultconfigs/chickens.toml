@@ -37,7 +37,7 @@ incubatorCapacity = 100000
 incubatorMaxReceive = 4000
 scalingDrops = true
 enableFluidChickens = true
+autoRegisterFluidChickens = false
 enableChemicalChickens = true
 enableGasChickens = true
 roostDropCount = 64
-

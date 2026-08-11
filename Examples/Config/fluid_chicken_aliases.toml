@@ -1,0 +1,6 @@
+# Optional fluid equivalence rules for automatic fluid-chicken discovery.
+# Keep this file empty unless the pack intentionally treats two fluid registry
+# IDs as the same resource. A trailing * matches the remainder of a fluid path.
+
+[aliases]
+# "examplemod:molten_*" = "canonicalmod:molten_*"

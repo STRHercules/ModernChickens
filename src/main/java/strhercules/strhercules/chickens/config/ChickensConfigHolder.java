@@ -34,6 +34,7 @@ public final class ChickensConfigHolder {
             true,                    // avianChemicalEffectsEnabled
             true,                    // liquidEggHazardsEnabled
             true,                    // fluidChickensEnabled
+            false,                   // automaticFluidChickensEnabled
             true,                    // chemicalChickensEnabled
             true,                    // gasChickensEnabled
             10_000,                  // incubatorEnergyCost
