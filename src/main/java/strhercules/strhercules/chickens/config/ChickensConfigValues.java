@@ -41,6 +41,7 @@ public final class ChickensConfigValues {
     private final int avianChemicalTransferRate;
     private final boolean avianChemicalEffectsEnabled;
     private final boolean liquidEggHazardsEnabled;
+    private final boolean allLiquidChemicalDousingEnabled;
     private final boolean fluidChickensEnabled;
     private final boolean automaticFluidChickensEnabled;
     private final boolean chemicalChickensEnabled;
@@ -63,7 +64,8 @@ public final class ChickensConfigValues {
             int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
             int avianFluidCapacity, int avianFluidTransferRate, boolean avianFluidEffectsEnabled,
             int avianChemicalCapacity, int avianChemicalTransferRate, boolean avianChemicalEffectsEnabled,
-            boolean liquidEggHazardsEnabled, boolean fluidChickensEnabled,
+            boolean liquidEggHazardsEnabled, boolean allLiquidChemicalDousingEnabled,
+            boolean fluidChickensEnabled,
             boolean automaticFluidChickensEnabled,
             boolean chemicalChickensEnabled, boolean gasChickensEnabled, int incubatorEnergyCost,
             int incubatorEnergyCapacity, int incubatorEnergyMaxReceive,
@@ -96,6 +98,7 @@ public final class ChickensConfigValues {
         this.avianChemicalTransferRate = avianChemicalTransferRate;
         this.avianChemicalEffectsEnabled = avianChemicalEffectsEnabled;
         this.liquidEggHazardsEnabled = liquidEggHazardsEnabled;
+        this.allLiquidChemicalDousingEnabled = allLiquidChemicalDousingEnabled;
         this.fluidChickensEnabled = fluidChickensEnabled;
         this.automaticFluidChickensEnabled = automaticFluidChickensEnabled;
         this.chemicalChickensEnabled = chemicalChickensEnabled;
@@ -234,6 +237,10 @@ public final class ChickensConfigValues {
 
     public boolean isLiquidEggHazardsEnabled() {
         return liquidEggHazardsEnabled;
+    }
+
+    public boolean isAllLiquidChemicalDousingEnabled() {
+        return allLiquidChemicalDousingEnabled;
     }
 
     public boolean isFluidChickensEnabled() {

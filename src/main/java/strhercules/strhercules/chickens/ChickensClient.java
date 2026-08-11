@@ -18,6 +18,10 @@ import strhercules.chickens.client.render.RoosterModel;
 import strhercules.chickens.client.render.RoosterRenderer;
 import strhercules.chickens.client.render.blockentity.BreederBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.CollectorBlockEntityRenderer;
+import strhercules.chickens.client.render.blockentity.AvianChemicalConverterBlockEntityRenderer;
+import strhercules.chickens.client.render.blockentity.AvianDousingMachineBlockEntityRenderer;
+import strhercules.chickens.client.render.blockentity.AvianFluxConverterBlockEntityRenderer;
+import strhercules.chickens.client.render.blockentity.AvianFluidConverterBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.RoostBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.NestBlockEntityRenderer;
 import strhercules.chickens.item.ChickenItemHelper;
@@ -92,6 +96,14 @@ public final class ChickensClient {
         event.registerBlockEntityRenderer(ModBlockEntities.NEST.get(), NestBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BREEDER.get(), BreederBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COLLECTOR.get(), CollectorBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.AVIAN_FLUX_CONVERTER.get(),
+                AvianFluxConverterBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.AVIAN_FLUID_CONVERTER.get(),
+                AvianFluidConverterBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.AVIAN_CHEMICAL_CONVERTER.get(),
+                AvianChemicalConverterBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.AVIAN_DOUSING_MACHINE.get(),
+                AvianDousingMachineBlockEntityRenderer::new);
     }
 
     @SubscribeEvent

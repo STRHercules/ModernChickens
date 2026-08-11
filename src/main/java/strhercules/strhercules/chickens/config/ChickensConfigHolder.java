@@ -33,6 +33,7 @@ public final class ChickensConfigHolder {
             2_000,                   // avianChemicalTransferRate
             true,                    // avianChemicalEffectsEnabled
             true,                    // liquidEggHazardsEnabled
+            true,                    // allLiquidChemicalDousingEnabled
             true,                    // fluidChickensEnabled
             false,                   // automaticFluidChickensEnabled
             true,                    // chemicalChickensEnabled

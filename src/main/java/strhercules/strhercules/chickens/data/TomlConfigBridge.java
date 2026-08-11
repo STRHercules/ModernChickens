@@ -30,7 +30,7 @@ public final class TomlConfigBridge {
             "alwaysShowStats", "disableEggLaying", "disableVanillaEggLaying", "avianFluxEffectsEnabled",
             "avianFluidConverterEffectsEnabled", "avianChemicalConverterEffectsEnabled",
             "liquidEggHazardsEnabled", "scalingDrops", "enableFluidChickens",
-            "autoRegisterFluidChickens",
+            "autoRegisterFluidChickens", "allowAllLiquidChemicalDousing",
             "enableChemicalChickens", "enableGasChickens", "enabled", "allowNaturalSpawn",
             "allowDousing", "generatedTexture");
     private static final Set<String> INTEGER_KEYS = Set.of(

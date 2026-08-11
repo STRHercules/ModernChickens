@@ -1,9 +1,12 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "bottom": "chickens:block/incubator_bottom",
-    "front": "chickens:block/incubator_front",
-    "side": "chickens:block/incubator_side",
-    "top": "chickens:block/incubator_top"
+    "down": "chickens:block/machines/macerator_bottom",
+    "east": "chickens:block/machines/macerator_side",
+    "north": "chickens:block/machines/macerator_front",
+    "particle": "chickens:block/machines/macerator_front",
+    "south": "chickens:block/machines/macerator_side",
+    "up": "chickens:block/machines/macerator_top",
+    "west": "chickens:block/machines/macerator_side"
   }
 }

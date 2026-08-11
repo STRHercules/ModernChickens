@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "down": "chickens:block/machines/fluid_pump_bottom",
+    "east": "chickens:block/machines/fluid_pump_leftright_active",
+    "north": "chickens:block/machines/fluid_pump_front_active",
+    "particle": "chickens:block/machines/fluid_pump_front_active",
+    "south": "chickens:block/machines/fluid_pump_back",
+    "up": "chickens:block/machines/fluid_pump_top",
+    "west": "chickens:block/machines/fluid_pump_leftright_active"
+  }
+}

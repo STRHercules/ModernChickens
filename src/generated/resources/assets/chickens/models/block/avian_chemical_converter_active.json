@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "down": "chickens:block/machines/gas_infuser_bottom",
+    "east": "chickens:block/machines/gas_infuser_side",
+    "north": "chickens:block/machines/gas_infuser_front_active",
+    "particle": "chickens:block/machines/gas_infuser_front_active",
+    "south": "chickens:block/machines/gas_infuser_side",
+    "up": "chickens:block/machines/gas_infuser_top",
+    "west": "chickens:block/machines/gas_infuser_side"
+  }
+}
