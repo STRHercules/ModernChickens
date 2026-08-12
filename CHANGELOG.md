@@ -25,7 +25,7 @@
 
   ```js
   event.recipes.chickens.avian_dousing('minecraft:grass_block', 'minecraft:dirt',
-    { type: 'item', id: 'minecraft:bone_meal' }).energy(2000)
+    { type: 'fluid', id: 'minecraft:lava', amount: 1000 }).energy(2000).id('nadiendev:test_dousing_recipe')
   ```
 
 ## Fixed
