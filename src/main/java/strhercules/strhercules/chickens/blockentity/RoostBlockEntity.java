@@ -8,6 +8,7 @@ import strhercules.chickens.blockentity.NestBlockEntity;
 import strhercules.chickens.item.ChickenStats;
 import strhercules.chickens.menu.RoostMenu;
 import strhercules.chickens.registry.ModBlockEntities;
+import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -32,10 +33,13 @@ import java.util.List;
 public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int INVENTORY_SIZE = 5;
     public static final int CHICKEN_SLOT = 0;
+    public static final int SPEED_UPGRADE_SLOT = 0;
+    public static final int STACK_UPGRADE_SLOT = 1;
+    public static final int UPGRADE_SLOT_COUNT = 2;
     private static final int MAX_CHICKENS = 16;
 
     public RoostBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ROOST.get(), pos, state, INVENTORY_SIZE, 1);
+        super(ModBlockEntities.ROOST.get(), pos, state, INVENTORY_SIZE, 1, UPGRADE_SLOT_COUNT);
     }
 
     @Override
@@ -56,6 +60,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     @Override
     protected double speedMultiplier() {
         double base = ChickensConfigHolder.get().getRoostSpeedMultiplier();
+        double upgradeMultiplier = 1.0D + 0.2D * getUpgradeCount(SPEED_UPGRADE_SLOT);
 
         // So the production rate can be changed per chicken in chicken.cfg
         double chickenLayCoeffient = 1.0;
@@ -67,11 +72,11 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
         double auraMultiplier = ChickensConfigHolder.get().getRoosterAuraMultiplier();
         int auraRange = ChickensConfigHolder.get().getRoosterAuraRange();
         if (auraRange <= 0 || auraMultiplier <= 1.0D || level == null) {
-            return base;
+            return base * upgradeMultiplier;
         }
         int activeRoosters = countActiveRoostersInNests(level, worldPosition, auraRange);
         if (activeRoosters <= 0) {
-            return base;
+            return base * upgradeMultiplier;
         }
         // Preserve the existing meaning of roosterAuraMultiplier for a single
         // rooster while scaling linearly with additional birds. For example,
@@ -79,7 +84,28 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
         // base * (1 + 3 * 0.25) = base * 1.75.
         double bonusPerRooster = auraMultiplier - 1.0D;
         double totalMultiplier = 1.0D + activeRoosters * bonusPerRooster;
-        return (base * Math.max(totalMultiplier, 0.0D)) * chickenLayCoeffient;
+        return (base * Math.max(totalMultiplier, 0.0D)) * chickenLayCoeffient * upgradeMultiplier;
+    }
+
+    @Override
+    protected boolean hasStackUpgrade() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT) > 0;
+    }
+
+    @Override
+    protected int getStackUpgradeCount() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT);
+    }
+
+    @Override
+    public boolean canPlaceUpgrade(int slot, ItemStack stack) {
+        return slot == SPEED_UPGRADE_SLOT && stack.is(ModRegistry.SPEED_UPGRADE.get())
+                || slot == STACK_UPGRADE_SLOT && stack.is(ModRegistry.STACK_UPGRADE.get());
+    }
+
+    @Override
+    public int getUpgradeMaxStackSize(int slot) {
+        return slot == SPEED_UPGRADE_SLOT ? 5 : slot == STACK_UPGRADE_SLOT ? MAX_STACK_UPGRADE_COUNT : 1;
     }
 
     private static int countActiveRoostersInNests(net.minecraft.world.level.Level level, BlockPos origin, int range) {
@@ -132,11 +158,17 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected int getMaxStackSizeForSlot(int slot, ItemStack stack) {
+    protected int getMaxStackSizeForSlotWithStackUpgrades(int slot, ItemStack stack, int stackUpgradeCount) {
         if (slot == CHICKEN_SLOT) {
-            return Math.min(MAX_CHICKENS, stack.getMaxStackSize());
+            int max = Math.min(MAX_CHICKENS, stack.getMaxStackSize());
+            return Math.min(MAX_VIRTUAL_STACK_SIZE, max << stackUpgradeCount);
         }
-        return super.getMaxStackSizeForSlot(slot, stack);
+        return super.getMaxStackSizeForSlotWithStackUpgrades(slot, stack, stackUpgradeCount);
+    }
+
+    @Override
+    public boolean canRemoveUpgrade(int slot, int count) {
+        return slot != STACK_UPGRADE_SLOT || canRemoveStackUpgrade(count);
     }
 
     public boolean putChicken(ItemStack newStack) {
@@ -144,8 +176,9 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
             return false;
         }
         ItemStack current = getItem(CHICKEN_SLOT);
+        int maxChickens = getMaxStackSizeForSlot(CHICKEN_SLOT, newStack);
         if (current.isEmpty()) {
-            int toMove = Math.min(MAX_CHICKENS, newStack.getCount());
+            int toMove = Math.min(maxChickens, newStack.getCount());
             if (toMove <= 0) {
                 return false;
             }
@@ -156,7 +189,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
         if (!ItemStack.isSameItemSameComponents(current, newStack)) {
             return false;
         }
-        int space = MAX_CHICKENS - current.getCount();
+        int space = maxChickens - current.getCount();
         if (space <= 0) {
             return false;
         }
@@ -176,10 +209,14 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
         if (stack.isEmpty()) {
             return false;
         }
-        ItemStack toGive = stack.copy();
+        ItemStack remaining = stack.copy();
         setItem(CHICKEN_SLOT, ItemStack.EMPTY);
-        if (!player.addItem(toGive)) {
-            player.drop(toGive, false);
+        int maxExternalStackSize = AbstractChickenContainerBlockEntity.getLegalExternalStackSize(stack);
+        while (!remaining.isEmpty()) {
+            ItemStack toGive = remaining.split(maxExternalStackSize);
+            if (!player.addItem(toGive) && !toGive.isEmpty()) {
+                player.drop(toGive, false);
+            }
         }
         playRemoveSound();
         return true;

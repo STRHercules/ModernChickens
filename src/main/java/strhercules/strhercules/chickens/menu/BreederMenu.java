@@ -1,5 +1,6 @@
 package strhercules.chickens.menu;
 
+import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.BreederBlockEntity;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModMenuTypes;
@@ -27,6 +28,7 @@ public class BreederMenu extends AbstractContainerMenu {
     private final BreederBlockEntity breeder;
     private final ContainerLevelAccess access;
     private final ContainerData data;
+    private final int machineSlotCount;
 
     public BreederMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
@@ -40,6 +42,7 @@ public class BreederMenu extends AbstractContainerMenu {
         super(ModMenuTypes.BREEDER.get(), id);
         this.breeder = breeder;
         this.data = data;
+        this.machineSlotCount = breeder.getContainerSize();
         Level level = breeder.getLevel();
         this.access = level != null ? ContainerLevelAccess.create(level, breeder.getBlockPos()) : ContainerLevelAccess.NULL;
 
@@ -49,14 +52,16 @@ public class BreederMenu extends AbstractContainerMenu {
         for (int i = 0; i < 3; i++) {
             this.addSlot(new OutputSlot(breeder, i + 3, 116 + i * 18, 20));
         }
+        this.addSlot(new MachineUpgradeSlot(breeder, BreederBlockEntity.SPEED_UPGRADE_SLOT, 128, 41));
+        this.addSlot(new MachineUpgradeSlot(breeder, BreederBlockEntity.STACK_UPGRADE_SLOT, 149, 41));
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {
-                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 51 + row * 18));
+                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 62 + row * 18));
             }
         }
         for (int hotbar = 0; hotbar < 9; ++hotbar) {
-            this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 109));
+            this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 120));
         }
 
         this.addDataSlots(data);
@@ -86,11 +91,11 @@ public class BreederMenu extends AbstractContainerMenu {
         if (slot != null && slot.hasItem()) {
             ItemStack current = slot.getItem();
             original = current.copy();
-            if (index < INVENTORY_SIZE) {
-                if (!this.moveItemStackTo(current, INVENTORY_SIZE, this.slots.size(), true)) {
+            if (index < machineSlotCount) {
+                if (!this.moveItemStackTo(current, machineSlotCount, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(current, 0, INVENTORY_SIZE, false)) {
+            } else if (!this.moveItemStackTo(current, 0, machineSlotCount, false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -133,8 +138,11 @@ public class BreederMenu extends AbstractContainerMenu {
     }
 
     private static class SeedSlot extends Slot {
+        private final BreederBlockEntity breeder;
+
         public SeedSlot(BreederBlockEntity breeder, int index, int x, int y) {
             super(breeder, index, x, y);
+            this.breeder = breeder;
         }
 
         @Override
@@ -142,16 +150,41 @@ public class BreederMenu extends AbstractContainerMenu {
             return stack.is(Items.WHEAT_SEEDS) || stack.is(Items.BEETROOT_SEEDS) || stack.is(Items.MELON_SEEDS)
                     || stack.is(Items.PUMPKIN_SEEDS);
         }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return breeder.getMaxStackSizeForSlot(getContainerSlot(), stack);
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            return super.remove(Math.min(amount,
+                    AbstractChickenContainerBlockEntity.getLegalExternalStackSize(getItem())));
+        }
     }
 
     private static class OutputSlot extends Slot {
+        private final BreederBlockEntity breeder;
+
         public OutputSlot(BreederBlockEntity breeder, int index, int x, int y) {
             super(breeder, index, x, y);
+            this.breeder = breeder;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
             return false;
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return breeder.getMaxStackSizeForSlot(getContainerSlot(), stack);
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            return super.remove(Math.min(amount,
+                    AbstractChickenContainerBlockEntity.getLegalExternalStackSize(getItem())));
         }
     }
 }

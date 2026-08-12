@@ -24,7 +24,7 @@ public class BreederScreen extends AbstractContainerScreen<BreederMenu> {
     public BreederScreen(BreederMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 133;
+        this.imageHeight = 144;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 

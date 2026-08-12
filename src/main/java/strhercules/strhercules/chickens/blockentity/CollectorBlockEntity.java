@@ -3,44 +3,104 @@ package strhercules.chickens.blockentity;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.menu.CollectorMenu;
 import strhercules.chickens.registry.ModBlockEntities;
+import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
 /**
- * Block entity that periodically scans nearby roost-style containers and pulls
- * drops into its own inventory. The logic mirrors the legacy collector while
- * reusing the shared container base for inventory persistence.
+ * Block entity that pulls drops from nearby chicken containers into unlocked
+ * storage rows. Capacity upgrades add three 13-slot rows at a time.
  */
 public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
-    public static final int INVENTORY_SIZE = 27;
-    private static final int MAX_SCAN_RANGE = 16;
+    public static final int BASE_STORAGE_SLOTS = 26;
+    public static final int SLOTS_PER_CAPACITY_UPGRADE = 39;
+    public static final int MAX_STORAGE_SLOTS = 104;
+    public static final int INVENTORY_SIZE = BASE_STORAGE_SLOTS;
+
+    public static final int STACK_UPGRADE_SLOT = 0;
+    public static final int CAPACITY_UPGRADE_SLOT = 1;
+    public static final int SPEED_UPGRADE_SLOT = 2;
+    public static final int RANGE_UPGRADE_SLOT = 3;
+    public static final int UPGRADE_SLOT_COUNT = 4;
+
+    private static final int MAX_RANGE = 16 + 20 * 4;
+    private double scanWork;
+    private int syncedCapacityLevel = -1;
 
     public CollectorBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.COLLECTOR.get(), pos, state, INVENTORY_SIZE, 0);
+        super(ModBlockEntities.COLLECTOR.get(), pos, state, MAX_STORAGE_SLOTS, 0, UPGRADE_SLOT_COUNT);
+    }
+
+    @Override
+    protected int getActiveStorageSize() {
+        return getStorageSlotCount();
+    }
+
+    public int getCapacityUpgradeCount() {
+        return getUpgradeCount(CAPACITY_UPGRADE_SLOT);
+    }
+
+    public int getCapacityLevel() {
+        return Math.min(2, getCapacityUpgradeCount());
+    }
+
+    public int getStorageSlotCount() {
+        return BASE_STORAGE_SLOTS + getCapacityLevel() * SLOTS_PER_CAPACITY_UPGRADE;
+    }
+
+    public int getStorageRows() {
+        return 2 + getCapacityLevel() * 3;
+    }
+
+    @Override
+    protected int getContainerDataCount() {
+        return 2;
+    }
+
+    @Override
+    protected int getContainerDataValue(int index) {
+        if (index != 1) {
+            return 0;
+        }
+        int installed = getCapacityLevel();
+        return level != null && level.isClientSide && syncedCapacityLevel >= 0
+                ? syncedCapacityLevel : installed;
+    }
+
+    @Override
+    protected void setContainerDataValue(int index, int value) {
+        if (index == 1) {
+            syncedCapacityLevel = Mth.clamp(value, 0, 2);
+        }
     }
 
     @Override
     protected void runServerTick(Level level) {
         super.runServerTick(level);
-        int range = clampRange(ChickensConfigHolder.get().getCollectorScanRange());
-        gatherItems(level, range);
+        scanWork += 1.0D + 0.2D * getUpgradeCount(SPEED_UPGRADE_SLOT);
+        int operations = (int) scanWork;
+        if (operations <= 0) {
+            return;
+        }
+        scanWork -= operations;
+        int range = Mth.clamp(ChickensConfigHolder.get().getCollectorScanRange()
+                + 20 * getUpgradeCount(RANGE_UPGRADE_SLOT), 0, MAX_RANGE);
+        gatherItems(level, range, operations);
     }
 
     @Override
     protected boolean spawnChickenItem(RandomSource random) {
-        // No-op: the collector never generates drops on its own.
         return false;
     }
 
@@ -65,8 +125,9 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected AbstractContainerMenu createMenu(int id, Inventory playerInventory, ContainerData dataAccess) {
-        return new CollectorMenu(id, playerInventory, this);
+    protected AbstractContainerMenu createMenu(int id, Inventory playerInventory,
+            net.minecraft.world.inventory.ContainerData dataAccess) {
+        return new CollectorMenu(id, playerInventory, this, dataAccess);
     }
 
     @Override
@@ -74,27 +135,90 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         return null;
     }
 
-    private void gatherItems(Level level, int range) {
-        if (range <= 0) {
+    @Override
+    protected boolean hasStackUpgrade() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT) > 0;
+    }
+
+    @Override
+    protected int getStackUpgradeCount() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT);
+    }
+
+    @Override
+    public boolean canPlaceUpgrade(int slot, ItemStack stack) {
+        return slot == STACK_UPGRADE_SLOT && stack.is(ModRegistry.STACK_UPGRADE.get())
+                || slot == CAPACITY_UPGRADE_SLOT && stack.is(ModRegistry.STORAGE_CAPACITY_UPGRADE.get())
+                || slot == SPEED_UPGRADE_SLOT && stack.is(ModRegistry.SPEED_UPGRADE.get())
+                || slot == RANGE_UPGRADE_SLOT && stack.is(ModRegistry.RANGE_UPGRADE.get());
+    }
+
+    public boolean isUpgradeItem(ItemStack stack) {
+        return stack.is(ModRegistry.STACK_UPGRADE.get())
+                || stack.is(ModRegistry.STORAGE_CAPACITY_UPGRADE.get())
+                || stack.is(ModRegistry.SPEED_UPGRADE.get())
+                || stack.is(ModRegistry.RANGE_UPGRADE.get());
+    }
+
+    @Override
+    public boolean canRemoveUpgrade(int slot, int count) {
+        if (slot == STACK_UPGRADE_SLOT) {
+            return canRemoveStackUpgrade(count);
+        }
+        if (slot != CAPACITY_UPGRADE_SLOT) {
+            return true;
+        }
+        int installed = getUpgradeCount(CAPACITY_UPGRADE_SLOT);
+        int remaining = Math.max(0, installed - Math.max(count, 0));
+        int activeAfter = BASE_STORAGE_SLOTS + Math.min(2, remaining) * SLOTS_PER_CAPACITY_UPGRADE;
+        for (int storageSlot = activeAfter; storageSlot < getStorageSlotCount(); storageSlot++) {
+            if (!getItem(storageSlot).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int getUpgradeMaxStackSize(int slot) {
+        return switch (slot) {
+            case STACK_UPGRADE_SLOT -> MAX_STACK_UPGRADE_COUNT;
+            case CAPACITY_UPGRADE_SLOT -> 2;
+            case SPEED_UPGRADE_SLOT -> 5;
+            case RANGE_UPGRADE_SLOT -> 4;
+            default -> 1;
+        };
+    }
+
+    private void gatherItems(Level level, int range, int maxOperations) {
+        if (range <= 0 || maxOperations <= 0) {
             return;
         }
-        // Sweep the entire configured cube (default 9x9x9) each tick to mirror the original mod reach.
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        for (int xOffset = -range; xOffset <= range; xOffset++) {
-            for (int yOffset = -range; yOffset <= range; yOffset++) {
-                for (int zOffset = -range; zOffset <= range; zOffset++) {
-                    if (xOffset == 0 && yOffset == 0 && zOffset == 0) {
+
+        int minX = worldPosition.getX() - range;
+        int maxX = worldPosition.getX() + range;
+        int minZ = worldPosition.getZ() - range;
+        int maxZ = worldPosition.getZ() + range;
+        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
+            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
+                BlockPos chunkProbe = new BlockPos(chunkX << 4, worldPosition.getY(), chunkZ << 4);
+                if (!level.hasChunkAt(chunkProbe)) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+                for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
+                    if (!(blockEntity instanceof AbstractChickenContainerBlockEntity other)
+                            || other == this || other instanceof CollectorBlockEntity) {
                         continue;
                     }
-                    cursor.setWithOffset(worldPosition, xOffset, yOffset, zOffset);
-                    if (!level.hasChunkAt(cursor)) {
+                    BlockPos otherPos = other.getBlockPos();
+                    if (Math.abs(otherPos.getX() - worldPosition.getX()) > range
+                            || Math.abs(otherPos.getY() - worldPosition.getY()) > range
+                            || Math.abs(otherPos.getZ() - worldPosition.getZ()) > range) {
                         continue;
                     }
-                    BlockEntity blockEntity = level.getBlockEntity(cursor);
-                    if (blockEntity instanceof AbstractChickenContainerBlockEntity other && other != this) {
-                        if (drainContainer(other)) {
-                            return;
-                        }
+                    if (drainContainer(other) && --maxOperations <= 0) {
+                        return;
                     }
                 }
             }
@@ -103,17 +227,16 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
 
     private boolean drainContainer(AbstractChickenContainerBlockEntity other) {
         int start = other.getOutputSlotIndex();
-        int size = other.getContainerSize();
-        for (int slot = start; slot < size; slot++) {
+        int end = start + other.getOutputSlotCount();
+        for (int slot = start; slot < end; slot++) {
             ItemStack stack = other.getItem(slot);
-            // Drain the full stack before advancing so large drop buffers empty quickly.
             while (!stack.isEmpty()) {
                 ItemStack remaining = pushIntoOutput(stack);
                 int transferred = stack.getCount() - remaining.getCount();
                 if (transferred <= 0) {
                     return true;
                 }
-                other.removeItem(slot, transferred);
+                other.removeItemForMachine(slot, transferred);
                 if (isOutputInventoryFull()) {
                     return true;
                 }
@@ -124,35 +247,31 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    public void storeTooltipData(CompoundTag tag) {
+    public void storeTooltipData(net.minecraft.nbt.CompoundTag tag) {
         super.storeTooltipData(tag);
         int filled = 0;
-        for (int slot = getOutputSlotIndex(); slot < getContainerSize(); slot++) {
+        for (int slot = getOutputSlotIndex(); slot < getOutputSlotIndex() + getOutputSlotCount(); slot++) {
             if (!getItem(slot).isEmpty()) {
                 filled++;
             }
         }
         tag.putInt("FilledSlots", filled);
-        tag.putInt("TotalSlots", getContainerSize());
+        tag.putInt("TotalSlots", getStorageSlotCount());
     }
 
     @Override
-    public void appendTooltip(List<Component> tooltip, CompoundTag data) {
+    public void appendTooltip(List<Component> tooltip, net.minecraft.nbt.CompoundTag data) {
         tooltip.add(Component.translatable("tooltip.chickens.collector.slots", data.getInt("FilledSlots"),
                 data.getInt("TotalSlots")));
         super.appendTooltip(tooltip, data);
     }
 
-    private static int clampRange(int configuredRange) {
-        return Mth.clamp(configuredRange, 0, MAX_SCAN_RANGE);
-    }
-
     private boolean isOutputInventoryFull() {
         int start = getOutputSlotIndex();
-        int size = getContainerSize();
-        for (int slot = start; slot < size; slot++) {
+        int end = start + getOutputSlotCount();
+        for (int slot = start; slot < end; slot++) {
             ItemStack stack = getItem(slot);
-            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+            if (stack.isEmpty() || stack.getCount() < getMaxStackSizeForSlot(slot, stack)) {
                 return false;
             }
         }

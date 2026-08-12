@@ -84,7 +84,13 @@ final class HudBarElement extends Element {
             offset = travel;
         }
         int drawX = baseX - offset;
-        graphics.enableScissor(baseX, y + 1, baseX + areaWidth, y + HEIGHT - 1);
+        // Jade renders elements inside a translated pose. Scissor coordinates
+        // are screen-space, so include that translation or long labels get
+        // clipped outside the bar while the fill remains visible.
+        int poseX = (int) graphics.pose().last().pose().m30();
+        int poseY = (int) graphics.pose().last().pose().m31();
+        graphics.enableScissor(baseX + poseX, y + poseY + 1,
+                baseX + poseX + areaWidth, y + poseY + HEIGHT - 1);
         graphics.drawString(font, label, drawX, textY, TEXT_COLOR, false);
         graphics.disableScissor();
     }

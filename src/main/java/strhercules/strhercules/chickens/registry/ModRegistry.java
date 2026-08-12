@@ -9,6 +9,7 @@ import strhercules.chickens.block.BreederBlock;
 import strhercules.chickens.block.CollectorBlock;
 import strhercules.chickens.block.IncubatorBlock;
 import strhercules.chickens.block.HenhouseBlock;
+import strhercules.chickens.block.LavaChickenFireBlock;
 import strhercules.chickens.block.RoostBlock;
 import strhercules.chickens.block.NestBlock;
 import strhercules.chickens.item.AnalyzerItem;
@@ -20,6 +21,7 @@ import strhercules.chickens.item.ChickenItem;
 import strhercules.chickens.item.ChickenCatcherItem;
 import strhercules.chickens.item.CreativeCatcherItem;
 import strhercules.chickens.item.LiquidEggItem;
+import strhercules.chickens.item.LavaChickenItem;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.GasEggItem;
 import strhercules.chickens.item.MegaChickenItem;
@@ -28,6 +30,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.Unbreakable;
+import net.minecraft.util.Unit;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -47,6 +50,7 @@ public final class ModRegistry {
     }
 
     public static void init(IEventBus modBus) {
+        ModEffects.init(modBus);
         ITEMS.register(modBus);
         BLOCKS.register(modBus);
         ModEntityTypes.init(modBus);
@@ -76,12 +80,26 @@ public final class ModRegistry {
             () -> new FluxEggItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<FlyingEggItem> FLYING_EGG = ITEMS.register("flying_egg",
             () -> new FlyingEggItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<LavaChickenItem> LAVA_CHICKEN = ITEMS.register("lava_chicken",
+            () -> new LavaChickenItem(new Item.Properties()
+                    .stacksTo(16)
+                    .component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE)));
+    public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speedupgrade",
+            () -> new Item(new Item.Properties().stacksTo(5)));
+    public static final DeferredItem<Item> STACK_UPGRADE = ITEMS.register("stackupgrade",
+            () -> new Item(new Item.Properties().stacksTo(4)));
+    public static final DeferredItem<Item> STORAGE_CAPACITY_UPGRADE = ITEMS.register("storagecapacity",
+            () -> new Item(new Item.Properties().stacksTo(2)));
+    public static final DeferredItem<Item> RANGE_UPGRADE = ITEMS.register("rangeupgrade",
+            () -> new Item(new Item.Properties().stacksTo(4)));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
     public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());
     public static final DeferredBlock<NestBlock> NEST = BLOCKS.register("nest", () -> new NestBlock());
     public static final DeferredBlock<BreederBlock> BREEDER = BLOCKS.register("breeder", () -> new BreederBlock());
     public static final DeferredBlock<CollectorBlock> COLLECTOR = BLOCKS.register("collector", () -> new CollectorBlock());
+    public static final DeferredBlock<LavaChickenFireBlock> LAVA_CHICKEN_FIRE = BLOCKS.register("lava_chicken_fire",
+            () -> new LavaChickenFireBlock());
     public static final DeferredBlock<AvianFluxConverterBlock> AVIAN_FLUX_CONVERTER = BLOCKS.register("avian_flux_converter", () -> new AvianFluxConverterBlock());
     public static final DeferredBlock<AvianFluidConverterBlock> AVIAN_FLUID_CONVERTER = BLOCKS.register("avian_fluid_converter", () -> new AvianFluidConverterBlock());
     public static final DeferredBlock<AvianChemicalConverterBlock> AVIAN_CHEMICAL_CONVERTER = BLOCKS.register("avian_chemical_converter", () -> new AvianChemicalConverterBlock());

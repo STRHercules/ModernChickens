@@ -27,6 +27,7 @@ public final class ChickensMod {
         ChickenTeachHandler.init();
         ChickensCommands.init();
         RoostEggPreventer.init();
+        LavaChickenGameplay.init();
         MekanismRadiationCompat.init();
         NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);

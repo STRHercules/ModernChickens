@@ -29,7 +29,8 @@ import javax.annotation.Nullable;
 
 /**
  * Simple storage block that gathers drops from nearby roost-style containers.
- * Players can open the menu to access the 27-slot inventory.
+ * Players can open the menu to access the storage slots unlocked by capacity
+ * upgrades.
  */
 public class CollectorBlock extends Block implements EntityBlock {
     public static final MapCodec<CollectorBlock> CODEC = simpleCodec(CollectorBlock::new);

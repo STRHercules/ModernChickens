@@ -23,7 +23,7 @@ public class RoostScreen extends AbstractContainerScreen<RoostMenu> {
     public RoostScreen(RoostMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 133;
+        this.imageHeight = 144;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 

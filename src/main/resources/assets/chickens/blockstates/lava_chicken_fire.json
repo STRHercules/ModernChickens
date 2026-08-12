@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "chickens:block/lava_chicken_fire"
+    }
+  }
+}

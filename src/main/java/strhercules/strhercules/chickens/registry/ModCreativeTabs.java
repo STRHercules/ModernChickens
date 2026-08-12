@@ -37,7 +37,12 @@ public final class ModCreativeTabs {
                         // Herramientas
                         output.accept(ModRegistry.ANALYZER.get());
                         output.accept(ModRegistry.CATCHER.get());
-                         output.accept(ModRegistry.CREATIVE_CATCHER.get());
+                        output.accept(ModRegistry.CREATIVE_CATCHER.get());
+                        output.accept(ModRegistry.LAVA_CHICKEN.get());
+                        output.accept(ModRegistry.SPEED_UPGRADE.get());
+                        output.accept(ModRegistry.STACK_UPGRADE.get());
+                        output.accept(ModRegistry.STORAGE_CAPACITY_UPGRADE.get());
+                        output.accept(ModRegistry.RANGE_UPGRADE.get());
 
                         // Pollos (chicken item, todos los tipos)
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {

@@ -39,6 +39,11 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         generatedItem("creative_catcher", "creative_catcher");
         generatedItem("catcher", "catcher");
         generatedItem("flying_egg", "flyingegg");
+        generatedItem("lava_chicken", "lava_chicken");
+        generatedItem("speedupgrade", "speedupgrade");
+        generatedItem("stackupgrade", "stackupgrade");
+        generatedItem("storagecapacity", "storagecapacity");
+        generatedItem("rangeupgrade", "rangeupgrade");
         generatedItem("gas_egg", "gas_egg");
         generatedItem("chemical_egg", "chemical_egg");
         generatedItem("mega_chicken", "mega_chicken");

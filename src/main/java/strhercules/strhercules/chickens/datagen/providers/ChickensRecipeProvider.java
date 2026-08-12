@@ -192,6 +192,46 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_collector", has(item("chickens:collector")))
                 .save(output, id("avian_dousing_machine"));
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:speedupgrade"))
+                .pattern("NEN")
+                .pattern("EDE")
+                .pattern("NEN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('E', Items.ENDER_EYE)
+                .define('D', Items.DIAMOND)
+                .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
+                .save(output, id("speedupgrade"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:stackupgrade"))
+                .pattern("NSN")
+                .pattern("SDS")
+                .pattern("NSN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('S', Items.SHULKER_SHELL)
+                .define('D', Items.DIAMOND)
+                .unlockedBy("has_shulker_shell", has(Items.SHULKER_SHELL))
+                .save(output, id("stackupgrade"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:storagecapacity"))
+                .pattern("NEN")
+                .pattern("ECE")
+                .pattern("NEN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('E', Items.ENDER_PEARL)
+                .define('C', Items.CHEST)
+                .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
+                .save(output, id("storagecapacity"));
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:rangeupgrade"))
+                .pattern("ENE")
+                .pattern("NBN")
+                .pattern("ENE")
+                .define('E', Items.ENDER_EYE)
+                .define('N', Items.NETHERITE_INGOT)
+                .define('B', Items.BEACON)
+                .unlockedBy("has_beacon", has(Items.BEACON))
+                .save(output, id("rangeupgrade"));
+
         dousingRecipe(output, "avian_dousing_dragon", "obsidianChicken", "dragonChicken",
                 "minecraft:dragon_breath", 10);
         dousingRecipe(output, "avian_dousing_wither", "soulSandChicken", "witherChicken",

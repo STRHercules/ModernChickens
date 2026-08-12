@@ -70,7 +70,9 @@ public class CollectorBlockEntityRenderer implements BlockEntityRenderer<Collect
 
     private static List<ItemStack> collectDisplayStacks(CollectorBlockEntity collector) {
         List<ItemStack> result = new ArrayList<>(MAX_DISPLAY_ITEMS);
-        for (ItemStack stack : collector.getItems()) {
+        int outputEnd = collector.getOutputSlotIndex() + collector.getOutputSlotCount();
+        for (int slot = collector.getOutputSlotIndex(); slot < outputEnd; slot++) {
+            ItemStack stack = collector.getItem(slot);
             if (stack.isEmpty()) {
                 continue;
             }

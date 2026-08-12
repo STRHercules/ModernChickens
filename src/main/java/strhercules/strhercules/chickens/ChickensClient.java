@@ -117,7 +117,10 @@ public final class ChickensClient {
         NeoForge.EVENT_BUS.addListener(ChickensClient::onClientTick);
         ModLoadingContext.get().getActiveContainer().registerExtensionPoint(IConfigScreenFactory.class,
                 (container, parent) -> new ChickensConfigScreen(parent));
-        event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(ModRegistry.BREEDER.get(), RenderType.cutout()));
+        event.enqueueWork(() -> {
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.BREEDER.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(ModRegistry.LAVA_CHICKEN_FIRE.get(), RenderType.cutout());
+        });
     }
 
     @SubscribeEvent

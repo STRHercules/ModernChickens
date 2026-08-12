@@ -44,10 +44,13 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int LEFT_CHICKEN_SLOT = 0;
     public static final int RIGHT_CHICKEN_SLOT = 1;
     public static final int SEED_SLOT = 2;
+    public static final int SPEED_UPGRADE_SLOT = 0;
+    public static final int STACK_UPGRADE_SLOT = 1;
+    public static final int UPGRADE_SLOT_COUNT = 2;
     private static final int REQUIRED_SEEDS = 2;
 
     public BreederBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.BREEDER.get(), pos, state, INVENTORY_SIZE, 2);
+        super(ModBlockEntities.BREEDER.get(), pos, state, INVENTORY_SIZE, 2, UPGRADE_SLOT_COUNT);
     }
 
     @Override
@@ -117,7 +120,8 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
 
     @Override
     protected double speedMultiplier() {
-        return ChickensConfigHolder.get().getBreederSpeedMultiplier();
+        return ChickensConfigHolder.get().getBreederSpeedMultiplier()
+                * (1.0D + 0.2D * getUpgradeCount(SPEED_UPGRADE_SLOT));
     }
 
     /**
@@ -139,9 +143,15 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
         } else if (right != null) {
             tier = right.getTier();
         }
-        if (tier <= 1) return 60;
-        if (tier == 2) return 40;
-        return 20;
+        int baseTicks;
+        if (tier <= 1) {
+            baseTicks = 60;
+        } else if (tier == 2) {
+            baseTicks = 40;
+        } else {
+            baseTicks = 20;
+        }
+        return Math.max(1, (int) Math.ceil(baseTicks / Math.max(speedMultiplier(), 0.0001D)));
     }
 
     @Override
@@ -177,14 +187,40 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     @Override
-    protected int getMaxStackSizeForSlot(int slot, ItemStack stack) {
+    protected int getMaxStackSizeForSlotWithStackUpgrades(int slot, ItemStack stack, int stackUpgradeCount) {
         if (slot == LEFT_CHICKEN_SLOT || slot == RIGHT_CHICKEN_SLOT) {
             return 1;
         }
         if (slot == SEED_SLOT) {
-            return 64;
+            return Math.min(MAX_VIRTUAL_STACK_SIZE, 64 << stackUpgradeCount);
         }
-        return super.getMaxStackSizeForSlot(slot, stack);
+        return super.getMaxStackSizeForSlotWithStackUpgrades(slot, stack, stackUpgradeCount);
+    }
+
+    @Override
+    public boolean canRemoveUpgrade(int slot, int count) {
+        return slot != STACK_UPGRADE_SLOT || canRemoveStackUpgrade(count);
+    }
+
+    @Override
+    protected boolean hasStackUpgrade() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT) > 0;
+    }
+
+    @Override
+    protected int getStackUpgradeCount() {
+        return getUpgradeCount(STACK_UPGRADE_SLOT);
+    }
+
+    @Override
+    public boolean canPlaceUpgrade(int slot, ItemStack stack) {
+        return slot == SPEED_UPGRADE_SLOT && stack.is(ModRegistry.SPEED_UPGRADE.get())
+                || slot == STACK_UPGRADE_SLOT && stack.is(ModRegistry.STACK_UPGRADE.get());
+    }
+
+    @Override
+    public int getUpgradeMaxStackSize(int slot) {
+        return slot == SPEED_UPGRADE_SLOT ? 5 : slot == STACK_UPGRADE_SLOT ? MAX_STACK_UPGRADE_COUNT : 1;
     }
 
     @Override
@@ -255,11 +291,12 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
             return false;
         }
         ItemStack seedSlot = getItem(SEED_SLOT);
+        int maxSeeds = getMaxStackSizeForSlot(SEED_SLOT, stack);
         if (seedSlot.isEmpty()) {
-            setItem(SEED_SLOT, stack.split(Math.min(stack.getCount(), stack.getMaxStackSize())));
+            setItem(SEED_SLOT, stack.split(Math.min(stack.getCount(), maxSeeds)));
             return true;
         }
-        int canMove = Math.min(seedSlot.getMaxStackSize() - seedSlot.getCount(), stack.getCount());
+        int canMove = Math.min(maxSeeds - seedSlot.getCount(), stack.getCount());
         if (canMove <= 0) {
             return false;
         }

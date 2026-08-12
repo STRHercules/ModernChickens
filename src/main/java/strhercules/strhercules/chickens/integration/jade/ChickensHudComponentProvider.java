@@ -9,6 +9,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -28,6 +29,7 @@ import java.util.Locale;
 final class ChickensHudComponentProvider implements IBlockComponentProvider {
     static final ChickensHudComponentProvider INSTANCE = new ChickensHudComponentProvider();
     private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "hud_overlay");
+    private static final ResourceLocation MEKANISM_CHEMICAL = ResourceLocation.fromNamespaceAndPath("mekanism", "chemical");
 
     private ChickensHudComponentProvider() {
     }
@@ -46,11 +48,17 @@ final class ChickensHudComponentProvider implements IBlockComponentProvider {
         tooltip.remove(JadeIds.UNIVERSAL_FLUID_STORAGE);
         tooltip.remove(JadeIds.UNIVERSAL_FLUID_STORAGE_DEFAULT);
         tooltip.remove(JadeIds.UNIVERSAL_FLUID_STORAGE_DETAILED);
+        boolean mekanismOwnsChemicalBar = config.get(MEKANISM_CHEMICAL)
+                && accessor.getServerData().contains("mek_data", Tag.TAG_LIST);
         for (HudData.Entry entry : hud.entries()) {
             switch (entry.type()) {
                 case TEXT -> tooltip.add(((HudData.TextEntry) entry).text());
                 case FLUID -> tooltip.add(buildFluidBar((HudData.FluidEntry) entry, accessor));
-                case CHEMICAL -> tooltip.add(buildChemicalBar((HudData.ChemicalEntry) entry));
+                case CHEMICAL -> {
+                    if (!mekanismOwnsChemicalBar) {
+                        tooltip.add(buildChemicalBar((HudData.ChemicalEntry) entry));
+                    }
+                }
                 case ENERGY -> tooltip.add(buildEnergyBar((HudData.EnergyEntry) entry));
                 default -> { /* ignore */ }
             }

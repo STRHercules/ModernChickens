@@ -1,5 +1,6 @@
 package strhercules.chickens.menu;
 
+import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModMenuTypes;
@@ -25,6 +26,7 @@ public class RoostMenu extends AbstractContainerMenu {
     private final RoostBlockEntity roost;
     private final ContainerLevelAccess access;
     private final ContainerData data;
+    private final int machineSlotCount;
 
     public RoostMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
@@ -38,6 +40,7 @@ public class RoostMenu extends AbstractContainerMenu {
         super(ModMenuTypes.ROOST.get(), id);
         this.roost = roost;
         this.data = data;
+        this.machineSlotCount = roost.getContainerSize();
         Level level = roost.getLevel();
         this.access = level != null ? ContainerLevelAccess.create(level, roost.getBlockPos())
                 : ContainerLevelAccess.NULL;
@@ -46,14 +49,16 @@ public class RoostMenu extends AbstractContainerMenu {
         for (int i = 0; i < RoostBlockEntity.INVENTORY_SIZE - 1; i++) {
             this.addSlot(new OutputSlot(roost, i + 1, 80 + i * 18, 20));
         }
+        this.addSlot(new MachineUpgradeSlot(roost, RoostBlockEntity.SPEED_UPGRADE_SLOT, 128, 41));
+        this.addSlot(new MachineUpgradeSlot(roost, RoostBlockEntity.STACK_UPGRADE_SLOT, 150, 41));
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {
-                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 51 + row * 18));
+                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 62 + row * 18));
             }
         }
         for (int hotbar = 0; hotbar < 9; ++hotbar) {
-            this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 109));
+            this.addSlot(new Slot(playerInventory, hotbar, 8 + hotbar * 18, 120));
         }
 
         this.addDataSlots(data);
@@ -83,11 +88,11 @@ public class RoostMenu extends AbstractContainerMenu {
         if (slot != null && slot.hasItem()) {
             ItemStack current = slot.getItem();
             original = current.copy();
-            if (index < RoostBlockEntity.INVENTORY_SIZE) {
-                if (!this.moveItemStackTo(current, RoostBlockEntity.INVENTORY_SIZE, this.slots.size(), true)) {
+            if (index < machineSlotCount) {
+                if (!this.moveItemStackTo(current, machineSlotCount, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(current, 0, RoostBlockEntity.INVENTORY_SIZE, false)) {
+            } else if (!this.moveItemStackTo(current, 0, machineSlotCount, false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -110,8 +115,11 @@ public class RoostMenu extends AbstractContainerMenu {
     }
 
     private static class ChickenSlot extends Slot {
+        private final RoostBlockEntity roost;
+
         public ChickenSlot(RoostBlockEntity roost, int index, int x, int y) {
             super(roost, index, x, y);
+            this.roost = roost;
         }
 
         @Override
@@ -121,18 +129,38 @@ public class RoostMenu extends AbstractContainerMenu {
 
         @Override
         public int getMaxStackSize(ItemStack stack) {
-            return 16;
+            return roost.getMaxStackSizeForSlot(getContainerSlot(), stack);
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            return super.remove(Math.min(amount,
+                    AbstractChickenContainerBlockEntity.getLegalExternalStackSize(getItem())));
         }
     }
 
     private static class OutputSlot extends Slot {
+        private final RoostBlockEntity roost;
+
         public OutputSlot(RoostBlockEntity roost, int index, int x, int y) {
             super(roost, index, x, y);
+            this.roost = roost;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
             return false;
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return roost.getMaxStackSizeForSlot(getContainerSlot(), stack);
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            return super.remove(Math.min(amount,
+                    AbstractChickenContainerBlockEntity.getLegalExternalStackSize(getItem())));
         }
     }
 }

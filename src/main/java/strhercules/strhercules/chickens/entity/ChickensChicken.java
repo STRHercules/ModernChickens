@@ -1,5 +1,6 @@
 package strhercules.chickens.entity;
 
+import strhercules.chickens.LavaChickenGameplay;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
@@ -469,6 +470,7 @@ public class ChickensChicken extends Chicken {
         } else {
             this.spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.CHICKEN), 0.0F);
         }
+        LavaChickenGameplay.dropForModernChicken(this, source);
         super.dropCustomDeathLoot(level, source, recentlyHit);
     }
 
