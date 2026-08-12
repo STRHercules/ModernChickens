@@ -192,53 +192,53 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private OperationPlan choosePlan() {
         ItemStack input = items.get(INPUT_SLOT);
-        ChickensRegistryItem inputChicken = getChicken(input);
-        if (inputChicken == null) {
+        if (input.isEmpty()) {
             return OperationPlan.none();
         }
+        ChickensRegistryItem inputChicken = getChicken(input);
         ItemStack output = items.get(OUTPUT_SLOT);
         if (!output.isEmpty() && output.getCount() >= output.getMaxStackSize()) {
             return OperationPlan.none();
         }
 
-        boolean hasCustomItemRecipe = hasCustomRecipe(inputChicken, DousingRecipe.ReagentType.ITEM);
-        DousingRecipe itemRecipe = findAvailableItemRecipe(inputChicken);
+        boolean hasCustomItemRecipe = hasCustomRecipe(input, DousingRecipe.ReagentType.ITEM);
+        DousingRecipe itemRecipe = findAvailableItemRecipe(input);
         if (itemRecipe != null && hasItemReagent(itemRecipe)) {
-            ChickensRegistryItem result = itemRecipe.resultChicken();
-            if (result != null && canOutput(output, result)) {
-                return new OperationPlan(InfusionMode.ITEM, result, SpecialInfusion.NONE, 0, itemRecipe);
+            OperationPlan plan = planFor(InfusionMode.ITEM, itemRecipe, output, 0);
+            if (plan != null) {
+                return plan;
             }
         }
 
-        if (!hasCustomItemRecipe) {
+        if (inputChicken != null && !hasCustomItemRecipe) {
             if (specialInfusion == SpecialInfusion.DRAGON_BREATH && specialAmount >= SPECIAL_LIQUID_CAPACITY
                     && isChicken(inputChicken, "obsidianChicken")) {
                 ChickensRegistryItem dragon = findChickenByName("dragonChicken");
                 if (dragon != null && canOutput(output, dragon)) {
-                    return new OperationPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0, null);
+                    return chickenPlan(InfusionMode.SPECIAL, dragon, SpecialInfusion.DRAGON_BREATH, 0, null);
                 }
             }
             if (specialInfusion == SpecialInfusion.NETHER_STAR && specialAmount >= SPECIAL_LIQUID_CAPACITY
                     && isChicken(inputChicken, "soulSandChicken")) {
                 ChickensRegistryItem wither = findChickenByName("witherChicken");
                 if (wither != null && canOutput(output, wither)) {
-                    return new OperationPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0, null);
+                    return chickenPlan(InfusionMode.SPECIAL, wither, SpecialInfusion.NETHER_STAR, 0, null);
                 }
             }
         }
 
         if (chemicalAmount > 0 && chemicalId != null) {
-            DousingRecipe custom = findCustomRecipe(inputChicken, DousingRecipe.ReagentType.CHEMICAL, chemicalId);
+            DousingRecipe custom = findCustomRecipe(input, DousingRecipe.ReagentType.CHEMICAL, chemicalId);
             if (custom != null && chemicalAmount >= custom.reagentAmount()) {
-                ChickensRegistryItem result = custom.resultChicken();
-                if (result != null && canOutput(output, result)) {
-                    return new OperationPlan(InfusionMode.CHEMICAL, result, SpecialInfusion.NONE, custom.reagentAmount(), custom);
+                OperationPlan plan = planFor(InfusionMode.CHEMICAL, custom, output, custom.reagentAmount());
+                if (plan != null) {
+                    return plan;
                 }
             }
-            if (custom == null && chemicalAmount >= CHEMICAL_COST) {
+            if (custom == null && inputChicken != null && chemicalAmount >= CHEMICAL_COST) {
                 ChickensRegistryItem chicken = resolveChemicalChicken(chemicalId);
                 if (chicken != null && canOutput(output, chicken)) {
-                    return new OperationPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0, null);
+                    return chickenPlan(InfusionMode.CHEMICAL, chicken, SpecialInfusion.NONE, 0, null);
                 }
             }
         }
@@ -246,25 +246,39 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         FluidStack stored = liquidTank.getFluid();
         if (!stored.isEmpty()) {
             ResourceLocation fluidId = stored.getFluid().builtInRegistryHolder().key().location();
-            DousingRecipe custom = findCustomRecipe(inputChicken, DousingRecipe.ReagentType.FLUID, fluidId);
+            DousingRecipe custom = findCustomRecipe(input, DousingRecipe.ReagentType.FLUID, fluidId);
             if (custom != null && stored.getAmount() >= custom.reagentAmount()) {
-                ChickensRegistryItem result = custom.resultChicken();
-                if (result != null && canOutput(output, result)) {
-                    return new OperationPlan(InfusionMode.LIQUID, result, SpecialInfusion.NONE, custom.reagentAmount(), custom);
+                OperationPlan plan = planFor(InfusionMode.LIQUID, custom, output, custom.reagentAmount());
+                if (plan != null) {
+                    return plan;
                 }
             }
-            if (custom == null) {
+            if (custom == null && inputChicken != null) {
                 ChickensRegistryItem chicken = resolveLiquidChicken(stored);
                 if (chicken != null) {
                     int liquidCost = chicken.getLiquidDousingCost();
                     if (stored.getAmount() >= liquidCost && canOutput(output, chicken)) {
-                        return new OperationPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost, null);
+                        return chickenPlan(InfusionMode.LIQUID, chicken, SpecialInfusion.NONE, liquidCost, null);
                     }
                 }
             }
         }
 
         return OperationPlan.none();
+    }
+
+    @Nullable
+    private OperationPlan planFor(InfusionMode mode, DousingRecipe recipe, ItemStack output, int liquidCost) {
+        ItemStack result = recipe.resultStack();
+        if (result.isEmpty() || !canOutput(output, result)) {
+            return null;
+        }
+        return new OperationPlan(mode, recipe.resultChicken(), result, SpecialInfusion.NONE, liquidCost, recipe);
+    }
+
+    private OperationPlan chickenPlan(InfusionMode mode, ChickensRegistryItem chicken, SpecialInfusion special,
+            int liquidCost, @Nullable DousingRecipe recipe) {
+        return new OperationPlan(mode, chicken, ChickensSpawnEggItem.createFor(chicken), special, liquidCost, recipe);
     }
 
     private boolean hasResourcesFor(OperationPlan plan) {
@@ -302,8 +316,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     private void completeOperation(OperationPlan plan) {
         ItemStack input = items.get(INPUT_SLOT);
         ItemStack output = items.get(OUTPUT_SLOT);
-        ChickensRegistryItem resultChicken = plan.chicken();
-        if (resultChicken == null || !isDousableChicken(input) || !canOutput(output, resultChicken)
+        ItemStack result = plan.result();
+        if (result.isEmpty() || !isDousableChicken(input) || !canOutput(output, result)
                 || (plan.recipe() != null && (level == null
                         || !plan.recipe().matches(new SingleRecipeInput(input), level)))
                 || !hasResourcesFor(plan)) {
@@ -345,11 +359,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             markLiquidDirty();
         }
 
-        ItemStack result = ChickensSpawnEggItem.createFor(resultChicken);
         if (!output.isEmpty()) {
-            output.grow(1);
+            output.grow(result.getCount());
         } else {
-            items.set(OUTPUT_SLOT, result);
+            items.set(OUTPUT_SLOT, result.copy());
         }
 
         input.shrink(1);
@@ -377,23 +390,31 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     public boolean isDousableChicken(ItemStack stack) {
-        ChickensRegistryItem chicken = getChicken(stack);
-        if (chicken == null) {
+        if (stack.isEmpty()) {
             return false;
         }
-        if (chicken.getId() == ChickensRegistry.SMART_CHICKEN_ID) {
-            return true;
+        ChickensRegistryItem chicken = getChicken(stack);
+        if (chicken != null) {
+            if (chicken.getId() == ChickensRegistry.SMART_CHICKEN_ID) {
+                return true;
+            }
+            if (isChicken(chicken, "obsidianChicken") || isChicken(chicken, "soulSandChicken")) {
+                return true;
+            }
         }
-        return isChicken(chicken, "obsidianChicken") || isChicken(chicken, "soulSandChicken")
-                || hasCustomRecipeForInput(stack);
+        return hasCustomRecipeForInput(stack);
     }
 
     private boolean canOutput(ItemStack output, ChickensRegistryItem chicken) {
-        ItemStack template = ChickensSpawnEggItem.createFor(chicken);
+        return canOutput(output, ChickensSpawnEggItem.createFor(chicken));
+    }
+
+    private boolean canOutput(ItemStack output, ItemStack template) {
         if (output.isEmpty()) {
             return true;
         }
-        return ItemStack.isSameItemSameComponents(output, template) && output.getCount() < output.getMaxStackSize();
+        return ItemStack.isSameItemSameComponents(output, template)
+                && output.getCount() + template.getCount() <= output.getMaxStackSize();
     }
 
     private void updateActiveState(Level level, boolean active) {
@@ -1024,7 +1045,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (stored.isEmpty()) {
             return ChickensRegistryItem.DEFAULT_LIQUID_DOUSING_COST;
         }
-        ChickensRegistryItem input = getChicken(items.get(INPUT_SLOT));
+        ItemStack input = items.get(INPUT_SLOT);
         ResourceLocation fluidId = stored.getFluid().builtInRegistryHolder().key().location();
         DousingRecipe custom = findCustomRecipe(input, DousingRecipe.ReagentType.FLUID, fluidId);
         if (custom != null) {
@@ -1098,15 +1119,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     @Nullable
-    private DousingRecipe findCustomRecipe(ChickensRegistryItem input, DousingRecipe.ReagentType reagentType,
+    private DousingRecipe findCustomRecipe(ItemStack input, DousingRecipe.ReagentType reagentType,
             @Nullable ResourceLocation reagentId) {
-        if (level == null || input == null) {
+        if (level == null || input.isEmpty()) {
             return null;
         }
         for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             DousingRecipe recipe = holder.value();
-            if (recipe.reagentType() != reagentType
-                    || !recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())) {
+            if (recipe.reagentType() != reagentType || !recipe.matchesInput(input)) {
                 continue;
             }
             if (reagentId == null || reagentId.equals(recipe.reagentId())) {
@@ -1116,19 +1136,19 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return null;
     }
 
-    private boolean hasCustomRecipe(ChickensRegistryItem input, DousingRecipe.ReagentType reagentType) {
+    private boolean hasCustomRecipe(ItemStack input, DousingRecipe.ReagentType reagentType) {
         return findCustomRecipe(input, reagentType, null) != null;
     }
 
     @Nullable
-    private DousingRecipe findAvailableItemRecipe(ChickensRegistryItem input) {
-        if (level == null) {
+    private DousingRecipe findAvailableItemRecipe(ItemStack input) {
+        if (level == null || input.isEmpty()) {
             return null;
         }
         for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             DousingRecipe recipe = holder.value();
             if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
-                    && recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())
+                    && recipe.matchesInput(input)
                     && hasItemReagent(recipe)) {
                 return recipe;
             }
@@ -1141,15 +1161,15 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (level == null || stack.isEmpty()) {
             return null;
         }
-        ChickensRegistryItem input = getChicken(items.get(INPUT_SLOT));
-        if (input == null) {
+        ItemStack input = items.get(INPUT_SLOT);
+        if (input.isEmpty()) {
             return null;
         }
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             DousingRecipe recipe = holder.value();
             if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
-                    && recipe.inputChickenName().equalsIgnoreCase(input.getEntityName())
+                    && recipe.matchesInput(input)
                     && recipe.reagentId().equals(itemId)) {
                 return recipe;
             }
@@ -1158,12 +1178,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private boolean hasCustomRecipeForInput(ItemStack stack) {
-        ChickensRegistryItem input = getChicken(stack);
-        if (level == null || input == null) {
+        if (level == null || stack.isEmpty()) {
             return false;
         }
         for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            if (holder.value().inputChickenName().equalsIgnoreCase(input.getEntityName())) {
+            if (holder.value().matchesInput(stack)) {
                 return true;
             }
         }
@@ -1306,10 +1325,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 && (specialInfusion == SpecialInfusion.NONE || specialInfusion == type);
     }
 
-    private record OperationPlan(InfusionMode mode, @Nullable ChickensRegistryItem chicken,
+    private record OperationPlan(InfusionMode mode, @Nullable ChickensRegistryItem chicken, ItemStack result,
                                  SpecialInfusion special, int liquidCost, @Nullable DousingRecipe recipe) {
         static OperationPlan none() {
-            return new OperationPlan(InfusionMode.NONE, null, SpecialInfusion.NONE, 0, null);
+            return new OperationPlan(InfusionMode.NONE, null, ItemStack.EMPTY, SpecialInfusion.NONE, 0, null);
         }
     }
 

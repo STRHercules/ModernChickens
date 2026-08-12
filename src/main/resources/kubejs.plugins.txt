@@ -1,0 +1,1 @@
+strhercules.chickens.integration.kubejs.ChickensKubeJSPlugin

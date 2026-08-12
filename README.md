@@ -171,6 +171,20 @@ ServerEvents.recipes(event => {
 
 `reagent.type` accepts `item`, `fluid`, or `chemical`; `reagent.id` is the normal namespaced registry ID and `amount` is the consumed item count or stored mB. Chemical recipes require Mekanism at runtime, but the recipe type itself remains safe to load without Mekanism. Right-click the machine with item reagents after placing the base chicken in the left slot. The built-in Dragon/Wither recipes use the same data path and can be replaced by removing `chickens:avian_dousing_dragon` or `chickens:avian_dousing_wither` first.
 
+With KubeJS installed the mod also registers a recipe schema, so the same recipe can be written in builder form:
+
+```js
+ServerEvents.recipes(event => {
+  event.recipes.chickens.avian_dousing(
+    'GoldChicken',                                            // result
+    'IronChicken',                                            // input
+    { type: 'item', id: 'minecraft:gold_ingot', amount: 4 }   // reagent
+  ).energy(10000)
+})
+```
+
+Ready-to-use scripts and a full field reference live in [`Examples/KubeJS/`](Examples/KubeJS/README.md), which also documents the `ChickensEvents.registry` startup event for defining chickens from scripts.
+
 Combining the Dousing Machine with the Fluid and Chemical Converters lets you go from liquids or Mekanism chemicals → eggs → buffered tanks → dedicated chickens entirely inside the Modern Chickens ecosystem.
 
 ![Dousing Process](https://i.imgur.com/kSI861D.gif)

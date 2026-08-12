@@ -94,6 +94,9 @@ public final class ChickensDataLoader {
         // per-chicken configuration overrides are resolved.
         List<ChickensRegistryItem> defaults = DefaultChickens.create();
         CustomChickensLoader.load(defaults);
+        // Script defined chickens join the roster before the per-chicken config
+        // pass so pack authors can still tweak them from chickens.properties.
+        KubeJSChickensHook.register(defaults);
         ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
         DynamicFluidChickens.register(defaults, indexByName(defaults));

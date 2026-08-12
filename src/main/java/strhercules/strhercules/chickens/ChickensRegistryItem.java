@@ -10,12 +10,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 
 import javax.annotation.Nullable;
 
-/**
- * Registry entry describing a single chicken type. Ported from the
- * original 1.10 implementation with modern item helpers. Each instance
- * stores breeding information, presentation data and the drop/lay
- * behaviour that the entity class consumes at runtime.
- */
+
 public class ChickensRegistryItem {
     /** Default liquid cost (mB) used by the Avian Dousing Machine when no per-chicken override is present. */
     public static final int DEFAULT_LIQUID_DOUSING_COST = FluidType.BUCKET_VOLUME * 10;
@@ -42,6 +37,8 @@ public class ChickensRegistryItem {
     private boolean naturalSpawnOverride;
     private boolean dousingAllowed;
     private int liquidDousingCost = DEFAULT_LIQUID_DOUSING_COST;
+    @Nullable
+    private Integer tierOverride;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -147,10 +144,32 @@ public class ChickensRegistryItem {
     }
 
     public int getTier() {
+        if (tierOverride != null) {
+            return tierOverride;
+        }
         if (parent1 == null || parent2 == null) {
             return 1;
         }
         return Math.max(parent1.getTier(), parent2.getTier()) + 1;
+    }
+
+    /**
+     * Pins the breeding tier instead of deriving it from the parent chain.
+     * Script driven definitions need this because they may declare a rarity
+     * that does not follow from their parents alone.
+     */
+    public ChickensRegistryItem setTier(int tier) {
+        tierOverride = Math.max(1, tier);
+        return this;
+    }
+
+    /** Restores the derived {@code max(parentTier) + 1} behaviour. */
+    public void clearTierOverride() {
+        tierOverride = null;
+    }
+
+    public boolean hasTierOverride() {
+        return tierOverride != null;
     }
 
     public boolean isChildOf(ChickensRegistryItem possibleParent1, ChickensRegistryItem possibleParent2) {

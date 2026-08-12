@@ -97,6 +97,20 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.dev"
     }
+    // KubeJS + Rhino
+    maven {
+        url = "https://maven.latvian.dev/releases"
+        content {
+            includeGroup "dev.latvian.mods"
+            includeGroup "dev.latvian.apps"
+        }
+    }
+    maven {
+        url = "https://jitpack.io"
+        content {
+            includeGroup "com.github.rtyley"
+        }
+    }
 }
 
 
@@ -118,6 +132,12 @@ dependencies {
 
     // ultimate foods
     implementation "curse.maven:ultimate-foods-1455067:${ultimatefoods_version}"
+
+    // KubeJS 
+    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    compileOnly "dev.latvian.mods:rhino:${rhino_version}"
+     implementation "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+     implementation "dev.latvian.mods:rhino:${rhino_version}"
 
   // ------ [   DATAGEN DEPENDENCY MODS ] ------ //
 

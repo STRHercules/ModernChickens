@@ -517,9 +517,6 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
             if (stack.isEmpty()) {
                 return false;
             }
-            if (!(stack.getItem() instanceof ChickensSpawnEggItem || stack.getItem() instanceof ChickenItem)) {
-                return false;
-            }
             return machine.isDousableChicken(stack);
         }
 

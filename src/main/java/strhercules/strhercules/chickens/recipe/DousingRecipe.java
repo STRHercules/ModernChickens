@@ -14,7 +14,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
@@ -28,13 +30,11 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.Locale;
 
-/**
- * Data-pack/KubeJS recipe for an Avian Dousing Machine infusion.
- *
- * The machine resolves the named chickens at runtime because Modern Chickens
- * creates many chicken entries dynamically from config and optional mods.
- */
+
 public final class DousingRecipe implements Recipe<SingleRecipeInput> {
+    /** Redstone Flux consumed per cycle when a recipe does not specify it. */
+    public static final int DEFAULT_ENERGY = 10_000;
+
     public enum ReagentType {
         ITEM,
         FLUID,
@@ -65,7 +65,7 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
             Codec.STRING.fieldOf("input").forGetter(DousingRecipe::inputChickenName),
             Codec.STRING.fieldOf("result").forGetter(DousingRecipe::resultChickenName),
             Reagent.CODEC.fieldOf("reagent").forGetter(DousingRecipe::reagent),
-            Codec.INT.optionalFieldOf("energy", 10_000).forGetter(DousingRecipe::energyCost)
+            Codec.INT.optionalFieldOf("energy", DEFAULT_ENERGY).forGetter(DousingRecipe::energyCost)
     ).apply(instance, DousingRecipe::new));
 
     private static final StreamCodec<RegistryFriendlyByteBuf, DousingRecipe> STREAM_CODEC = StreamCodec.of(
@@ -129,9 +129,63 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
         return chicken != null && chicken.getEntityName().equalsIgnoreCase(inputChickenName);
     }
 
+    public boolean matchesInput(ItemStack stack) {
+        if (matchesChicken(stack)) {
+            return true;
+        }
+        Item item = inputItem();
+        return item != null && stack.is(item);
+    }
+
+    @Nullable
+    public ChickensRegistryItem inputChicken() {
+        return ChickensRegistry.getByEntityName(inputChickenName);
+    }
+
     @Nullable
     public ChickensRegistryItem resultChicken() {
         return ChickensRegistry.getByEntityName(resultChickenName);
+    }
+
+    @Nullable
+    public Item inputItem() {
+        return resolveItem(inputChickenName);
+    }
+
+    @Nullable
+    public Item resultItem() {
+        return resolveItem(resultChickenName);
+    }
+
+    public ItemStack resultStack() {
+        ChickensRegistryItem chicken = resultChicken();
+        if (chicken != null) {
+            return ChickensSpawnEggItem.createFor(chicken);
+        }
+        Item item = resultItem();
+        return item == null ? ItemStack.EMPTY : new ItemStack(item);
+    }
+
+    public ItemStack inputDisplayStack() {
+        ChickensRegistryItem chicken = inputChicken();
+        if (chicken != null) {
+            return ChickensSpawnEggItem.createFor(chicken);
+        }
+        Item item = inputItem();
+        return item == null ? ItemStack.EMPTY : new ItemStack(item);
+    }
+
+    @Nullable
+    private static Item resolveItem(String name) {
+        if (ChickensRegistry.getByEntityName(name) != null) {
+            return null;
+        }
+        ResourceLocation id = ResourceLocation.tryParse(name);
+        if (id == null) {
+            return null;
+        }
+        Item item = BuiltInRegistries.ITEM.get(id);
+        return item == null || item == Items.AIR ? null : item;
     }
 
     @Nullable
@@ -145,7 +199,7 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
 
     @Override
     public boolean matches(SingleRecipeInput input, Level level) {
-        return input.size() == 1 && matchesChicken(input.getItem(0));
+        return input.size() == 1 && matchesInput(input.getItem(0));
     }
 
     @Override
@@ -160,8 +214,7 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
 
     @Override
     public ItemStack getResultItem(HolderLookup.Provider registries) {
-        ChickensRegistryItem result = resultChicken();
-        return result == null ? ItemStack.EMPTY : ChickensSpawnEggItem.createFor(result);
+        return resultStack();
     }
 
     @Override
