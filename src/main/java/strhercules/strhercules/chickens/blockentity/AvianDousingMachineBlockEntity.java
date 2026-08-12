@@ -7,6 +7,7 @@ import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.LiquidEggRegistry;
 import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.block.AvianDousingMachineBlock;
+import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.integration.mekanism.MekanismChemicalHelper;
 import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.item.ChickenItem;
@@ -165,7 +166,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 progress = 0;
                 inventoryChanged = true;
             }
-            updateActiveState(level, false);
+            updateActiveState(level, hasStoredLiquidOrChemical());
             if (inventoryChanged) {
                 setChanged();
             }
@@ -184,7 +185,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             progress = Math.max(progress - 2, 0);
         }
 
-        updateActiveState(level, progress > 0 || pulledFluid || pulledChemical || pulledEnergy);
+        updateActiveState(level, hasStoredLiquidOrChemical());
         if (inventoryChanged || canAdvance || pulledFluid || pulledChemical || pulledEnergy) {
             setChanged();
         }
@@ -415,6 +416,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         return ItemStack.isSameItemSameComponents(output, template)
                 && output.getCount() + template.getCount() <= output.getMaxStackSize();
+    }
+
+    private boolean hasStoredLiquidOrChemical() {
+        return liquidTank.getFluidAmount() > 0 || chemicalAmount > 0;
     }
 
     private void updateActiveState(Level level, boolean active) {
@@ -1021,7 +1026,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         Integer cached = LIQUID_CHICKEN_CACHE.get(fluidId);
         if (cached != null) {
             ChickensRegistryItem cachedChicken = ChickensRegistry.getByType(cached);
-            if (cachedChicken != null && cachedChicken.isDousingAllowed()) {
+            if (cachedChicken != null && isDousingAllowed(cachedChicken)) {
                 return cachedChicken;
             }
             LIQUID_CHICKEN_CACHE.remove(fluidId);
@@ -1033,7 +1038,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         ItemStack target = LiquidEggItem.createFor(entry);
         ChickensRegistryItem chicken = findChickenByLayItem(target);
-        if (chicken != null && chicken.isDousingAllowed()) {
+        if (chicken != null && isDousingAllowed(chicken)) {
             LIQUID_CHICKEN_CACHE.put(fluidId, chicken.getId());
             return chicken;
         }
@@ -1063,7 +1068,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         Integer cached = CHEMICAL_CHICKEN_CACHE.get(id);
         if (cached != null) {
             ChickensRegistryItem cachedChicken = ChickensRegistry.getByType(cached);
-            if (cachedChicken != null && cachedChicken.isDousingAllowed()) {
+            if (cachedChicken != null && isDousingAllowed(cachedChicken)) {
                 return cachedChicken;
             }
             CHEMICAL_CHICKEN_CACHE.remove(id);
@@ -1075,7 +1080,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         ItemStack target = ChemicalEggItem.createFor(entry);
         ChickensRegistryItem chicken = findChickenByLayItem(target);
-        if (chicken != null && chicken.isDousingAllowed()) {
+        if (chicken != null && isDousingAllowed(chicken)) {
             CHEMICAL_CHICKEN_CACHE.put(id, chicken.getId());
             return chicken;
         }
@@ -1101,6 +1106,22 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private static boolean isChicken(ChickensRegistryItem chicken, String entityName) {
         return chicken.getEntityName().equalsIgnoreCase(entityName);
+    }
+
+    /**
+     * Applies the per-chicken dousing flag, with the global compatibility
+     * toggle allowing every liquid and chemical chicken when enabled.
+     */
+    public static boolean isDousingAllowed(ChickensRegistryItem chicken) {
+        if (chicken.isDousingAllowed()) {
+            return true;
+        }
+        if (!ChickensConfigHolder.get().isAllLiquidChemicalDousingEnabled()) {
+            return false;
+        }
+        ItemStack layItem = chicken.createLayItem();
+        return layItem.getItem() instanceof LiquidEggItem
+                || layItem.getItem() instanceof ChemicalEggItem;
     }
 
     @Nullable

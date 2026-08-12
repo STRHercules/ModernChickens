@@ -70,29 +70,106 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
 
     /** Generated from avian_chemical_converter.json */
     private void avianChemicalConverter() {
-        BlockModelBuilder builder = getBuilder("avian_chemical_converter");
-        builder.parent(getBuilder("avian_flux_converter"));
+        avianMachine(
+            "avian_chemical_converter",
+            "gas_infuser_bottom",
+            "gas_infuser_top",
+            "gas_infuser_front",
+            "gas_infuser_side",
+            "gas_infuser_side"
+        );
+        avianMachine(
+            "avian_chemical_converter_active",
+            "gas_infuser_bottom",
+            "gas_infuser_top",
+            "gas_infuser_front_active",
+            "gas_infuser_side",
+            "gas_infuser_side"
+        ).renderType(mcLoc("translucent"));
     }
 
     /** Generated from avian_dousing_machine.json */
     private void avianDousingMachine() {
-        BlockModelBuilder builder = getBuilder("avian_dousing_machine");
-        builder.parent(getBuilder("avian_flux_converter"));
+        avianMachine(
+            "avian_dousing_machine",
+            "fluid_pump_bottom",
+            "fluid_pump_top",
+            "fluid_pump_front",
+            "fluid_pump_back",
+            "fluid_pump_leftright"
+        );
+        avianMachine(
+            "avian_dousing_machine_active",
+            "fluid_pump_bottom",
+            "fluid_pump_top",
+            "fluid_pump_front_active",
+            "fluid_pump_back",
+            "fluid_pump_leftright_active"
+        )
+            .renderType(mcLoc("translucent"));
     }
 
     /** Generated from avian_fluid_converter.json */
     private void avianFluidConverter() {
-        BlockModelBuilder builder = getBuilder("avian_fluid_converter");
-        builder.parent(getBuilder("avian_flux_converter"));
+        avianMachine(
+            "avian_fluid_converter",
+            "extruder_bottom",
+            "extruder_top",
+            "extruder_front",
+            "extruder_side",
+            "extruder_side"
+        );
+        avianMachine(
+            "avian_fluid_converter_active",
+            "extruder_bottom",
+            "extruder_top",
+            "extruder_front_active",
+            "extruder_side",
+            "extruder_side"
+        ).renderType(mcLoc("translucent"));
     }
 
     /** Generated from avian_flux_converter.json */
     private void avianFluxConverter() {
-        BlockModelBuilder builder = withExistingParent("avian_flux_converter", mcLoc("block/orientable_with_bottom"));
-        builder.texture("top", "chickens:block/collector_plain");
-        builder.texture("front", "chickens:block/collector_slats");
-        builder.texture("side", "chickens:block/collector_plain");
-        builder.texture("bottom", "chickens:block/collector_plain");
+        avianMachine(
+            "avian_flux_converter",
+            "enricher_bottom",
+            "enricher_top",
+            "enricher_front",
+            "enricher_side",
+            "extruder_side"
+        );
+        avianMachine(
+            "avian_flux_converter_active",
+            "enricher_bottom",
+            "enricher_top",
+            "enricher_front_active",
+            "enricher_side",
+            "extruder_side"
+        ).renderType(mcLoc("translucent"));
+    }
+
+    private BlockModelBuilder avianMachine(
+        String modelName,
+        String bottomTexture,
+        String topTexture,
+        String frontTexture,
+        String backTexture,
+        String leftRightTexture
+    ) {
+        BlockModelBuilder builder = withExistingParent(modelName, mcLoc("block/cube"));
+        builder.texture("particle", machineTexture(frontTexture));
+        builder.texture("down", machineTexture(bottomTexture));
+        builder.texture("up", machineTexture(topTexture));
+        builder.texture("north", machineTexture(frontTexture));
+        builder.texture("south", machineTexture(backTexture));
+        builder.texture("west", machineTexture(leftRightTexture));
+        builder.texture("east", machineTexture(leftRightTexture));
+        return builder;
+    }
+
+    private String machineTexture(String textureName) {
+        return "chickens:block/machines/" + textureName;
     }
 
     /** Generated from breeder.json */
@@ -5082,11 +5159,22 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
 
     /** Generated from incubator.json */
     private void incubator() {
-        BlockModelBuilder builder = withExistingParent("incubator", mcLoc("block/orientable_with_bottom"));
-        builder.texture("top", "chickens:block/incubator_top");
-        builder.texture("front", "chickens:block/incubator_front");
-        builder.texture("side", "chickens:block/incubator_side");
-        builder.texture("bottom", "chickens:block/incubator_bottom");
+        avianMachine(
+            "incubator",
+            "macerator_bottom",
+            "macerator_top",
+            "macerator_front",
+            "macerator_side",
+            "macerator_side"
+        );
+        avianMachine(
+            "incubator_active",
+            "macerator_bottom",
+            "macerator_top_active",
+            "macerator_front_active",
+            "macerator_side",
+            "macerator_side"
+        );
     }
 
     /** Generated from manure_block.json */

@@ -118,6 +118,7 @@ public final class LegacyConfigBridge {
                 getInt(props, "general.avianChemicalConverterTransferRate", current.getAvianChemicalConverterTransfer(2_000)),
                 getBool(props, "general.avianChemicalConverterEffectsEnabled", current.isAvianChemicalConverterEffectsEnabled()),
                 getBool(props, "general.liquidEggHazardsEnabled",   current.isLiquidEggHazardsEnabled()),
+                getBool(props, "general.allowAllLiquidChemicalDousing", current.isAllLiquidChemicalDousingEnabled()),
                 getBool(props, "general.enableFluidChickens",       current.isFluidChickensEnabled()),
                 getBool(props, "general.autoRegisterFluidChickens", current.isAutomaticFluidChickensEnabled()),
                 getBool(props, "general.enableChemicalChickens",    current.isChemicalChickensEnabled()),

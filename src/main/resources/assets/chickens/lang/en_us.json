@@ -50,6 +50,7 @@
   "config.chickens.option.scalingDrops": "Scale Chicken Drops by Gain",
   "config.chickens.option.enableFluidChickens": "Enable Fluid Chickens",
   "config.chickens.option.autoRegisterFluidChickens": "Automatically Register Fluid Chickens",
+  "config.chickens.option.allowAllLiquidChemicalDousing": "Allow All Liquid/Chemical Dousing",
   "config.chickens.option.enableChemicalChickens": "Enable Chemical Chickens",
   "config.chickens.option.enableGasChickens": "Enable Gas Chickens",
   "config.chickens.option.enabled": "Enabled",

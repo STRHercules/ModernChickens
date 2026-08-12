@@ -1,3 +1,12 @@
 {
-  "parent": "chickens:block/avian_flux_converter"
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "chickens:block/machines/gas_infuser_bottom",
+    "east": "chickens:block/machines/gas_infuser_side",
+    "north": "chickens:block/machines/gas_infuser_front",
+    "particle": "chickens:block/machines/gas_infuser_front",
+    "south": "chickens:block/machines/gas_infuser_side",
+    "up": "chickens:block/machines/gas_infuser_top",
+    "west": "chickens:block/machines/gas_infuser_side"
+  }
 }

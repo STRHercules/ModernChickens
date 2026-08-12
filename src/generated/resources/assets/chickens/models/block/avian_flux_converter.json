@@ -1,9 +1,12 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "bottom": "chickens:block/collector_plain",
-    "front": "chickens:block/collector_slats",
-    "side": "chickens:block/collector_plain",
-    "top": "chickens:block/collector_plain"
+    "down": "chickens:block/machines/enricher_bottom",
+    "east": "chickens:block/machines/extruder_side",
+    "north": "chickens:block/machines/enricher_front",
+    "particle": "chickens:block/machines/enricher_front",
+    "south": "chickens:block/machines/enricher_side",
+    "up": "chickens:block/machines/enricher_top",
+    "west": "chickens:block/machines/extruder_side"
   }
 }

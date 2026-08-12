@@ -20,8 +20,12 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -377,6 +381,33 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
         return new AvianChemicalConverterMenu(id, playerInventory, this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, provider);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
+        loadAdditional(tag, provider);
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
+            HolderLookup.Provider provider) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            loadAdditional(tag, provider);
+        }
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

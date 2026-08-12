@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "down": "chickens:block/machines/extruder_bottom",
+    "east": "chickens:block/machines/extruder_side",
+    "north": "chickens:block/machines/extruder_front_active",
+    "particle": "chickens:block/machines/extruder_front_active",
+    "south": "chickens:block/machines/extruder_side",
+    "up": "chickens:block/machines/extruder_top",
+    "west": "chickens:block/machines/extruder_side"
+  }
+}

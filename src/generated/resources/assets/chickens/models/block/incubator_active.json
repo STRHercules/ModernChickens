@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "chickens:block/machines/macerator_bottom",
+    "east": "chickens:block/machines/macerator_side",
+    "north": "chickens:block/machines/macerator_front_active",
+    "particle": "chickens:block/machines/macerator_front_active",
+    "south": "chickens:block/machines/macerator_side",
+    "up": "chickens:block/machines/macerator_top_active",
+    "west": "chickens:block/machines/macerator_side"
+  }
+}
