@@ -10,6 +10,7 @@ import strhercules.chickens.blockentity.AvianFluidConverterBlockEntity;
 import strhercules.chickens.blockentity.AvianFluxConverterBlockEntity;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.blockentity.IncubatorBlockEntity;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.integration.wthit.component.HudBarComponent;
 import strhercules.chickens.integration.wthit.overlay.HudOverlayHelper;
 import mcp.mobius.waila.api.IBlockAccessor;
@@ -51,7 +52,8 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
         boolean allowEnergy = target instanceof AvianFluxConverterBlockEntity
                 || target instanceof AvianDousingMachineBlockEntity
                 || target instanceof IncubatorBlockEntity
-                || target instanceof HenhouseBlockEntity;
+                || target instanceof HenhouseBlockEntity
+                || target instanceof MechanicalRoostBlockEntity;
         for (HudOverlayHelper.Entry entry : helper.entries()) {
             switch (entry.type()) {
                 case TEXT -> tooltip.addLine(((HudOverlayHelper.TextEntry) entry).text());

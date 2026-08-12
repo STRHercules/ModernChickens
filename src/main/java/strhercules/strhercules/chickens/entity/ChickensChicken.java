@@ -1,6 +1,7 @@
 package strhercules.chickens.entity;
 
 import strhercules.chickens.LavaChickenGameplay;
+import strhercules.chickens.ChickenTeachingRegistry;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
@@ -34,11 +35,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import strhercules.chickens.item.ChickenItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModRegistry;
@@ -411,26 +410,7 @@ public class ChickensChicken extends Chicken {
      */
     @Nullable
     private static ChickensRegistryItem resolveTeachingTarget(ItemStack held) {
-        if (held.isEmpty()) {
-            return null;
-        }
-        // Book → SmartChicken (the base teaching recipe)
-        if (held.is(Items.BOOK)) {
-            return ChickensRegistry.getSmartChicken();
-        }
-        // Cake → chickenNosto
-        if (held.is(Items.CAKE)) {
-            return ChickensRegistry.getByEntityName("chickenNosto");
-        }
-        // Grass Block → americanChicken
-        if (held.is(Blocks.GRASS_BLOCK.asItem())) {
-            return ChickensRegistry.getByEntityName("americanChicken");
-        }
-        // Dirt → dirtChicken
-        if (held.is(Blocks.DIRT.asItem())) {
-            return ChickensRegistry.getByEntityName("dirtChicken");
-        }
-        return null;
+        return ChickenTeachingRegistry.resolve(held);
     }
 
     @Override

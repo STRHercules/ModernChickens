@@ -9,6 +9,8 @@ inside the Modern Chickens jar and only loads when KubeJS is present.
 | What | Entry point | Script folder |
 | --- | --- | --- |
 | [Registering chickens](#1-registering-chickens) | `ChickensEvents.registry` | `kubejs/startup_scripts/` |
+| [Pack overrides](#pack-overrides) | `ChickensEvents.registry` | `kubejs/startup_scripts/` |
+| [Nest seeds](#nest-seeds) | `ServerEvents.tags('item', ...)` | `kubejs/server_scripts/` |
 | [Avian Dousing recipes](#2-avian-dousing-recipes) | `event.recipes.chickens.avian_dousing` | `kubejs/server_scripts/` |
 
 ---
@@ -42,11 +44,12 @@ mods resolve correctly.
 
 ### Load order
 
-1. built-in chickens
+1. built-in chickens and automatic material/chemical/gas chickens
 2. `config/custom_chickens.toml`
-3. **this event**
+3. **this event** (including egg metadata)
 4. the per-chicken config pass
-5. automatic fluid/chemical/gas chickens
+5. automatic fluid chickens
+6. KubeJS overrides are finalized, so scripted changes win over legacy config
 
 So scripts can use built-in *and* TOML chickens as parents, and the config pass
 still applies to script chickens — a partial table in `custom_chickens.toml` acts
@@ -132,6 +135,12 @@ Defaults to `'NONE'` (breeding/creative only). Unknown values fall back to
 Lets a chicken above tier 1 spawn naturally. Without it, only tier 1 chickens
 with a spawn type other than `NONE` appear in the world.
 
+#### `.spawnWeight(number)`
+
+Overrides this breed's share of its natural-spawn pool. Higher values are more
+common relative to other breeds in the same spawn type; `0` removes the breed
+from natural spawning while leaving it registered.
+
 #### `.primaryColor(color)` / `.secondaryColor(color)`
 
 Body and accent colours for the generated texture. Accepts `0xRRGGBB`,
@@ -187,6 +196,68 @@ world.** Ids are otherwise derived from the chicken name (in the 6,000,000+
 range, away from the built-in roster and the dynamic fluid/chemical/gas spans),
 which keeps them stable across script edits, load order changes and mod updates.
 A requested id that is already taken falls back to the derived one.
+
+### Pack overrides
+
+The same startup event can change existing breeds and the automatically
+generated fluid/chemical roster. These calls are applied after the legacy
+per-chicken config pass.
+
+```js
+ChickensEvents.registry(event => {
+    // Add or replace a vanilla teaching item mapping.
+    event.teach('minecraft:paper', 'IronChicken')
+
+    // Change any registered breed. A zero spawn weight removes it from natural
+    // spawn selection while keeping the breed available for breeding/items.
+    event.modify('IronChicken')
+        .parents('CoalChicken', 'SmartChicken')
+        .layItem('minecraft:iron_nugget')
+        .spawnWeight(4)
+
+    // Override the breeding path for an automatically generated fluid breed.
+    event.fluid('minecraft:lava')
+        .parents('BlazeChicken', 'WaterChicken')
+        .allowDousing(false)
+
+    // Chemical IDs use the same fluent surface.
+    event.chemical('mekanism:polonium')
+        .parents('UraniumChicken', 'LavaChicken')
+
+    // Fluid, chemical, and gas eggs all use this metadata entry point.
+    event.modifyEgg('minecraft:lava')
+        .volume(500)
+        .eggColor(0xFF3300)
+        .hazards('hot', 'toxic')
+})
+```
+
+`event.modify(id)` supports `displayName`, `parents`, `layItem`, `dropItem`, `tier`,
+`spawnType`, `primaryColor`, `secondaryColor`, `layCoefficient`,
+`generatedTexture`, `itemTexture`, `enabled`, `allowNaturalSpawn`,
+`allowDousing`, `liquidDousingCost`, and `spawnWeight`. `spawnWeight(0)` is
+the explicit natural-spawn disable. `event.fluid(id)` and `event.chemical(id)`
+support `parents`, `allowDousing`, and `spawnWeight`.
+
+`event.modifyEgg(id)` accepts a fluid, chemical, or gas resource ID. `.hazards(...)`
+replaces the complete hazard set; use `.clearHazards()` to remove every flag.
+Valid flags are `hot`, `toxic`, `corrosive`, `radioactive`, and `magical`.
+
+### Nest seeds
+
+The nest seed slot accepts the `chickens:nest_seeds` item tag. It contains the
+four vanilla seed items by default, and KubeJS can extend it during server tag
+loading:
+
+```js
+ServerEvents.tags('item', event => {
+    event.add('chickens:nest_seeds', 'minecraft:torchflower_seeds')
+    event.add('chickens:nest_seeds', 'example:breeding_seed')
+})
+```
+
+This updates the menu, automation slot validation, and the nest's server-side
+seed consumption check together.
 
 ### Full example
 

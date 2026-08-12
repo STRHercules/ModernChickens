@@ -40,6 +40,7 @@ import strhercules.chickens.screen.IncubatorScreen;
 import strhercules.chickens.screen.HenhouseScreen;
 import strhercules.chickens.screen.MegaChickenScreen;
 import strhercules.chickens.screen.RoostScreen;
+import strhercules.chickens.screen.MechanicalRoostScreen;
 import strhercules.chickens.screen.NestScreen;
 import strhercules.chickens.screen.RoosterScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -177,6 +178,7 @@ public final class ChickensClient {
         // Bind the container to its screen so the henhouse GUI renders correctly on the client.
         event.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
+        event.register(ModMenuTypes.MECHANICAL_ROOST.get(), MechanicalRoostScreen::new);
         event.register(ModMenuTypes.NEST.get(), NestScreen::new);
         event.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);

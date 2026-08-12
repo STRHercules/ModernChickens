@@ -945,7 +945,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         }
     }
 
-    private static CompoundTag saveVirtualStack(ItemStack stack,
+    protected static CompoundTag saveVirtualStack(ItemStack stack,
             net.minecraft.core.HolderLookup.Provider registries) {
         int count = stack.getCount();
         CompoundTag tag = (CompoundTag) stack.copyWithCount(Math.min(count, serializedStackSize(stack)))
@@ -956,7 +956,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         return tag;
     }
 
-    private static ItemStack loadVirtualStack(CompoundTag tag,
+    protected static ItemStack loadVirtualStack(CompoundTag tag,
             net.minecraft.core.HolderLookup.Provider registries) {
         CompoundTag stackTag = tag.copy();
         stackTag.remove("VirtualCount");
@@ -967,7 +967,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
         return stack;
     }
 
-    private void dropLegalStack(ItemStack stack) {
+    protected final void dropLegalStack(ItemStack stack) {
         if (level == null || level.isClientSide || stack.isEmpty()) {
             return;
         }

@@ -10,9 +10,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
@@ -78,21 +76,6 @@ public final class ChickenTeachHandler {
      */
     @Nullable
     private static ChickensRegistryItem resolveTeachingTarget(ItemStack held) {
-        if (held.isEmpty()) {
-            return null;
-        }
-        if (held.is(Items.BOOK)) {
-            return ChickensRegistry.getSmartChicken();
-        }
-        if (held.is(Items.CAKE)) {
-            return ChickensRegistry.getByEntityName("chickenNosto");
-        }
-        if (held.is(Blocks.GRASS_BLOCK.asItem())) {
-            return ChickensRegistry.getByEntityName("americanChicken");
-        }
-        if (held.is(Blocks.DIRT.asItem())) {
-            return ChickensRegistry.getByEntityName("dirtChicken");
-        }
-        return null;
+        return ChickenTeachingRegistry.resolve(held);
     }
 }

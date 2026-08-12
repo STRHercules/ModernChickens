@@ -25,6 +25,7 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         blockItem("avian_chemical_converter");
         blockItem("avian_dousing_machine");
         blockItem("incubator");
+        blockItem("mechanical_roost");
         blockItem("henhouse");
         blockItem("henhouse_spruce");
         blockItem("henhouse_birch");

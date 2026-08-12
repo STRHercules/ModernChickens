@@ -28,4 +28,17 @@ final class KubeJSChickensHook {
             LOGGER.warn("KubeJS is installed but the chicken registry event could not be posted", throwable);
         }
     }
+
+    static void finalizeRegistry(List<ChickensRegistryItem> chickens) {
+        if (!ModList.get().isLoaded("kubejs")) {
+            return;
+        }
+
+        try {
+            Method finalize = Class.forName(REGISTRAR).getMethod("finalizeRegistry", List.class);
+            finalize.invoke(null, chickens);
+        } catch (Throwable throwable) {
+            LOGGER.warn("KubeJS is installed but the chicken registry finalization could not be applied", throwable);
+        }
+    }
 }

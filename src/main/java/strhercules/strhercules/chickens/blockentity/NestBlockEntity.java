@@ -1,5 +1,6 @@
 package strhercules.chickens.blockentity;
 
+import strhercules.chickens.ChickensMod;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.menu.NestMenu;
@@ -8,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -21,11 +23,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +43,8 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     public static final int ROOSTER_SLOT = 0;
     public static final int SEED_SLOT = 1;
     public static final int INVENTORY_SIZE = 2;
+    public static final TagKey<Item> NEST_SEEDS = TagKey.create(
+            Registries.ITEM, ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "nest_seeds"));
     private static final int[] ACCESSIBLE_SLOTS = new int[] { ROOSTER_SLOT, SEED_SLOT };
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
@@ -83,7 +89,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
             return;
         }
         ItemStack seeds = items.get(SEED_SLOT);
-        if (seeds.isEmpty() || !isSeed(seeds)) {
+        if (seeds.isEmpty() || !isNestSeed(seeds)) {
             return;
         }
         int duration = ChickensConfigHolder.get().getNestSeedDurationTicks();
@@ -185,9 +191,8 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
         return true;
     }
 
-    private static boolean isSeed(ItemStack stack) {
-        return stack.is(Items.WHEAT_SEEDS) || stack.is(Items.BEETROOT_SEEDS)
-                || stack.is(Items.MELON_SEEDS) || stack.is(Items.PUMPKIN_SEEDS);
+    public static boolean isNestSeed(ItemStack stack) {
+        return !stack.isEmpty() && stack.is(NEST_SEEDS);
     }
 
     // ---------------------------------------------------------------------
@@ -264,7 +269,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
             return ChickenItemHelper.isRooster(stack);
         }
         if (index == SEED_SLOT) {
-            return isSeed(stack);
+            return isNestSeed(stack);
         }
         return false;
     }

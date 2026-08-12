@@ -13,11 +13,7 @@ This document is for cataloguing and detailing potential ideas for features.
         - Maximum uses: 5
         - Increases scale to a total of -2x over the course of the 5 bottles
 
-
-
-
-
-
+- RF Capacity Upgrade Item
 
 ## Implemented
 

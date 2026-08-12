@@ -19,8 +19,8 @@ public class ChickensRegistryItem {
     private final String entityName;
     private ItemStack layItem;
     private ItemStack dropItem;
-    private final int bgColor;
-    private final int fgColor;
+    private int bgColor;
+    private int fgColor;
     private final ResourceLocation texture;
     @Nullable
     private ResourceLocation itemTexture;
@@ -39,6 +39,8 @@ public class ChickensRegistryItem {
     private int liquidDousingCost = DEFAULT_LIQUID_DOUSING_COST;
     @Nullable
     private Integer tierOverride;
+    @Nullable
+    private Integer spawnWeightOverride;
 
     public ChickensRegistryItem(int id, String entityName, ResourceLocation texture, ItemStack layItem, int bgColor, int fgColor) {
         this(id, entityName, texture, layItem, bgColor, fgColor, null, null);
@@ -62,6 +64,16 @@ public class ChickensRegistryItem {
         // Custom item sprites should render exactly as authored rather than
         // being recoloured by the legacy tint pipeline.
         tintItem = false;
+        return this;
+    }
+
+    public ChickensRegistryItem setBgColor(int color) {
+        bgColor = clampColor(color, bgColor);
+        return this;
+    }
+
+    public ChickensRegistryItem setFgColor(int color) {
+        fgColor = clampColor(color, fgColor);
         return this;
     }
 
@@ -203,7 +215,8 @@ public class ChickensRegistryItem {
 
     public boolean canSpawn() {
         boolean tierEligible = naturalSpawnOverride || getTier() == 1;
-        return tierEligible && spawnType != SpawnType.NONE;
+        return tierEligible && spawnType != SpawnType.NONE
+                && (spawnWeightOverride == null || spawnWeightOverride > 0);
     }
 
     public int getMinLayTime() {
@@ -311,5 +324,23 @@ public class ChickensRegistryItem {
 
     public void setLiquidDousingCost(int amount) {
         liquidDousingCost = Math.max(1, amount);
+    }
+
+    public ChickensRegistryItem setSpawnWeight(int weight) {
+        spawnWeightOverride = Math.max(0, weight);
+        return this;
+    }
+
+    public void clearSpawnWeightOverride() {
+        spawnWeightOverride = null;
+    }
+
+    @Nullable
+    public Integer getSpawnWeightOverride() {
+        return spawnWeightOverride;
+    }
+
+    private static int clampColor(int value, int fallback) {
+        return value >= 0 && value <= 0xFFFFFF ? value : fallback;
     }
 }

@@ -8,6 +8,7 @@ import strhercules.chickens.block.AvianFluidConverterBlock;
 import strhercules.chickens.block.BreederBlock;
 import strhercules.chickens.block.CollectorBlock;
 import strhercules.chickens.block.IncubatorBlock;
+import strhercules.chickens.block.MechanicalRoostBlock;
 import strhercules.chickens.block.HenhouseBlock;
 import strhercules.chickens.block.LavaChickenFireBlock;
 import strhercules.chickens.block.RoostBlock;
@@ -106,6 +107,8 @@ public final class ModRegistry {
     public static final DeferredBlock<AvianDousingMachineBlock> AVIAN_DOUSING_MACHINE = BLOCKS.register("avian_dousing_machine",
             () -> new AvianDousingMachineBlock());
     public static final DeferredBlock<IncubatorBlock> INCUBATOR = BLOCKS.register("incubator", () -> new IncubatorBlock());
+    public static final DeferredBlock<MechanicalRoostBlock> MECHANICAL_ROOST = BLOCKS.register("mechanical_roost",
+            () -> new MechanicalRoostBlock());
     public static final DeferredBlock<HenhouseBlock> HENHOUSE = registerHenhouse("henhouse", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_SPRUCE = registerHenhouse("henhouse_spruce", MapColor.COLOR_BROWN);
     public static final DeferredBlock<HenhouseBlock> HENHOUSE_BIRCH = registerHenhouse("henhouse_birch", MapColor.COLOR_BROWN);
@@ -140,6 +143,8 @@ public final class ModRegistry {
             () -> new BlockItem(AVIAN_DOUSING_MACHINE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> INCUBATOR_ITEM = ITEMS.register("incubator",
             () -> new BlockItem(INCUBATOR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> MECHANICAL_ROOST_ITEM = ITEMS.register("mechanical_roost",
+            () -> new BlockItem(MECHANICAL_ROOST.get(), new Item.Properties()));
 
     private static final List<DeferredItem<BlockItem>> HENHOUSE_ITEMS = List.of(
             HENHOUSE_ITEM, HENHOUSE_SPRUCE_ITEM, HENHOUSE_BIRCH_ITEM,

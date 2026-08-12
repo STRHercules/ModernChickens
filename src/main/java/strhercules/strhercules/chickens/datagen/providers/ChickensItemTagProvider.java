@@ -28,6 +28,11 @@ public class ChickensItemTagProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(TagKey.create(Registries.ITEM, ResourceLocation.parse("chickens:chemical_egg")))
                 .add(item("chickens:chemical_egg"));
+        tag(TagKey.create(Registries.ITEM, ResourceLocation.parse("chickens:nest_seeds")))
+                .add(item("minecraft:wheat_seeds"))
+                .add(item("minecraft:beetroot_seeds"))
+                .add(item("minecraft:melon_seeds"))
+                .add(item("minecraft:pumpkin_seeds"));
     }
 
     private static Item item(String id) {

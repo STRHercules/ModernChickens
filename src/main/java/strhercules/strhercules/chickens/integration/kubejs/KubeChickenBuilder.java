@@ -44,6 +44,8 @@ public class KubeChickenBuilder {
     private boolean allowDousing;
     @Nullable
     private Integer liquidDousingCost;
+    @Nullable
+    private Integer spawnWeight;
 
     KubeChickenBuilder(String entityName) {
         this.entityName = entityName;
@@ -175,6 +177,12 @@ public class KubeChickenBuilder {
         return this;
     }
 
+    /** Overrides this breed's share of its natural-spawn pool; zero disables it. */
+    public KubeChickenBuilder spawnWeight(int value) {
+        this.spawnWeight = Math.max(0, value);
+        return this;
+    }
+
   
     ChickensRegistryItem build(int resolvedId) {
         if (layItem.isEmpty()) {
@@ -203,6 +211,9 @@ public class KubeChickenBuilder {
         }
         if (liquidDousingCost != null) {
             chicken.setLiquidDousingCost(liquidDousingCost);
+        }
+        if (spawnWeight != null) {
+            chicken.setSpawnWeight(spawnWeight);
         }
         if (itemTexture != null && !itemTexture.isEmpty()) {
             ResourceLocation sprite = ResourceLocation.tryParse(itemTexture);

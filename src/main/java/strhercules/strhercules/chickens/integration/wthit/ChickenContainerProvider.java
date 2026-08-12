@@ -1,6 +1,7 @@
 package strhercules.chickens.integration.wthit;
 
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.integration.wthit.overlay.HudOverlayHelper;
 import mcp.mobius.waila.api.IDataProvider;
 import mcp.mobius.waila.api.IDataWriter;
@@ -41,6 +42,10 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
         List<Component> lines = new ArrayList<>();
         container.appendTooltip(lines, tag);
         lines.forEach(helper::addText);
+
+        if (container instanceof MechanicalRoostBlockEntity roost) {
+            helper.addEnergy(roost.getEnergyStored(), roost.getEnergyCapacity());
+        }
 
         boolean hasChickens = tag.getBoolean("HasChickens");
         boolean hasSeeds = tag.getBoolean("HasSeeds");

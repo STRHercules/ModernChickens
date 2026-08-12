@@ -17,8 +17,8 @@ public final class ChemicalEggRegistryItem {
     private final ResourceLocation chemicalId;
     private final ResourceLocation texture;
     private final Component displayName;
-    private final int eggColor;
-    private final int volume;
+    private int eggColor;
+    private int volume;
     private final EnumSet<LiquidEggRegistryItem.HazardFlag> hazards;
     private final boolean gaseous;
 
@@ -62,12 +62,29 @@ public final class ChemicalEggRegistryItem {
         return eggColor;
     }
 
+    public void setEggColor(int color) {
+        if (color >= 0 && color <= 0xFFFFFF) {
+            eggColor = color;
+        }
+    }
+
     public int getVolume() {
         return volume;
     }
 
+    public void setVolume(int amount) {
+        volume = Math.max(0, amount);
+    }
+
     public Set<LiquidEggRegistryItem.HazardFlag> getHazards() {
         return Collections.unmodifiableSet(hazards);
+    }
+
+    public void setHazards(Set<LiquidEggRegistryItem.HazardFlag> values) {
+        hazards.clear();
+        if (values != null) {
+            hazards.addAll(values);
+        }
     }
 
     public boolean isGaseous() {

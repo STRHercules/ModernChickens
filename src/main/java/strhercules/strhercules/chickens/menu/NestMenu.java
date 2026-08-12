@@ -110,12 +110,7 @@ public class NestMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            // Reuse the same seed set recognised by the underlying block entity.
-            return !stack.isEmpty()
-                    && (stack.is(net.minecraft.world.item.Items.WHEAT_SEEDS)
-                            || stack.is(net.minecraft.world.item.Items.BEETROOT_SEEDS)
-                            || stack.is(net.minecraft.world.item.Items.MELON_SEEDS)
-                            || stack.is(net.minecraft.world.item.Items.PUMPKIN_SEEDS));
+            return NestBlockEntity.isNestSeed(stack);
         }
     }
 

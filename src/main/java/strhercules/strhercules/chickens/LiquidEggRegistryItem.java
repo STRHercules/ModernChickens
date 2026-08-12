@@ -23,11 +23,11 @@ import java.util.function.Supplier;
  */
 public final class LiquidEggRegistryItem {
     private final int id;
-    private final int eggColor;
+    private int eggColor;
     private final Supplier<Fluid> fluidSupplier;
     @Nullable
     private final Supplier<BlockState> blockStateSupplier;
-    private final int volume;
+    private int volume;
     private final EnumSet<HazardFlag> hazardFlags;
 
     public LiquidEggRegistryItem(int id, Block liquid, int eggColor, Fluid fluid) {
@@ -74,6 +74,12 @@ public final class LiquidEggRegistryItem {
         return eggColor;
     }
 
+    public void setEggColor(int color) {
+        if (color >= 0 && color <= 0xFFFFFF) {
+            eggColor = color;
+        }
+    }
+
     public Fluid getFluid() {
         return fluidSupplier.get();
     }
@@ -89,12 +95,23 @@ public final class LiquidEggRegistryItem {
         return volume;
     }
 
+    public void setVolume(int amount) {
+        volume = Math.max(0, amount);
+    }
+
     public boolean hasHazard(HazardFlag flag) {
         return hazardFlags.contains(flag);
     }
 
     public Set<HazardFlag> getHazards() {
         return Collections.unmodifiableSet(hazardFlags);
+    }
+
+    public void setHazards(Set<HazardFlag> hazards) {
+        hazardFlags.clear();
+        if (hazards != null) {
+            hazardFlags.addAll(hazards);
+        }
     }
 
     public Component getDisplayName() {

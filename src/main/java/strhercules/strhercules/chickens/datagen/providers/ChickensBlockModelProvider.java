@@ -58,6 +58,8 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
         henhouseJungle();
         henhouseSpruce();
         incubator();
+        mechanicalRoost();
+        mechanicalRoostActive();
         manureBlock();
         nest();
         nurserySorter();
@@ -5174,6 +5176,28 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
             "macerator_front_active",
             "macerator_side",
             "macerator_side"
+        );
+    }
+
+    private void mechanicalRoost() {
+        avianMachine(
+            "mechanical_roost",
+            "compressor_bottom",
+            "compressor_top",
+            "compressor_front",
+            "compressor_side",
+            "compressor_side"
+        );
+    }
+
+    private void mechanicalRoostActive() {
+        avianMachine(
+            "mechanical_roost_active",
+            "compressor_bottom",
+            "compressor_top",
+            "compressor_front_active",
+            "compressor_side",
+            "compressor_side"
         );
     }
 

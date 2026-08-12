@@ -2,6 +2,7 @@ package strhercules.chickens.integration.jade;
 
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -39,6 +40,10 @@ enum ChickenContainerDataProvider implements IServerDataProvider<BlockAccessor> 
         List<Component> lines = new ArrayList<>();
         container.appendTooltip(lines, tag);
         lines.forEach(builder::addText);
+
+        if (container instanceof MechanicalRoostBlockEntity roost) {
+            builder.addEnergy(roost.getEnergyStored(), roost.getEnergyCapacity());
+        }
 
         boolean hasChickens = tag.getBoolean("HasChickens");
         boolean hasSeeds = tag.getBoolean("HasSeeds");

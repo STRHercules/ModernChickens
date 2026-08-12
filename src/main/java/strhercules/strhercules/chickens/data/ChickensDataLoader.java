@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -100,6 +101,7 @@ public final class ChickensDataLoader {
         ChickensConfigValues values = applyConfiguration(props, defaults);
         ChickensConfigHolder.set(values);
         DynamicFluidChickens.register(defaults, indexByName(defaults));
+        KubeJSChickensHook.finalizeRegistry(defaults);
         defaults.forEach(ChickensRegistry::register);
 
         LOGGER.info("Loaded {} chickens ({} enabled, {} disabled)",
@@ -859,6 +861,10 @@ public final class ChickensDataLoader {
             DynamicFluidChickens.refresh();
             DynamicChemicalChickens.refresh();
             DynamicGasChickens.refresh();
+            List<ChickensRegistryItem> current = new ArrayList<>();
+            current.addAll(ChickensRegistry.getItems());
+            current.addAll(ChickensRegistry.getDisabledItems());
+            KubeJSChickensHook.finalizeRegistry(current);
             ChickensSpawnManager.refreshFromRegistry();
             BreedingGraphExporter.export(ChickensRegistry.getItems());
         }

@@ -59,6 +59,7 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.AVIAN_CHEMICAL_CONVERTER_ITEM.get());
                         output.accept(ModRegistry.AVIAN_DOUSING_MACHINE_ITEM.get());
                         output.accept(ModRegistry.INCUBATOR_ITEM.get());
+                        output.accept(ModRegistry.MECHANICAL_ROOST_ITEM.get());
 
                         // Gallineros (todas las variantes de madera)
                         for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {

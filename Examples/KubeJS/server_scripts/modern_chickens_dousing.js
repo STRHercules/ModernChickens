@@ -9,6 +9,9 @@
 // Chicken names are registry names (IronChicken, obsidianChicken, ...), matched
 // case-insensitively. They are NOT item IDs.
 
+// KubeJS can also extend the seed tag used by the rooster nest:
+// ServerEvents.tags('item', event => event.add('chickens:nest_seeds', 'example:seed'))
+
 ServerEvents.recipes(event => {
 
   // ==============================================

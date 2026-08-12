@@ -19,6 +19,7 @@
     ```
 
     Supports `displayName`, `layItem`, `dropItem`, `parent1`/`parent2`/`parents`, `tier`, `spawnType`, `allowNaturalSpawn`, `primaryColor`, `secondaryColor`, `layCoefficient`, `generatedTexture`, `texturePath`, `itemTexture`, `allowDousing`, `liquidDousingCost`, `enabled` and `id`. Registry ids are derived from the chicken name (6,000,000+ span) so they stay stable across script edits and load order changes.
+  - The same startup event now supports `teach`, `modify`, fluid/chemical lineage overrides, per-breed `spawnWeight`, and fluid/chemical/gas egg metadata and hazard overrides. Rooster nest inputs use the extensible `chickens:nest_seeds` item tag.
   - **Recipe schema for `chickens:avian_dousing`** — `event.recipes.chickens.avian_dousing(result, input, reagent).energy(rf)`. The raw `event.custom({ type: 'chickens:avian_dousing', ... })` form keeps working and produces identical JSON.
   - Full reference and runnable examples in `wiki.md` and `Examples/KubeJS/`.
 - **Avian Dousing recipes now accept item and block IDs** in `input` and `result`, not just chicken names, so the machine can convert items as well as chickens. Fields resolve as a chicken name first and an item ID second, which keeps every existing recipe working unchanged.

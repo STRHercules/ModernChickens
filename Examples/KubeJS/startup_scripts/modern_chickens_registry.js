@@ -23,6 +23,17 @@ ChickensEvents.registry(event => {
         .liquidDousingCost(4000)                        // 4 buckets when doused with a fluid
 
     // ==============================================
+    // OVERRIDES AND AUTOMATIC LINEAGE
+    // ==============================================
+    // These are examples of the additional integration. Leave them commented
+    // or adapt the names to your pack.
+    // event.teach('minecraft:paper', 'IronChicken')
+    // event.modify('IronChicken').spawnWeight(4).layItem('minecraft:iron_nugget')
+    // event.fluid('minecraft:lava').parents('BlazeChicken', 'WaterChicken')
+    // event.chemical('mekanism:polonium').parents('UraniumChicken', 'LavaChicken')
+    // event.modifyEgg('minecraft:lava').volume(500).eggColor(0xFF3300).hazards('hot', 'toxic')
+
+    // ==============================================
     // CUSTOM TEXTURE
     // ==============================================
     // Drop the PNG in kubejs/assets/chickens/textures/entity/ and reference it

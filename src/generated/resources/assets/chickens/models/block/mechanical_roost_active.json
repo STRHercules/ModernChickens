@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "chickens:block/machines/compressor_bottom",
+    "east": "chickens:block/machines/compressor_side",
+    "north": "chickens:block/machines/compressor_front_active",
+    "particle": "chickens:block/machines/compressor_front_active",
+    "south": "chickens:block/machines/compressor_side",
+    "up": "chickens:block/machines/compressor_top",
+    "west": "chickens:block/machines/compressor_side"
+  }
+}

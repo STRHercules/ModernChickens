@@ -8,6 +8,7 @@ import strhercules.chickens.block.BreederBlock;
 import strhercules.chickens.block.CollectorBlock;
 import strhercules.chickens.block.HenhouseBlock;
 import strhercules.chickens.block.IncubatorBlock;
+import strhercules.chickens.block.MechanicalRoostBlock;
 import strhercules.chickens.block.RoostBlock;
 import strhercules.chickens.blockentity.AvianDousingMachineBlockEntity;
 import strhercules.chickens.blockentity.AvianFluidConverterBlockEntity;
@@ -16,6 +17,7 @@ import strhercules.chickens.blockentity.BreederBlockEntity;
 import strhercules.chickens.blockentity.CollectorBlockEntity;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.blockentity.IncubatorBlockEntity;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.entity.ChickensChicken;
 import snownee.jade.api.IWailaClientRegistration;
@@ -48,6 +50,7 @@ public final class JadeIntegration implements IWailaPlugin {
         registration.registerBlockDataProvider(ChickenContainerDataProvider.INSTANCE, CollectorBlockEntity.class);
         registration.registerBlockDataProvider(HenhouseDataProvider.INSTANCE, HenhouseBlockEntity.class);
         registration.registerBlockDataProvider(IncubatorDataProvider.INSTANCE, IncubatorBlockEntity.class);
+        registration.registerBlockDataProvider(ChickenContainerDataProvider.INSTANCE, MechanicalRoostBlockEntity.class);
     }
 
     @Override
@@ -60,6 +63,7 @@ public final class JadeIntegration implements IWailaPlugin {
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, CollectorBlock.class);
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, HenhouseBlock.class);
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, IncubatorBlock.class);
+        registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, MechanicalRoostBlock.class);
 
         registration.registerEntityComponent(ChickensChickenProvider.INSTANCE, ChickensChicken.class);
         registration.addTooltipCollectedCallback(9999, JadeOverlaySanitiser.INSTANCE);

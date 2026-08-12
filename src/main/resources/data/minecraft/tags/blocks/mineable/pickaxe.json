@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "chickens:incubator"
+    "chickens:incubator",
+    "chickens:mechanical_roost"
   ]
 }

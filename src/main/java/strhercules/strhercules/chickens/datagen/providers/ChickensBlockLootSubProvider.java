@@ -26,6 +26,7 @@ public class ChickensBlockLootSubProvider extends BlockLootSubProvider {
             "chickens:collector",
             "chickens:incubator",
             "chickens:roost",
+            "chickens:mechanical_roost",
             "chickens:avian_dousing_machine",
             "chickens:avian_fluid_converter",
             "chickens:avian_flux_converter"

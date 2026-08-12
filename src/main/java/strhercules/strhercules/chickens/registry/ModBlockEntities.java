@@ -10,6 +10,7 @@ import strhercules.chickens.blockentity.CollectorBlockEntity;
 import strhercules.chickens.blockentity.IncubatorBlockEntity;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.blockentity.NestBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
@@ -34,6 +35,10 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoostBlockEntity>> ROOST = BLOCK_ENTITIES
             .register("roost", () -> BlockEntityType.Builder
                     .of(RoostBlockEntity::new, ModRegistry.ROOST.get())
+                    .build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MechanicalRoostBlockEntity>> MECHANICAL_ROOST = BLOCK_ENTITIES
+            .register("mechanical_roost", () -> BlockEntityType.Builder
+                    .of(MechanicalRoostBlockEntity::new, ModRegistry.MECHANICAL_ROOST.get())
                     .build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NestBlockEntity>> NEST = BLOCK_ENTITIES
             .register("nest", () -> BlockEntityType.Builder

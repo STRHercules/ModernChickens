@@ -7,6 +7,8 @@ import java.util.List;
 
 
 public final class KubeJSChickenRegistrar {
+    private static ChickenRegistryKubeEvent activeEvent;
+
     private KubeJSChickenRegistrar() {
     }
 
@@ -19,5 +21,12 @@ public final class KubeJSChickenRegistrar {
         ChickenRegistryKubeEvent event = new ChickenRegistryKubeEvent(chickens);
         ChickensKubeEvents.REGISTRY.post(ScriptType.STARTUP, event);
         event.apply();
+        activeEvent = event;
+    }
+
+    public static void finalizeRegistry(List<ChickensRegistryItem> chickens) {
+        if (activeEvent != null) {
+            activeEvent.applyFinal(chickens);
+        }
     }
 }

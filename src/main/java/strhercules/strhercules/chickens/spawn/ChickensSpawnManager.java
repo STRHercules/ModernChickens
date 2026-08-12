@@ -138,6 +138,10 @@ public final class ChickensSpawnManager {
     }
 
     private static int spawnWeightFor(ChickensRegistryItem chicken) {
+        Integer override = chicken.getSpawnWeightOverride();
+        if (override != null) {
+            return override;
+        }
         // Lower tiers should dominate the overworld pool while still allowing rare high-tier spawns when enabled.
         return Math.max(1, 8 - Math.min(7, chicken.getTier()));
     }

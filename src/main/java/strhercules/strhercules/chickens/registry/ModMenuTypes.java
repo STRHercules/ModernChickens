@@ -11,6 +11,7 @@ import strhercules.chickens.menu.IncubatorMenu;
 import strhercules.chickens.menu.HenhouseMenu;
 import strhercules.chickens.menu.MegaChickenMenu;
 import strhercules.chickens.menu.RoostMenu;
+import strhercules.chickens.menu.MechanicalRoostMenu;
 import strhercules.chickens.menu.NestMenu;
 import strhercules.chickens.menu.RoosterMenu;
 import net.minecraft.core.registries.Registries;
@@ -32,6 +33,8 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(HenhouseMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<RoostMenu>> ROOST = MENU_TYPES.register("roost",
             () -> IMenuTypeExtension.create(RoostMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<MechanicalRoostMenu>> MECHANICAL_ROOST = MENU_TYPES.register(
+            "mechanical_roost", () -> IMenuTypeExtension.create(MechanicalRoostMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<NestMenu>> NEST = MENU_TYPES.register("nest",
             () -> IMenuTypeExtension.create(NestMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<RoosterMenu>> ROOSTER = MENU_TYPES.register("rooster",
