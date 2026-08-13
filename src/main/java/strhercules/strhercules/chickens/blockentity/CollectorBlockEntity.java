@@ -1,6 +1,8 @@
 package strhercules.chickens.blockentity;
 
 import strhercules.chickens.config.ChickensConfigHolder;
+import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
+import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.menu.CollectorMenu;
 import strhercules.chickens.registry.ModBlockEntities;
 import strhercules.chickens.registry.ModRegistry;
@@ -94,9 +96,7 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
             return;
         }
         scanWork -= operations;
-        int range = Mth.clamp(ChickensConfigHolder.get().getCollectorScanRange()
-                + 20 * getUpgradeCount(RANGE_UPGRADE_SLOT), 0, MAX_RANGE);
-        gatherItems(level, range, operations);
+        gatherItems(level, getScanRange(), operations);
     }
 
     @Override
@@ -207,10 +207,11 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
                 }
                 LevelChunk chunk = level.getChunk(chunkX, chunkZ);
                 for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-                    if (!(blockEntity instanceof AbstractChickenContainerBlockEntity other)
-                            || other == this || other instanceof CollectorBlockEntity) {
+                    if (!(blockEntity instanceof RoostBlockEntity)
+                            && !(blockEntity instanceof MechanicalRoostBlockEntity)) {
                         continue;
                     }
+                    AbstractChickenContainerBlockEntity other = (AbstractChickenContainerBlockEntity) blockEntity;
                     BlockPos otherPos = other.getBlockPos();
                     if (Math.abs(otherPos.getX() - worldPosition.getX()) > range
                             || Math.abs(otherPos.getY() - worldPosition.getY()) > range
@@ -257,13 +258,20 @@ public class CollectorBlockEntity extends AbstractChickenContainerBlockEntity {
         }
         tag.putInt("FilledSlots", filled);
         tag.putInt("TotalSlots", getStorageSlotCount());
+        tag.putInt("Range", getScanRange());
     }
 
     @Override
     public void appendTooltip(List<Component> tooltip, net.minecraft.nbt.CompoundTag data) {
         tooltip.add(Component.translatable("tooltip.chickens.collector.slots", data.getInt("FilledSlots"),
                 data.getInt("TotalSlots")));
+        tooltip.add(Component.translatable("tooltip.chickens.collector.range", data.getInt("Range")));
         super.appendTooltip(tooltip, data);
+    }
+
+    public int getScanRange() {
+        return Mth.clamp(ChickensConfigHolder.get().getCollectorScanRange()
+                + 20 * getUpgradeCount(RANGE_UPGRADE_SLOT), 0, MAX_RANGE);
     }
 
     private boolean isOutputInventoryFull() {

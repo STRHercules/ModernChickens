@@ -16,6 +16,7 @@ import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.LiquidEggItem;
 import strhercules.chickens.menu.AvianDousingMachineMenu;
+import strhercules.chickens.registry.ModRegistry;
 import strhercules.chickens.recipe.DousingRecipe;
 import strhercules.chickens.registry.ModRecipeTypes;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -72,11 +73,14 @@ import java.util.Map;
  */
 public class AvianDousingMachineBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
     public static final int SLOT_COUNT = 2;
+    public static final int SPEED_UPGRADE_SLOT = 0;
+    public static final int RF_UPGRADE_SLOT = 1;
+    public static final int UPGRADE_SLOT_COUNT = 2;
     private static final int INPUT_SLOT = 0;
     private static final int OUTPUT_SLOT = 1;
-    private static final int[] TOP_SLOTS = new int[] { INPUT_SLOT };
-    private static final int[] SIDE_SLOTS = new int[] { INPUT_SLOT, OUTPUT_SLOT };
-    private static final int[] BOTTOM_SLOTS = new int[] { OUTPUT_SLOT };
+    private static final int[] IO_SLOTS = new int[] { INPUT_SLOT, OUTPUT_SLOT };
+    private static final int MAX_SPEED_UPGRADES = 5;
+    private static final int MAX_RF_UPGRADES = 3;
 
     public static final int LIQUID_CAPACITY = FluidType.BUCKET_VOLUME * 100;
     public static final int CHEMICAL_CAPACITY = FluidType.BUCKET_VOLUME * 100;
@@ -98,6 +102,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     private static final Map<ResourceLocation, Integer> CHEMICAL_CHICKEN_CACHE = new HashMap<>();
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final NonNullList<ItemStack> upgradeItems = NonNullList.withSize(UPGRADE_SLOT_COUNT, ItemStack.EMPTY);
     private final FluidTank liquidTank = new FluidTank(LIQUID_CAPACITY) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
@@ -120,6 +125,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private final Map<Direction, Object> chemicalHandlers = new EnumMap<>(Direction.class);
 
+    private int capacity = ENERGY_CAPACITY;
     private int maxReceive = ENERGY_MAX_RECEIVE;
     private int chemicalAmount;
     @Nullable
@@ -155,6 +161,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return;
         }
 
+        syncUpgradeLimits();
         boolean inventoryChanged = false;
         boolean pulledFluid = pullFluidFromNeighbors(level);
         boolean pulledChemical = pullChemicalFromNeighbors(level);
@@ -176,7 +183,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         boolean canAdvance = hasResourcesFor(plan);
         if (canAdvance) {
             progress++;
-            if (progress >= MAX_PROGRESS) {
+            if (progress >= getMaxProgress()) {
                 completeOperation(plan);
                 inventoryChanged = true;
                 progress = 0;
@@ -453,12 +460,12 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     private boolean pullEnergyFromNeighbors(Level level) {
-        if (energyStorage.getEnergyStored() >= ENERGY_CAPACITY) {
+        if (energyStorage.getEnergyStored() >= capacity) {
             return false;
         }
         boolean changed = false;
         for (Direction direction : Direction.values()) {
-            if (energyStorage.getEnergyStored() >= ENERGY_CAPACITY) {
+            if (energyStorage.getEnergyStored() >= capacity) {
                 break;
             }
             IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
@@ -466,7 +473,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (neighbor == null) {
                 continue;
             }
-            int space = Math.min(maxReceive, ENERGY_CAPACITY - energyStorage.getEnergyStored());
+            int space = Math.min(maxReceive, capacity - energyStorage.getEnergyStored());
             if (space <= 0) {
                 break;
             }
@@ -545,7 +552,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     @Override
     public int getContainerSize() {
-        return SLOT_COUNT;
+        return SLOT_COUNT + UPGRADE_SLOT_COUNT;
     }
 
     @Override
@@ -555,17 +562,33 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
                 return false;
             }
         }
+        for (ItemStack stack : upgradeItems) {
+            if (!stack.isEmpty()) {
+                return false;
+            }
+        }
         return true;
     }
 
     @Override
     public ItemStack getItem(int index) {
-        return items.get(index);
+        if (index < 0 || index >= getContainerSize()) {
+            return ItemStack.EMPTY;
+        }
+        return index < SLOT_COUNT ? items.get(index) : upgradeItems.get(index - SLOT_COUNT);
     }
 
     @Override
     public ItemStack removeItem(int index, int count) {
-        ItemStack result = ContainerHelper.removeItem(items, index, count);
+        if (index < 0 || index >= getContainerSize() || count <= 0) {
+            return ItemStack.EMPTY;
+        }
+        if (index >= SLOT_COUNT && !canRemoveUpgrade(index - SLOT_COUNT, count)) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack result = index < SLOT_COUNT
+                ? ContainerHelper.removeItem(items, index, count)
+                : ContainerHelper.removeItem(upgradeItems, index - SLOT_COUNT, count);
         if (!result.isEmpty()) {
             setChanged();
         }
@@ -574,11 +597,50 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
+        if (index < 0 || index >= getContainerSize()) {
+            return ItemStack.EMPTY;
+        }
+        if (index >= SLOT_COUNT) {
+            int upgradeSlot = index - SLOT_COUNT;
+            if (!canRemoveUpgrade(upgradeSlot, upgradeItems.get(upgradeSlot).getCount())) {
+                return ItemStack.EMPTY;
+            }
+            return ContainerHelper.takeItem(upgradeItems, upgradeSlot);
+        }
         return ContainerHelper.takeItem(items, index);
     }
 
     @Override
     public void setItem(int index, ItemStack stack) {
+        if (index >= SLOT_COUNT) {
+            int upgradeSlot = index - SLOT_COUNT;
+            if (upgradeSlot < 0 || upgradeSlot >= UPGRADE_SLOT_COUNT) {
+                return;
+            }
+            if (level != null && level.isClientSide) {
+                upgradeItems.set(upgradeSlot, stack.copy());
+                return;
+            }
+            ItemStack oldUpgrade = upgradeItems.get(upgradeSlot);
+            int removedCount = Math.max(0, oldUpgrade.getCount() -
+                    (canPlaceUpgrade(upgradeSlot, stack)
+                            ? Math.min(stack.getCount(), getUpgradeMaxStackSize(upgradeSlot)) : 0));
+            if (removedCount > 0 && !canRemoveUpgrade(upgradeSlot, removedCount)) {
+                return;
+            }
+            if (!stack.isEmpty() && !canPlaceUpgrade(upgradeSlot, stack)) {
+                return;
+            }
+            stack = stack.copy();
+            stack.setCount(Math.min(stack.getCount(), getUpgradeMaxStackSize(upgradeSlot)));
+            upgradeItems.set(upgradeSlot, stack);
+            syncUpgradeLimits();
+            setChanged();
+            return;
+        }
+        if (index < 0 || index >= SLOT_COUNT) {
+            return;
+        }
         items.set(index, stack);
         if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
@@ -599,6 +661,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
+        if (index >= SLOT_COUNT) {
+            int upgradeSlot = index - SLOT_COUNT;
+            return upgradeSlot >= 0 && upgradeSlot < UPGRADE_SLOT_COUNT
+                    && canPlaceUpgrade(upgradeSlot, stack);
+        }
         if (index == INPUT_SLOT) {
             return isDousableChicken(stack);
         }
@@ -617,19 +684,16 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        if (side == Direction.UP) {
-            return TOP_SLOTS;
-        }
-        if (side == Direction.DOWN) {
-            return BOTTOM_SLOTS;
-        }
-        return SIDE_SLOTS;
+        return IO_SLOTS;
     }
 
     @Override
     public void clearContent() {
         for (int i = 0; i < items.size(); i++) {
             items.set(i, ItemStack.EMPTY);
+        }
+        for (int i = 0; i < upgradeItems.size(); i++) {
+            upgradeItems.set(i, ItemStack.EMPTY);
         }
         setChanged();
     }
@@ -674,7 +738,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     public int getEnergyCapacity() {
-        return ENERGY_CAPACITY;
+        return capacity;
     }
 
     public int getChemicalAmount() {
@@ -711,7 +775,29 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     public int getMaxProgress() {
-        return MAX_PROGRESS;
+        return Math.max(1, (int) Math.ceil(MAX_PROGRESS
+                / (1.0D + 0.2D * getUpgradeCount(SPEED_UPGRADE_SLOT))));
+    }
+
+    public int getUpgradeCount(int slot) {
+        if (slot < 0 || slot >= upgradeItems.size()) {
+            return 0;
+        }
+        return upgradeItems.get(slot).getCount();
+    }
+
+    public boolean canPlaceUpgrade(int slot, ItemStack stack) {
+        return slot == SPEED_UPGRADE_SLOT && stack.is(ModRegistry.SPEED_UPGRADE.get())
+                || slot == RF_UPGRADE_SLOT && stack.is(ModRegistry.RF_UPGRADE.get());
+    }
+
+    public boolean canRemoveUpgrade(int slot, int count) {
+        return slot >= 0 && slot < UPGRADE_SLOT_COUNT && count > 0;
+    }
+
+    public int getUpgradeMaxStackSize(int slot) {
+        return slot == SPEED_UPGRADE_SLOT ? MAX_SPEED_UPGRADES
+                : slot == RF_UPGRADE_SLOT ? MAX_RF_UPGRADES : 1;
     }
 
     public InfusionMode getMode() {
@@ -750,10 +836,10 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     public int getComparatorOutput() {
-        if (ENERGY_CAPACITY <= 0) {
+        if (capacity <= 0) {
             return 0;
         }
-        return Math.round(15.0F * energyStorage.getEnergyStored() / (float) ENERGY_CAPACITY);
+        return Math.round(15.0F * energyStorage.getEnergyStored() / (float) capacity);
     }
 
     @Override
@@ -787,6 +873,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         ContainerHelper.saveAllItems(tag, items, provider);
+        saveUpgrades(tag, provider);
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("Progress", progress);
         tag.putString("Mode", mode.name());
@@ -818,7 +905,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
         ContainerHelper.loadAllItems(tag, items, provider);
-        energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY));
+        loadUpgrades(tag, provider);
+        syncUpgradeLimits();
+        energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, capacity));
         progress = Mth.clamp(tag.getInt("Progress"), 0, MAX_PROGRESS);
         mode = parseMode(tag.getString("Mode"));
         specialInfusion = parseSpecial(tag.getString("SpecialInfusion"));
@@ -877,6 +966,51 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private void invalidateChemicalHandlers() {
         chemicalHandlers.clear();
+    }
+
+    private void syncUpgradeLimits() {
+        int upgrades = Math.min(getUpgradeCount(RF_UPGRADE_SLOT), MAX_RF_UPGRADES);
+        capacity = (int) Math.min(Integer.MAX_VALUE,
+                (long) ENERGY_CAPACITY * (1L << upgrades));
+        energyStorage.setLimits(capacity, maxReceive);
+    }
+
+    private void saveUpgrades(CompoundTag tag, HolderLookup.Provider provider) {
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (int slot = 0; slot < upgradeItems.size(); slot++) {
+            ItemStack stack = upgradeItems.get(slot);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            CompoundTag entry = (CompoundTag) stack.save(provider);
+            entry.putByte("Slot", (byte) slot);
+            list.add(entry);
+        }
+        tag.put("Upgrades", list);
+    }
+
+    private void loadUpgrades(CompoundTag tag, HolderLookup.Provider provider) {
+        for (int slot = 0; slot < upgradeItems.size(); slot++) {
+            upgradeItems.set(slot, ItemStack.EMPTY);
+        }
+        if (!tag.contains("Upgrades", Tag.TAG_LIST)) {
+            return;
+        }
+        net.minecraft.nbt.ListTag list = tag.getList("Upgrades", Tag.TAG_COMPOUND);
+        for (int index = 0; index < list.size(); index++) {
+            CompoundTag entry = list.getCompound(index);
+            int slot = entry.getByte("Slot");
+            if (slot < 0 || slot >= upgradeItems.size()) {
+                continue;
+            }
+            CompoundTag stackTag = entry.copy();
+            stackTag.remove("Slot");
+            ItemStack stack = ItemStack.parse(provider, stackTag).orElse(ItemStack.EMPTY);
+            if (!stack.isEmpty() && canPlaceUpgrade(slot, stack)) {
+                stack.setCount(Math.min(stack.getCount(), getUpgradeMaxStackSize(slot)));
+                upgradeItems.set(slot, stack);
+            }
+        }
     }
 
     private void clearChemical() {
@@ -1508,6 +1642,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
         void setEnergy(int energy) {
             this.energy = Mth.clamp(energy, 0, getMaxEnergyStored());
+        }
+
+        void setLimits(int capacity, int maxReceive) {
+            this.capacity = Math.max(0, capacity);
+            this.maxReceive = Math.max(0, maxReceive);
+            if (this.energy > this.capacity) {
+                this.energy = this.capacity;
+            }
         }
 
         boolean consumeEnergy(int amount) {

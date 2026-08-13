@@ -8,6 +8,7 @@ import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChemicalEggItem;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -307,6 +308,16 @@ final class DynamicChemicalChickens {
             chemicalRule(rules, "mekanism:clean_" + ore, "mekanism:dirty_" + ore, "WaterChicken");
         }
 
+        // Mekanism Extras' non-gaseous chemicals follow the actual slurry and
+        // infusion chain instead of the generic progression fallback.
+        rule(rules, "mekanism_extras:dirty_naquadah", "sulfuricAcidChicken", "naquadahChicken");
+        chemicalRule(rules, "mekanism_extras:clean_naquadah", "mekanism_extras:dirty_naquadah", "WaterChicken");
+        rule(rules, "mekanism_extras:radiance", "uraniumChicken", "GlowstoneChicken");
+        chemicalRule(rules, "mekanism_extras:lead", "mekanism:carbon", "leadchicken");
+        chemicalRule(rules, "mekanism_extras:thermonuclear", "mekanism_extras:radiance", "LavaChicken");
+        chemicalRule(rules, "mekanism_extras:shining", "mekanism_extras:thermonuclear", "antimatterPelletChicken");
+        chemicalRule(rules, "mekanism_extras:spectrum", "mekanism_extras:shining", "antimatterPelletChicken");
+
         // Mekanism Elements atmospheric and industrial chemistry. The addon
         // registers these in the shared chemical registry, so they follow the
         // same breeding tree even though their names describe gases.
@@ -418,7 +429,30 @@ final class DynamicChemicalChickens {
     }
 
     private static Component buildDisplayName(ChemicalEggRegistryItem entry) {
-        return entry.getDisplayName().copy().append(Component.literal(" Chicken"));
+        ResourceLocation chemicalId = entry.getChemicalId();
+        String path = chemicalId.getPath();
+        String fallback = titleCase(path);
+        if (path.startsWith("dirty_") || path.startsWith("clean_")) {
+            fallback += " Slurry";
+        }
+        return Component.translatableWithFallback(Util.makeDescriptionId("chemical", chemicalId), fallback)
+                .append(Component.literal(" Chicken"));
+    }
+
+    private static String titleCase(String value) {
+        StringBuilder result = new StringBuilder(value.length());
+        boolean capitalize = true;
+        for (int i = 0; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (character == '_') {
+                result.append(' ');
+                capitalize = true;
+            } else {
+                result.append(capitalize ? Character.toUpperCase(character) : character);
+                capitalize = false;
+            }
+        }
+        return result.toString();
     }
 
     private static int allocateId(ResourceLocation chemicalId, Set<Integer> usedIds) {

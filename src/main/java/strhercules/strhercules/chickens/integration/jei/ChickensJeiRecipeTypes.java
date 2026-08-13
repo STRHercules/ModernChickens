@@ -30,6 +30,8 @@ public final class ChickensJeiRecipeTypes {
             ChickensMod.MOD_ID, "teaching", TeachingRecipe.class);
     public static final RecipeType<WildChickenRecipe> WILD_CHICKENS = RecipeType.create(
             ChickensMod.MOD_ID, "wild_chickens", WildChickenRecipe.class);
+    public static final RecipeType<LavaChickenRecipe> LAVA_CHICKEN = RecipeType.create(
+            ChickensMod.MOD_ID, "lava_chicken", LavaChickenRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -79,5 +81,8 @@ public final class ChickensJeiRecipeTypes {
     }
 
     public record WildChickenRecipe(ItemStack chicken, SpawnType spawnType) {
+    }
+
+    public record LavaChickenRecipe(ItemStack lavaBucket, ItemStack lavaChicken) {
     }
 }

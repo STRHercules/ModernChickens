@@ -131,10 +131,11 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         ItemStack held = player.getItemInHand(hand);
         // Open the rooster inventory when the player interacts with an empty hand
         // or holds seeds, mirroring the legacy Hatchery behaviour.
-        if (!level().isClientSide && hand == InteractionHand.MAIN_HAND
-                && (held.isEmpty() || held.is(ItemTags.CHICKEN_FOOD))) {
-            player.openMenu(this);
-            return InteractionResult.CONSUME;
+        if (hand == InteractionHand.MAIN_HAND && (held.isEmpty() || held.is(ItemTags.CHICKEN_FOOD))) {
+            if (!level().isClientSide) {
+                player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
+            }
+            return InteractionResult.sidedSuccess(level().isClientSide);
         }
         return super.mobInteract(player, hand);
     }
@@ -274,13 +275,13 @@ public class Rooster extends Chicken implements Container, MenuProvider {
             if (!(rooster.level() instanceof ServerLevel level) || hen == null) {
                 return;
             }
-            AgeableMob child = hen.getBreedOffspring(level, hen);
+            AgeableMob child = hen.getBreedOffspring(level, rooster);
             if (child == null) {
                 return;
             }
             child.setBaby(true);
             child.moveTo(hen.getX(), hen.getY(), hen.getZ(), 0.0F, 0.0F);
-            hen.finalizeSpawnChildFromBreeding(level, hen, child);
+            hen.finalizeSpawnChildFromBreeding(level, rooster, child);
             level.addFreshEntityWithPassengers(child);
             rooster.consumeSeeds(SEED_COST);
         }

@@ -60,7 +60,7 @@ public class MechanicalRoostMenu extends AbstractContainerMenu {
             }
         }
         this.addSlot(new MachineUpgradeSlot(roost, MechanicalRoostBlockEntity.SPEED_UPGRADE_SLOT, 128, 101));
-        this.addSlot(new MachineUpgradeSlot(roost, MechanicalRoostBlockEntity.STACK_UPGRADE_SLOT, 149, 101));
+        this.addSlot(new MachineUpgradeSlot(roost, MechanicalRoostBlockEntity.RF_UPGRADE_SLOT, 149, 101));
 
         for (int row = 0; row < PLAYER_INVENTORY_ROWS; row++) {
             for (int column = 0; column < PLAYER_COLUMNS; column++) {
@@ -187,6 +187,10 @@ public class MechanicalRoostMenu extends AbstractContainerMenu {
 
     public int getCapacity() {
         return isServerSide() ? getServerCapacity() : clientCapacity;
+    }
+
+    public int getEnergyCostPerOperation() {
+        return roost.getEnergyCostPerOperation();
     }
 
     private boolean isServerSide() {

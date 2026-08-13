@@ -242,6 +242,17 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_beacon", has(Items.BEACON))
                 .save(output, id("rangeupgrade"));
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:rfupgrade"))
+                .pattern("NEN")
+                .pattern("RDR")
+                .pattern("NEN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('E', Items.ENDER_EYE)
+                .define('R', Items.REDSTONE_BLOCK)
+                .define('D', Items.DIAMOND)
+                .unlockedBy("has_netherite", has(Items.NETHERITE_INGOT))
+                .save(output, id("rfupgrade"));
+
         dousingRecipe(output, "avian_dousing_dragon", "obsidianChicken", "dragonChicken",
                 "minecraft:dragon_breath", 10);
         dousingRecipe(output, "avian_dousing_wither", "soulSandChicken", "witherChicken",

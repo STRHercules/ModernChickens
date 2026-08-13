@@ -12,8 +12,140 @@ This document is for cataloguing and detailing potential ideas for features.
         * Dragon's Breath
         - Maximum uses: 5
         - Increases scale to a total of -2x over the course of the 5 bottles
+- Using either of these items on the mega chicken results in the desired outcome 
 
-- RF Capacity Upgrade Item
+## Mega Chicken Skins 
+- I have added a plethora of new mega chicken skins;
+    ```
+        newTextures\chickens\Mega\zombie_chicken.png
+        newTextures\chickens\Mega\valentines_chicken.png
+        newTextures\chickens\Mega\toxic_chicken.png
+        newTextures\chickens\Mega\reptar_chicken.png
+        newTextures\chickens\Mega\rambo_chicken.png
+        newTextures\chickens\Mega\pink_chicken.png
+        newTextures\chickens\Mega\fox_chicken.png
+        newTextures\chickens\Mega\duck_chicken.png
+        newTextures\chickens\Mega\dodo_chicken.png
+        newTextures\chickens\Mega\deepdark_chicken.png
+        newTextures\chickens\Mega\creeper_chicken.png
+        newTextures\chickens\Mega\bigbrain_chicken.png
+        newTextures\chickens\Mega\aviator_chicken.png   
+    ```
+- I want to add a new item; the 'Skin Crate' 
+    - the Skin Crates will be added to end-game loot tables such as the dragon, wither, etc. and have a very small chance to drop 
+    - the Skin Crate will 'contain' one of these respective skins, and when right-click used on an owned mega chicken, applies the respective skin to the chicken and consumes the item 
+    - the Skin Crate will have a Cyan name, and show what skin is inside in the tooltip 
+
+
+## New runtime chicken skin generation idea
+- Use `newTextures\chicken_base.png` for all chickens (bottom layer)
+- Use `newTextures\chicken_resource.png` and tint it in runtime based on the respective material (middle layer)
+- Use `newTextures\chicken_parts.png` for face/beak, etc. (top layer)
+- Apply tinted resource and then the features to the base chicken skin, created a spotted chicken tinted in runtime based on the respective material used to create/tint the chicken
+- Continue to use the bone white/skeleton chicken for fluid/chemical chickens with their existing fluid/chemical representation on their bodies
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Lava Chicken
+- Lava Chicken Buff asset broken
+    - `src\main\resources\assets\modern_companions\textures\gui\burning.png`
+    - `src\main\resources\assets\modern_companions\textures\gui\burning18.png`
+    - `src\main\resources\assets\modern_companions\textures\gui\burning32.png`
+- Should ignite player, and leave fire trail - is not
+    - Player should visually be ignited, but receive no damage
+    - Player should ignite the ground they are standing on during the duration of the buff
+        - Fire placed at the players feet does not spread and does not damage/destroy blocks or entities
+- Needs JEI recipe for dumping lava on a chicken
+    - `src\main\resources\assets\chickens\textures\gui\lava_chicken.png`
+        - The lava bucket should be displayed at `39,5` to `54,20`
+        - The lava chicken item should be displayed at `38,51` to `53,66`
+        - The overall JEI recipe area is `0,0` to `90,77`
+
+## RF Upgrade Item
+- This upgrade should have similar vanilla-friendly recipe, and JEI entry
+- This will increase the capacity of the total RF of the machine it is inserted into
+- Each upgrade doubles the RF capacity, cumulatively. 
+- Each machine can hold a maximum of 3 RF Upgrades
+- Item asset; `src\main\resources\assets\chickens\textures\item\rfupgrade.png`
+
+## Avian Dousing Machine
+- Hidden slot under the progress bar, this needs removed so "No Itegm Reagent Stored" tooltip is not visible
+    - ![alt text](image.png)
+- Include Speed / Energy Upgrade support
+    - Added two new slots to the Dousing GUI
+        - Speed Upgrade
+            - Located; `103,63` to `118,78`
+        - RF Upgrade
+            - Located; `124,63` to `139,78`
+    - Dousing Machie supports `3` RF upgrades and `5` Speed Upgrades
+
+## Roost Collector
+- Should only takes items out of Roosts and Mechanical Roosts
+- Ability to see the collector's range
+
+## Chemical Chickens
+- Mekanism Extras have generic recipes for chemical chickens, needs fixed so they make more sense 
+
+## Rooster
+- No Spawn egg in creative
+- Need to make sure t has the working GUI when right clicked with an empty hand
+- Need to make sure it is functional as intended
+
+## Mechanical Roost
+- Consuming a LOT of power for 10/10/10 chickens
+- Enable RF Capacity Upgrade
+- Heavily increase the rate in which it can receive power, it takes power much too slow 
+- Display how much RF each operation is consuming when hovering the RF bar
+- Stack Upgrade superfulous with internal virtual inventory, I have replaced the Stack Slot with an RF Upgrade Slot
+
+## Upgrades
+- Clear indicator of what the upgrade does in their respective tooltips, with accurate numbers such as % increased, etc.
+- All upgrade items should stack to 64 respectively 
+- We need to make sure that upgrade affects are stacking effectively and accurately
+
+## Nest
+- Using Jade, I would like to see; 
+    - range
+    - boost duration
+    - boost multiplier
+    - if there is a conflicting nest in the area/range
+
+## Misc
+- Add IO ports to all these machines; Avian Flux Converter, Avian Dousing Machine, Avian Fluid Converter, Avian Chemical Converter, Mechanical Roost, Roost Collector, Incubator, Henhouses, Roost, Chicken Breeder on all sides
+
+## Converter Machines
+- The bars in the Avian Fluid and Chemical converter are just red, we need to be coloring them according to their contents
+    - I suspect because these machines are reusing the flux converter gui, so I created a new one; `src\main\resources\assets\chickens\textures\gui\fluidchemicalconverter.png`
+    - The new GUI is identical to the Flux Converter GUI (the current one), except the fill bar is grey and should be recolored in runtime based on the chemical / fluid. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Implemented
 

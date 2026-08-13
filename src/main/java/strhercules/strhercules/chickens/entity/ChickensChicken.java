@@ -289,14 +289,26 @@ public class ChickensChicken extends Chicken {
     @Nullable
     @Override
     public ChickensChicken getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        if (!(partner instanceof ChickensChicken mate)) {
-            return null;
-        }
         ChickensRegistryItem description = this.getChickenDescription();
-        ChickensRegistryItem mateDescription = mate.getChickenDescription();
-        if (description == null || mateDescription == null) {
+        if (description == null) {
             return null;
         }
+
+        ChickensRegistryItem mateDescription;
+        ChickensChicken mate = partner instanceof ChickensChicken customMate ? customMate : null;
+        if (partner instanceof Rooster) {
+            // A rooster is not a breed, so the hen supplies both the lineage and
+            // inherited stats when it breeds with one.
+            mateDescription = description;
+        } else if (mate != null) {
+            mateDescription = mate.getChickenDescription();
+        } else {
+            return null;
+        }
+        if (mateDescription == null) {
+            return null;
+        }
+
         ChickensRegistryItem childDescription = ChickensRegistry.getRandomChild(description, mateDescription);
         if (childDescription == null) {
             return null;
@@ -308,10 +320,14 @@ public class ChickensChicken extends Chicken {
         child.setChickenType(childDescription.getId());
         boolean mutating = description.getId() == mateDescription.getId() && childDescription.getId() == description.getId();
         if (mutating) {
-            increaseStats(child, this, mate, this.random);
+            if (mate != null) {
+                increaseStats(child, this, mate, this.random);
+            } else {
+                inheritStats(child, this);
+            }
         } else if (description.getId() == childDescription.getId()) {
             inheritStats(child, this);
-        } else if (mateDescription.getId() == childDescription.getId()) {
+        } else if (mate != null && mateDescription.getId() == childDescription.getId()) {
             inheritStats(child, mate);
         }
         return child;

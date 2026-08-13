@@ -45,6 +45,7 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         generatedItem("stackupgrade", "stackupgrade");
         generatedItem("storagecapacity", "storagecapacity");
         generatedItem("rangeupgrade", "rangeupgrade");
+        generatedItem("rfupgrade", "rfupgrade");
         generatedItem("gas_egg", "gas_egg");
         generatedItem("chemical_egg", "chemical_egg");
         generatedItem("mega_chicken", "mega_chicken");
@@ -57,6 +58,7 @@ public class ChickensItemModelProvider extends ItemModelProvider {
 
         // Spawn eggs
         spawnEgg();
+        withExistingParent("rooster_spawn_egg", mcLoc("item/template_spawn_egg"));
         megaChickenSpawnEgg();
     }
 

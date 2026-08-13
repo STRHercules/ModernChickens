@@ -34,7 +34,8 @@ import java.util.Objects;
  * live progress and gauge information.
  */
 public class AvianDousingMachineMenu extends AbstractContainerMenu {
-    private static final int MACHINE_SLOTS = AvianDousingMachineBlockEntity.SLOT_COUNT;
+    private static final int MACHINE_SLOTS = AvianDousingMachineBlockEntity.SLOT_COUNT
+            + AvianDousingMachineBlockEntity.UPGRADE_SLOT_COUNT;
 
     private final AvianDousingMachineBlockEntity machine;
     private final ContainerLevelAccess access;
@@ -91,6 +92,8 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
         this.addSlot(new SmartChickenSlot(machine, 0, 50, 35));
         this.addSlot(new OutputSlot(machine, 1, 116, 35));
+        this.addSlot(new DousingUpgradeSlot(machine, AvianDousingMachineBlockEntity.SPEED_UPGRADE_SLOT, 103, 63));
+        this.addSlot(new DousingUpgradeSlot(machine, AvianDousingMachineBlockEntity.RF_UPGRADE_SLOT, 124, 63));
 
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 9; ++column) {
@@ -140,6 +143,14 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         this.addDataSlot(splitGetter(
                 () -> getServerProgress() >>> 16,
                 value -> clientProgress = (clientProgress & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
+
+        // Speed upgrades change the operation duration; keep the client denominator in sync.
+        this.addDataSlot(splitGetter(
+                () -> getServerMaxProgress(),
+                value -> clientMaxProgress = (clientMaxProgress & 0xFFFF0000) | (value & 0xFFFF)));
+        this.addDataSlot(splitGetter(
+                () -> getServerMaxProgress() >>> 16,
+                value -> clientMaxProgress = (clientMaxProgress & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
 
         // Fluid amount and capacity
         this.addDataSlot(splitGetter(
@@ -280,7 +291,7 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(current, MACHINE_SLOTS, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(current, 0, MACHINE_SLOTS - 1, false)) {
+            } else if (!this.moveItemStackTo(current, 0, MACHINE_SLOTS, false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -438,6 +449,10 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         return machine != null ? machine.getProgress() : 0;
     }
 
+    private int getServerMaxProgress() {
+        return machine != null ? machine.getMaxProgress() : 1;
+    }
+
     private int getServerFluidAmount() {
         return machine != null ? machine.getLiquidAmount() : 0;
     }
@@ -534,6 +549,32 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack) {
             return false;
+        }
+    }
+
+    private static final class DousingUpgradeSlot extends Slot {
+        private final AvianDousingMachineBlockEntity machine;
+        private final int upgradeSlot;
+
+        private DousingUpgradeSlot(AvianDousingMachineBlockEntity machine, int upgradeSlot, int x, int y) {
+            super(machine, AvianDousingMachineBlockEntity.SLOT_COUNT + upgradeSlot, x, y);
+            this.machine = machine;
+            this.upgradeSlot = upgradeSlot;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return machine.canPlaceUpgrade(upgradeSlot, stack);
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return machine.canRemoveUpgrade(upgradeSlot, getItem().getCount());
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return machine.getUpgradeMaxStackSize(upgradeSlot);
         }
     }
 }

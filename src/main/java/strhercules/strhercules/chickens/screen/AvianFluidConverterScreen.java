@@ -1,21 +1,23 @@
 package strhercules.chickens.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.menu.AvianFluidConverterMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Client screen for the Avian Fluid Converter. Reuses the flux converter
- * texture while rendering a vertical tank gauge and fluid-aware tooltip.
+ * Client screen for the Avian Fluid Converter. Renders a vertical tank gauge
+ * whose grey fill is tinted from the stored fluid.
  */
 public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFluidConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-            "textures/gui/fluxconverter.png");
+            "textures/gui/fluidchemicalconverter.png");
     private static final int TANK_X = 103;
     private static final int TANK_Y = 14;
     private static final int TANK_WIDTH = 13;
@@ -53,6 +55,7 @@ public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFlui
     }
 
     private void renderTank(GuiGraphics graphics, int originX, int originY) {
+        FluidStack fluid = this.menu.getFluid();
         int amount = this.menu.getFluidAmount();
         int capacity = Math.max(this.menu.getCapacity(), 1);
         if (amount <= 0) {
@@ -63,8 +66,14 @@ public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFlui
             return;
         }
         int offset = TANK_HEIGHT - filled;
+        int color = IClientFluidTypeExtensions.of(fluid.getFluid()).getTintColor(fluid);
+        float red = ((color >> 16) & 0xFF) / 255.0F;
+        float green = ((color >> 8) & 0xFF) / 255.0F;
+        float blue = (color & 0xFF) / 255.0F;
+        RenderSystem.setShaderColor(red, green, blue, 1.0F);
         graphics.blit(GUI_TEXTURE, originX + TANK_X, originY + TANK_Y + offset, TANK_TEXTURE_X,
                 TANK_TEXTURE_Y + offset, TANK_WIDTH, filled, 256, 256);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderTankTooltip(GuiGraphics graphics, int mouseX, int mouseY) {

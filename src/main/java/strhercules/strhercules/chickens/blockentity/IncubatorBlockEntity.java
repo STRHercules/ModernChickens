@@ -45,9 +45,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
     public static final int SLOT_COUNT = 2;
     private static final int INPUT_SLOT = 0;
     private static final int OUTPUT_SLOT = 1;
-    private static final int[] TOP_SLOTS = new int[] { INPUT_SLOT };
-    private static final int[] SIDE_SLOTS = new int[] { INPUT_SLOT };
-    private static final int[] BOTTOM_SLOTS = new int[] { OUTPUT_SLOT };
+    private static final int[] IO_SLOTS = new int[] { INPUT_SLOT, OUTPUT_SLOT };
     private static final int DEFAULT_ENERGY_CAPACITY = 100_000;
     private static final int DEFAULT_ENERGY_MAX_RECEIVE = 4_000;
     public static final int MAX_PROGRESS = 200;
@@ -361,7 +359,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return direction != Direction.DOWN && canPlaceItem(index, stack);
+        return canPlaceItem(index, stack);
     }
 
     @Override
@@ -371,13 +369,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        if (side == Direction.DOWN) {
-            return BOTTOM_SLOTS;
-        }
-        if (side == Direction.UP) {
-            return TOP_SLOTS;
-        }
-        return SIDE_SLOTS;
+        return IO_SLOTS;
     }
 
     @Override

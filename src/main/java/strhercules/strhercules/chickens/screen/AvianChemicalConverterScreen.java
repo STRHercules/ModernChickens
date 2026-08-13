@@ -3,6 +3,7 @@ package strhercules.chickens.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.ChemicalEggRegistryItem;
+import strhercules.chickens.integration.mekanism.MekanismChemicalHelper;
 import strhercules.chickens.menu.AvianChemicalConverterMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -11,12 +12,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * Client screen for the chemical converter. Reuses the flux converter GUI and
- * tints the tank fill based on the stored chemical egg colour.
+ * Client screen for the chemical converter. Uses the shared grey-fill GUI and
+ * tints the tank based on the stored chemical egg colour.
  */
 public class AvianChemicalConverterScreen extends AbstractContainerScreen<AvianChemicalConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
-            "textures/gui/fluxconverter.png");
+            "textures/gui/fluidchemicalconverter.png");
     private static final int TANK_X = 103;
     private static final int TANK_Y = 14;
     private static final int TANK_WIDTH = 13;
@@ -68,6 +69,8 @@ public class AvianChemicalConverterScreen extends AbstractContainerScreen<AvianC
         ChemicalEggRegistryItem entry = menu.getStoredEntry();
         if (entry != null) {
             color = entry.getEggColor();
+        } else {
+            color = MekanismChemicalHelper.getChemicalTint(menu.getChemicalId());
         }
         float r = ((color >> 16) & 0xFF) / 255.0F;
         float g = ((color >> 8) & 0xFF) / 255.0F;

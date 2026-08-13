@@ -44,14 +44,13 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     public static final int OUTPUT_SLOT_COUNT = 16;
     public static final int INVENTORY_SIZE = CHICKEN_SLOT_COUNT + OUTPUT_SLOT_COUNT;
     public static final int SPEED_UPGRADE_SLOT = 0;
-    public static final int STACK_UPGRADE_SLOT = 1;
+    public static final int RF_UPGRADE_SLOT = 1;
     public static final int UPGRADE_SLOT_COUNT = 2;
 
-    private static final int MAX_CHICKENS = 16;
-    private static final int MAX_MECHANICAL_STACK_UPGRADES = 3;
+    private static final int MAX_RF_UPGRADES = 3;
     private static final int MAX_OUTPUT_COUNT_PER_CYCLE = 64;
     private static final int DEFAULT_ENERGY_CAPACITY = 1_000_000;
-    private static final int DEFAULT_ENERGY_MAX_RECEIVE = 4_000;
+    private static final int DEFAULT_ENERGY_MAX_RECEIVE = 100_000;
     private static final double DEFAULT_SPEED_MULTIPLIER = 2.0D;
 
     private final MachineEnergyStorage energyStorage = new MachineEnergyStorage();
@@ -91,7 +90,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
             rowPendingOutputs.add(new ArrayList<>());
         }
-        syncWithConfig(true);
+        syncWithConfig();
     }
 
     @Override
@@ -99,7 +98,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         if (level.isClientSide) {
             return;
         }
-        syncWithConfig(false);
+        syncWithConfig();
         pullEnergyFromNeighbors(level);
         refreshRowData(level);
         for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
@@ -177,8 +176,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         if (output.isEmpty()) {
             return false;
         }
-        int energyCost = (int) Math.min(Integer.MAX_VALUE,
-                (long) getEnergyCostPerEgg() * output.getCount());
+        int energyCost = getEnergyCostPerEgg();
         if (!energyStorage.consumeEnergy(energyCost)) {
             return false;
         }
@@ -489,42 +487,20 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     @Override
-    protected boolean hasStackUpgrade() {
-        return getUpgradeCount(STACK_UPGRADE_SLOT) > 0;
-    }
-
-    @Override
-    protected int getStackUpgradeCount() {
-        return getUpgradeCount(STACK_UPGRADE_SLOT);
-    }
-
-    @Override
     public boolean canPlaceUpgrade(int slot, ItemStack stack) {
         return slot == SPEED_UPGRADE_SLOT && stack.is(ModRegistry.SPEED_UPGRADE.get())
-                || slot == STACK_UPGRADE_SLOT && stack.is(ModRegistry.STACK_UPGRADE.get());
+                || slot == RF_UPGRADE_SLOT && stack.is(ModRegistry.RF_UPGRADE.get());
     }
 
     @Override
     public int getUpgradeMaxStackSize(int slot) {
         return slot == SPEED_UPGRADE_SLOT ? 5
-                : slot == STACK_UPGRADE_SLOT ? MAX_MECHANICAL_STACK_UPGRADES : 1;
-    }
-
-    @Override
-    protected int getMaxStackSizeForSlotWithStackUpgrades(int slot, ItemStack stack, int stackUpgradeCount) {
-        if (slot >= 0 && slot < CHICKEN_SLOT_COUNT) {
-            int upgrades = Math.min(stackUpgradeCount, MAX_MECHANICAL_STACK_UPGRADES);
-            int max = Math.min(MAX_CHICKENS, stack.getMaxStackSize()) + MAX_CHICKENS * upgrades;
-            return Math.min(MAX_VIRTUAL_STACK_SIZE, max);
-        }
-        int upgrades = Math.min(stackUpgradeCount, MAX_MECHANICAL_STACK_UPGRADES);
-        int max = Math.min(stack.getMaxStackSize(), getMaxStackSize()) + MAX_CHICKENS * upgrades;
-        return Math.min(MAX_VIRTUAL_STACK_SIZE, max);
+                : slot == RF_UPGRADE_SLOT ? MAX_RF_UPGRADES : 1;
     }
 
     @Override
     public boolean canRemoveUpgrade(int slot, int count) {
-        return slot != STACK_UPGRADE_SLOT || canRemoveStackUpgrade(count);
+        return slot >= 0 && slot < UPGRADE_SLOT_COUNT && count > 0;
     }
 
     @Override
@@ -536,10 +512,35 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
             rowChickenData[index] = null;
             clearRowTimer(index);
         }
+        if (index == getUpgradeSlotIndex(RF_UPGRADE_SLOT)) {
+            syncWithConfig();
+        }
+    }
+
+    @Override
+    public ItemStack removeItem(int index, int count) {
+        ItemStack removed = super.removeItem(index, count);
+        if (!removed.isEmpty() && index == getUpgradeSlotIndex(RF_UPGRADE_SLOT)) {
+            syncWithConfig();
+        }
+        return removed;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int index) {
+        ItemStack removed = super.removeItemNoUpdate(index);
+        if (!removed.isEmpty() && index == getUpgradeSlotIndex(RF_UPGRADE_SLOT)) {
+            syncWithConfig();
+        }
+        return removed;
     }
 
     public int getEnergyCostPerEgg() {
         return Math.max(1, ChickensConfigHolder.get().getIncubatorEnergyCost());
+    }
+
+    public int getEnergyCostPerOperation() {
+        return getEnergyCostPerEgg();
     }
 
     public boolean pullChickensOut(Player player) {
@@ -590,6 +591,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         for (List<ItemStack> pending : rowPendingOutputs) {
             pending.clear();
         }
+        syncWithConfig();
     }
 
     @Override
@@ -643,7 +645,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         }
     }
 
-    private void syncWithConfig(boolean overwriteCapacity) {
+    private void syncWithConfig() {
         var config = ChickensConfigHolder.get();
         int configuredCapacity = Math.max(1, config.getIncubatorEnergyCapacity());
         int configuredReceive = Math.max(1, config.getIncubatorEnergyMaxReceive());
@@ -651,12 +653,9 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
                 Math.max((long) DEFAULT_ENERGY_CAPACITY,
                         (long) Math.max(1, config.getIncubatorEnergyCost()) * MAX_OUTPUT_COUNT_PER_CYCLE));
         configuredCapacity = Math.max(configuredCapacity, minimumCapacity);
-        if (overwriteCapacity) {
-            capacity = configuredCapacity;
-        } else {
-            capacity = Math.max(minimumCapacity, Math.min(capacity, configuredCapacity));
-        }
-        maxReceive = configuredReceive;
+        int rfUpgrades = Math.min(getUpgradeCount(RF_UPGRADE_SLOT), MAX_RF_UPGRADES);
+        capacity = (int) Math.min(Integer.MAX_VALUE, (long) configuredCapacity * (1L << rfUpgrades));
+        maxReceive = Math.max(DEFAULT_ENERGY_MAX_RECEIVE, configuredReceive);
         energyStorage.setLimits(capacity, maxReceive);
     }
 
@@ -698,7 +697,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
-        syncWithConfig(false);
+        syncWithConfig();
         energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, capacity));
         loadRowValues(tag.getIntArray("RowTimeUntilNextDrop"), rowTimeUntilNextDrop, Integer.MAX_VALUE);
         loadRowValues(tag.getIntArray("RowTimeElapsed"), rowTimeElapsed, Integer.MAX_VALUE);

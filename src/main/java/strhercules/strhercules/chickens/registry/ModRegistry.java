@@ -26,6 +26,7 @@ import strhercules.chickens.item.LavaChickenItem;
 import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.GasEggItem;
 import strhercules.chickens.item.MegaChickenItem;
+import strhercules.chickens.item.UpgradeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.material.MapColor;
@@ -66,6 +67,9 @@ public final class ModRegistry {
 
     public static final DeferredItem<ChickensSpawnEggItem> SPAWN_EGG = ITEMS.register("spawn_egg",
             () -> new ChickensSpawnEggItem(new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<DeferredSpawnEggItem> ROOSTER_SPAWN_EGG = ITEMS.register("rooster_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntityTypes.ROOSTER, 0xD6B26D, 0x9B2D20,
+                    new Item.Properties().stacksTo(64)));
     public static final DeferredItem<DeferredSpawnEggItem> MEGA_CHICKEN_SPAWN_EGG = ITEMS.register("mega_chicken_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntityTypes.MEGA_CHICKEN, 0xFFFFFF, 0xD51F1F,
                     new Item.Properties().stacksTo(64)));
@@ -85,14 +89,16 @@ public final class ModRegistry {
             () -> new LavaChickenItem(new Item.Properties()
                     .stacksTo(16)
                     .component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE)));
-    public static final DeferredItem<Item> SPEED_UPGRADE = ITEMS.register("speedupgrade",
-            () -> new Item(new Item.Properties().stacksTo(5)));
-    public static final DeferredItem<Item> STACK_UPGRADE = ITEMS.register("stackupgrade",
-            () -> new Item(new Item.Properties().stacksTo(4)));
-    public static final DeferredItem<Item> STORAGE_CAPACITY_UPGRADE = ITEMS.register("storagecapacity",
-            () -> new Item(new Item.Properties().stacksTo(2)));
-    public static final DeferredItem<Item> RANGE_UPGRADE = ITEMS.register("rangeupgrade",
-            () -> new Item(new Item.Properties().stacksTo(4)));
+    public static final DeferredItem<UpgradeItem> SPEED_UPGRADE = ITEMS.register("speedupgrade",
+            () -> new UpgradeItem(new Item.Properties().stacksTo(64), UpgradeItem.Kind.SPEED));
+    public static final DeferredItem<UpgradeItem> STACK_UPGRADE = ITEMS.register("stackupgrade",
+            () -> new UpgradeItem(new Item.Properties().stacksTo(64), UpgradeItem.Kind.STACK));
+    public static final DeferredItem<UpgradeItem> STORAGE_CAPACITY_UPGRADE = ITEMS.register("storagecapacity",
+            () -> new UpgradeItem(new Item.Properties().stacksTo(64), UpgradeItem.Kind.STORAGE));
+    public static final DeferredItem<UpgradeItem> RANGE_UPGRADE = ITEMS.register("rangeupgrade",
+            () -> new UpgradeItem(new Item.Properties().stacksTo(64), UpgradeItem.Kind.RANGE));
+    public static final DeferredItem<UpgradeItem> RF_UPGRADE = ITEMS.register("rfupgrade",
+            () -> new UpgradeItem(new Item.Properties().stacksTo(64), UpgradeItem.Kind.RF));
     public static final DeferredItem<AnalyzerItem> ANALYZER = ITEMS.register("analyzer",
             () -> new AnalyzerItem(new Item.Properties().durability(238)));
     public static final DeferredBlock<RoostBlock> ROOST = BLOCKS.register("roost", () -> new RoostBlock());

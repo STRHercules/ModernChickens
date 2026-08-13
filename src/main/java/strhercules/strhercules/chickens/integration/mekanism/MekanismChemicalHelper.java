@@ -411,6 +411,23 @@ public final class MekanismChemicalHelper {
         }
     }
 
+    /** Returns Mekanism's runtime tint for a chemical, or white when unavailable. */
+    public static int getChemicalTint(@Nullable ResourceLocation id) {
+        if (id == null || CHEMICAL_GET_TINT == null) {
+            return 0xFFFFFF;
+        }
+        Object chemical = getChemical(id);
+        if (chemical == null) {
+            return 0xFFFFFF;
+        }
+        try {
+            return (int) CHEMICAL_GET_TINT.invoke(chemical);
+        } catch (IllegalAccessException | InvocationTargetException ex) {
+            LOGGER.debug("Unable to inspect Mekanism chemical tint", ex);
+            return 0xFFFFFF;
+        }
+    }
+
     public record ChemicalData(ResourceLocation id,
                                 ResourceLocation texture,
                                 Component displayName,

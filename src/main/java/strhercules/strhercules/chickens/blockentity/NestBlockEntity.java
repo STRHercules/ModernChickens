@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
  * Block entity backing the rooster nest. It stores a stack of rooster items
  * alongside a seed buffer that is slowly consumed to power the rooster aura.
  * The aura itself is evaluated by nearby roosts via
- * {@link #getActiveRoosterCount()} and {@link #hasActiveAura()}.
+ * {@link #getRoosterCount()} and {@link #hasActiveAura()}.
  */
 public class NestBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
     public static final int ROOSTER_SLOT = 0;
@@ -127,6 +127,56 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     public boolean hasActiveAura() {
         return getRoosterCount() > 0 && seedTicksRemaining > 0
                 && ChickensConfigHolder.get().getNestSeedDurationTicks() > 0;
+    }
+
+    public int getSeedTicksRemaining() {
+        return Math.max(seedTicksRemaining, 0);
+    }
+
+    public int getBoostDurationTicks() {
+        return Math.max(ChickensConfigHolder.get().getNestSeedDurationTicks(), 0);
+    }
+
+    public double getBoostMultiplier() {
+        return ChickensConfigHolder.get().getRoosterAuraMultiplier();
+    }
+
+    public double getEffectiveBoostMultiplier() {
+        if (!hasActiveAura()) {
+            return 1.0D;
+        }
+        return Math.max(1.0D + getRoosterCount() * (getBoostMultiplier() - 1.0D), 0.0D);
+    }
+
+    /**
+     * Counts other active nests whose configured aura area overlaps this nest.
+     * Overlapping nests are still allowed to stack; this is diagnostic data for
+     * Jade so players can see why a layout may be receiving multiple boosts.
+     */
+    public int getConflictingActiveNestCount() {
+        if (level == null) {
+            return 0;
+        }
+        int range = ChickensConfigHolder.get().getRoosterAuraRange();
+        if (range <= 0) {
+            return 0;
+        }
+        int conflicts = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -range; dz <= range; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) {
+                        continue;
+                    }
+                    cursor.set(worldPosition.getX() + dx, worldPosition.getY() + dy, worldPosition.getZ() + dz);
+                    if (level.getBlockEntity(cursor) instanceof NestBlockEntity other && other.hasActiveAura()) {
+                        conflicts++;
+                    }
+                }
+            }
+        }
+        return conflicts;
     }
 
     public NonNullList<ItemStack> getItems() {

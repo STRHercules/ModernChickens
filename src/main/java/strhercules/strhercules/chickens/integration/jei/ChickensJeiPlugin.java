@@ -20,6 +20,7 @@ import strhercules.chickens.integration.jei.category.DropCategory;
 import strhercules.chickens.integration.jei.category.IncubatorCategory;
 import strhercules.chickens.integration.jei.category.HenhousingCategory;
 import strhercules.chickens.integration.jei.category.LayingCategory;
+import strhercules.chickens.integration.jei.category.LavaChickenCategory;
 import strhercules.chickens.integration.jei.category.RoostingCategory;
 import strhercules.chickens.integration.jei.category.TeachingCategory;
 import strhercules.chickens.integration.jei.category.ThrowingCategory;
@@ -103,7 +104,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new AvianDousingCategory(guiHelper),
                 new IncubatorCategory(guiHelper),
                 new TeachingCategory(guiHelper),
-                new WildChickensCategory(guiHelper)
+                new WildChickensCategory(guiHelper),
+                new LavaChickenCategory(guiHelper)
         );
     }
 
@@ -123,6 +125,7 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.INCUBATOR, buildIncubatorRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.TEACHING, buildTeachingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.WILD_CHICKENS, buildWildChickenRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.LAVA_CHICKEN, buildLavaChickenRecipes());
     }
 
     @Override
@@ -147,6 +150,8 @@ public class ChickensJeiPlugin implements IModPlugin {
                 ChickensJeiRecipeTypes.INCUBATOR);
         // El libro es el catalizador de la receta de teaching
         registration.addRecipeCatalyst(new ItemStack(Items.BOOK), ChickensJeiRecipeTypes.TEACHING);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.LAVA_CHICKEN.get()),
+                ChickensJeiRecipeTypes.LAVA_CHICKEN);
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -498,6 +503,12 @@ public class ChickensJeiPlugin implements IModPlugin {
                 .map(chicken -> new ChickensJeiRecipeTypes.WildChickenRecipe(
                         ChickensSpawnEggItem.createFor(chicken), chicken.getSpawnType()))
                 .toList();
+    }
+
+    private static List<ChickensJeiRecipeTypes.LavaChickenRecipe> buildLavaChickenRecipes() {
+        return List.of(new ChickensJeiRecipeTypes.LavaChickenRecipe(
+                new ItemStack(Items.LAVA_BUCKET),
+                new ItemStack(ModRegistry.LAVA_CHICKEN.get())));
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

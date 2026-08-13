@@ -85,7 +85,8 @@ public class MechanicalRoostScreen extends AbstractContainerScreen<MechanicalRoo
         }
         graphics.renderTooltip(this.font,
                 Component.translatable("tooltip.chickens.mechanical_roost.energy",
-                        this.menu.getEnergy(), this.menu.getCapacity()), mouseX, mouseY);
+                        this.menu.getEnergy(), this.menu.getCapacity(), this.menu.getEnergyCostPerOperation()),
+                mouseX, mouseY);
     }
 
     private void renderProgressTooltip(GuiGraphics graphics, int mouseX, int mouseY) {

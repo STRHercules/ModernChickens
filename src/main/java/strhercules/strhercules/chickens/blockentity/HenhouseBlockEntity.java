@@ -27,7 +27,6 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.neoforged.neoforge.common.Tags;
@@ -54,18 +53,12 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     private static final double BASE_RADIUS = 4.0D;
     private static final double SEARCH_RADIUS = BASE_RADIUS + HENHOUSE_RADIUS + FENCE_THRESHOLD;
 
-    private static final int[] UP_SLOTS = new int[] { HAY_SLOT };
-    private static final int[] DOWN_SLOTS;
-    private static final int[] EMPTY_SLOTS = new int[0];
-
-    static {
-        int itemSlotCount = LAST_OUTPUT_SLOT - FIRST_OUTPUT_SLOT + 1;
-        DOWN_SLOTS = new int[itemSlotCount + 1];
-        DOWN_SLOTS[0] = DIRT_SLOT;
-        for (int i = 0; i < itemSlotCount; i++) {
-            DOWN_SLOTS[i + 1] = FIRST_OUTPUT_SLOT + i;
-        }
-    }
+    private static final int[] IO_SLOTS = new int[] {
+            HAY_SLOT, DIRT_SLOT, FIRST_OUTPUT_SLOT, FIRST_OUTPUT_SLOT + 1,
+            FIRST_OUTPUT_SLOT + 2, FIRST_OUTPUT_SLOT + 3, FIRST_OUTPUT_SLOT + 4,
+            FIRST_OUTPUT_SLOT + 5, FIRST_OUTPUT_SLOT + 6, FIRST_OUTPUT_SLOT + 7,
+            LAST_OUTPUT_SLOT
+    };
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
     private final ContainerData dataAccess = new ContainerData() {
@@ -493,13 +486,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        if (side == Direction.DOWN) {
-            return Arrays.copyOf(DOWN_SLOTS, DOWN_SLOTS.length);
-        }
-        if (side == Direction.UP) {
-            return Arrays.copyOf(UP_SLOTS, UP_SLOTS.length);
-        }
-        return EMPTY_SLOTS;
+        return IO_SLOTS;
     }
 
     @Override

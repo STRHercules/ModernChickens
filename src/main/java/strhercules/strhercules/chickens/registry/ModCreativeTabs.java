@@ -43,6 +43,7 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.STACK_UPGRADE.get());
                         output.accept(ModRegistry.STORAGE_CAPACITY_UPGRADE.get());
                         output.accept(ModRegistry.RANGE_UPGRADE.get());
+                        output.accept(ModRegistry.RF_UPGRADE.get());
 
                         // Pollos (chicken item, todos los tipos)
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
@@ -67,6 +68,7 @@ public final class ModCreativeTabs {
                         }
 
                         // Huevos de spawn y huevos de color
+                        output.accept(ModRegistry.ROOSTER_SPAWN_EGG.get());
                         output.accept(ModRegistry.MEGA_CHICKEN_SPAWN_EGG.get());
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
                             output.accept(ChickensSpawnEggItem.createFor(chicken));

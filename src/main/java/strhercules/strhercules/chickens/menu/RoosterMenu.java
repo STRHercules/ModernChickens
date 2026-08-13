@@ -23,7 +23,7 @@ public class RoosterMenu extends AbstractContainerMenu {
     private int clientSeeds;
 
     public RoosterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
-        this(id, playerInventory, (Rooster) null);
+        this(id, playerInventory, resolveRooster(playerInventory, buffer));
     }
 
     public RoosterMenu(int id, Inventory playerInventory, Rooster rooster) {
@@ -95,6 +95,16 @@ public class RoosterMenu extends AbstractContainerMenu {
 
     public Rooster getRooster() {
         return rooster;
+    }
+
+    private static Rooster resolveRooster(Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+        if (buffer == null) {
+            return null;
+        }
+        if (playerInventory.player.level().getEntity(buffer.readVarInt()) instanceof Rooster rooster) {
+            return rooster;
+        }
+        throw new IllegalStateException("Rooster not found for inventory menu");
     }
 
     /**
