@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Client screen for the four-row RF-powered roost. */
-public class MechanicalRoostScreen extends AbstractContainerScreen<MechanicalRoostMenu> {
+public class MechanicalRoostScreen extends SideConfigurableScreen<MechanicalRoostMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/gui/mechanical_roost.png");
     private static final int[] ROW_Y = { 20, 40, 60, 80 };
@@ -50,6 +50,7 @@ public class MechanicalRoostScreen extends AbstractContainerScreen<MechanicalRoo
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderEnergyTooltip(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
@@ -90,10 +91,15 @@ public class MechanicalRoostScreen extends AbstractContainerScreen<MechanicalRoo
     }
 
     private void renderProgressTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
-        if (!isHoveringProgress(mouseX, mouseY)) {
+        int row = getHoveredProgressRow(mouseX, mouseY);
+        if (row < 0) {
             return;
         }
-        int percent = Math.min(100, this.menu.getProgress() / 10);
+        int progress = this.menu.getProgress(row);
+        if (progress <= 0) {
+            return;
+        }
+        int percent = Math.min(100, progress / 10);
         graphics.renderTooltip(this.font,
                 Component.translatable("tooltip.chickens.mechanical_roost.progress", percent), mouseX, mouseY);
     }
@@ -105,15 +111,16 @@ public class MechanicalRoostScreen extends AbstractContainerScreen<MechanicalRoo
                 && mouseY >= y && mouseY <= y + ENERGY_BAR_HEIGHT;
     }
 
-    private boolean isHoveringProgress(int mouseX, int mouseY) {
+    private int getHoveredProgressRow(int mouseX, int mouseY) {
         int x = (this.width - this.imageWidth) / 2 + PROGRESS_X;
         int y = (this.height - this.imageHeight) / 2;
-        for (int rowY : ROW_Y) {
+        for (int row = 0; row < ROW_Y.length; row++) {
+            int rowY = ROW_Y[row];
             if (mouseX >= x && mouseX <= x + PROGRESS_WIDTH
                     && mouseY >= y + rowY && mouseY <= y + rowY + PROGRESS_HEIGHT) {
-                return true;
+                return row;
             }
         }
-        return false;
+        return -1;
     }
 }

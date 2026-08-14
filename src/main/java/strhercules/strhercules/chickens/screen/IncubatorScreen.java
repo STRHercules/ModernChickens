@@ -14,7 +14,7 @@ import java.util.List;
  * Client-side screen for the Incubator. Renders the bespoke incubator.png layout
  * while overlaying a progress arrow and RF bar synced from the container data.
  */
-public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
+public class IncubatorScreen extends SideConfigurableScreen<IncubatorMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
             "textures/gui/incubator.png");
     private static final int PROGRESS_X = 68;
@@ -56,6 +56,7 @@ public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderEnergyTooltip(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);

@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
  * Client screen for the breeder container. Restores the legacy Roost layout by
  * drawing the ported texture and heart progress bar from the original mod.
  */
-public class BreederScreen extends AbstractContainerScreen<BreederMenu> {
+public class BreederScreen extends SideConfigurableScreen<BreederMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/gui/breeder.png");
     private static final int PROGRESS_X = 84;
@@ -50,6 +50,7 @@ public class BreederScreen extends AbstractContainerScreen<BreederMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

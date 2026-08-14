@@ -32,26 +32,16 @@ final class CustomChickenItemOverrides extends ItemOverrides {
     @Override
     public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level,
             @Nullable LivingEntity entity, int seed) {
+        if (ChickenItemHelper.isRobotRooster(stack)) {
+            return bakeRoosterModel(originalModel, ChickenItemHelper.ROBOT_ROOSTER_MODEL_ID,
+                    "RobotRooster");
+        }
         if (ChickenItemHelper.isRooster(stack)) {
-            BakedModel cachedRooster = cache.get(ChickenItemHelper.ROOSTER_MODEL_ID);
-            if (cachedRooster != null) {
-                return cachedRooster;
-            }
-            ChickensRegistryItem stub = new ChickensRegistryItem(
-                    ChickenItemHelper.ROOSTER_MODEL_ID,
-                    "Rooster",
-                    ResourceLocation.withDefaultNamespace("textures/entity/chicken.png"),
-                    ItemStack.EMPTY,
-                    0xFFFFFF,
-                    0xFFFFFF
-            );
-            stub.setItemTexture(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/rooster.png"));
-            BakedModel bakedRooster = ChickenItemSpriteModels.bake(stub, bakery);
-            if (bakedRooster != null) {
-                cache.put(ChickenItemHelper.ROOSTER_MODEL_ID, bakedRooster);
-                return bakedRooster;
-            }
-            return originalModel;
+            return bakeRoosterModel(originalModel, ChickenItemHelper.ROOSTER_MODEL_ID, "Rooster");
+        }
+        if (ChickenItemHelper.isRobotChicken(stack)) {
+            return bakeRoosterModel(originalModel, ChickenItemHelper.ROBOT_CHICKEN_MODEL_ID,
+                    "RobotChicken");
         }
 
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
@@ -73,5 +63,30 @@ final class CustomChickenItemOverrides extends ItemOverrides {
 
         cache.put(chicken.getId(), baked);
         return baked;
+    }
+
+    private BakedModel bakeRoosterModel(BakedModel originalModel, int modelId, String name) {
+        BakedModel cached = cache.get(modelId);
+        if (cached != null) {
+            return cached;
+        }
+        ChickensRegistryItem stub = new ChickensRegistryItem(
+                modelId,
+                name,
+                ResourceLocation.withDefaultNamespace("textures/entity/chicken.png"),
+                ItemStack.EMPTY,
+                0xFFFFFF,
+                0xFFFFFF);
+        ResourceLocation itemTexture = name.equals("Rooster") || name.equals("RobotRooster")
+                ? ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/rooster.png")
+                : ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+                        "textures/item/chicken/smartchicken.png");
+        stub.setItemTexture(itemTexture);
+        BakedModel baked = ChickenItemSpriteModels.bake(stub, bakery);
+        if (baked != null) {
+            cache.put(modelId, baked);
+            return baked;
+        }
+        return originalModel;
     }
 }

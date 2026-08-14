@@ -8,6 +8,7 @@ import strhercules.chickens.registry.ModRegistry;
 import strhercules.chickens.spawn.SpawnPlanDataLoader;
 import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
 import strhercules.chickens.network.MegaChickenFlightPayload;
+import strhercules.chickens.network.SideConfigPayload;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -23,11 +24,13 @@ public final class ChickensMod {
     public ChickensMod(IEventBus modBus) {
         ModRegistry.init(modBus);
         MegaChickenFlightPayload.init(modBus);
+        SideConfigPayload.init(modBus);
         modBus.addListener(this::onCommonSetup);
         ChickenTeachHandler.init();
         ChickensCommands.init();
         RoostEggPreventer.init();
         LavaChickenGameplay.init();
+        MegaChickenLoot.init();
         MekanismRadiationCompat.init();
         NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
         NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);

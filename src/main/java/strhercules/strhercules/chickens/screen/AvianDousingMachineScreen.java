@@ -20,7 +20,7 @@ import net.minecraft.util.Mth;
  * chemical, and liquid gauges plus a progress indicator showing when the next
  * Smart Chicken infusion will complete.
  */
-public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDousingMachineMenu> {
+public class AvianDousingMachineScreen extends SideConfigurableScreen<AvianDousingMachineMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
             "textures/gui/douser.png");
 
@@ -71,6 +71,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderTooltips(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }
@@ -198,7 +199,7 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
                     : Component.translatable("tooltip.chickens.avian_dousing_machine.empty");
             Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.chemical",
                     chemicalName, amount, capacity, AvianDousingMachineBlockEntity.CHEMICAL_COST,
-                    AvianDousingMachineBlockEntity.CHEMICAL_ENERGY_COST);
+                    menu.getEnergyCostForMode(InfusionMode.CHEMICAL));
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }
@@ -216,8 +217,8 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
                     ? AvianDousingMachineBlockEntity.SPECIAL_LIQUID_CAPACITY
                     : menu.getLiquidCost();
             int energyCost = menu.getSpecialInfusion() != SpecialInfusion.NONE
-                    ? AvianDousingMachineBlockEntity.SPECIAL_ENERGY_COST
-                    : AvianDousingMachineBlockEntity.LIQUID_ENERGY_COST;
+                    ? menu.getEnergyCostForMode(InfusionMode.SPECIAL)
+                    : menu.getEnergyCostForMode(InfusionMode.LIQUID);
             Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.liquid",
                     fluidName, amount, capacity, useCost, energyCost);
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
@@ -226,7 +227,8 @@ public class AvianDousingMachineScreen extends AbstractContainerScreen<AvianDous
         if (isHoveringEnergy(mouseX, mouseY)) {
             int energy = getDisplayedEnergy();
             int capacity = Math.max(getDisplayedCapacity(), 1);
-            Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.energy", energy, capacity);
+            Component tooltip = Component.translatable("tooltip.chickens.avian_dousing_machine.energy", energy, capacity,
+                    menu.getEnergyCostForCurrentOperation());
             graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }

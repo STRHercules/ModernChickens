@@ -57,6 +57,7 @@ public class BreederBlockEntityRenderer implements BlockEntityRenderer<BreederBl
         if (chicken == null) {
             return;
         }
+        chicken.setRobotChicken(data.robotChicken());
 
         poseStack.pushPose();
         poseStack.translate(0.5D, 0.25D, 0.5D);

@@ -27,6 +27,13 @@ public final class ChickensConfigValues {
      * A value of 0 disables seed-based consumption and aura from nests.
      */
     private final int nestSeedDurationTicks;
+    private final int mechanicalNestBaseEnergyPerTick;
+    private final int mechanicalNestEnergyPerRoostPerTick;
+    private final double mechanicalNestEnergyCostSpeedIncrease;
+    private final int mechanicalNestRange;
+    private final int mechanicalRoostTier1EnergyCost;
+    private final int mechanicalRoostTier10EnergyCost;
+    private final double mechanicalRoostEnergyCostSpeedIncrease;
     private final boolean disableVanillaEggLaying;
     private final int collectorScanRange;
     private final boolean avianFluxEffectsEnabled;
@@ -59,6 +66,10 @@ public final class ChickensConfigValues {
             double roostSpeedMultiplier, double breederSpeedMultiplier,
             double roosterAuraMultiplier, int roosterAuraRange,
             int nestMaxRoosters, int nestSeedDurationTicks,
+            int mechanicalNestBaseEnergyPerTick, int mechanicalNestEnergyPerRoostPerTick,
+            double mechanicalNestEnergyCostSpeedIncrease, int mechanicalNestRange,
+            int mechanicalRoostTier1EnergyCost, int mechanicalRoostTier10EnergyCost,
+            double mechanicalRoostEnergyCostSpeedIncrease,
             boolean disableVanillaEggLaying, int collectorScanRange,
             boolean avianFluxEffectsEnabled, double fluxEggCapacityMultiplier,
             int avianFluxCapacity, int avianFluxMaxReceive, int avianFluxMaxExtract,
@@ -84,6 +95,13 @@ public final class ChickensConfigValues {
         this.roosterAuraRange = roosterAuraRange;
         this.nestMaxRoosters = nestMaxRoosters;
         this.nestSeedDurationTicks = nestSeedDurationTicks;
+        this.mechanicalNestBaseEnergyPerTick = mechanicalNestBaseEnergyPerTick;
+        this.mechanicalNestEnergyPerRoostPerTick = mechanicalNestEnergyPerRoostPerTick;
+        this.mechanicalNestEnergyCostSpeedIncrease = mechanicalNestEnergyCostSpeedIncrease;
+        this.mechanicalNestRange = mechanicalNestRange;
+        this.mechanicalRoostTier1EnergyCost = mechanicalRoostTier1EnergyCost;
+        this.mechanicalRoostTier10EnergyCost = mechanicalRoostTier10EnergyCost;
+        this.mechanicalRoostEnergyCostSpeedIncrease = mechanicalRoostEnergyCostSpeedIncrease;
         this.disableVanillaEggLaying = disableVanillaEggLaying;
         this.collectorScanRange = collectorScanRange;
         this.avianFluxEffectsEnabled = avianFluxEffectsEnabled;
@@ -181,6 +199,38 @@ public final class ChickensConfigValues {
      */
     public int getNestSeedDurationTicks() {
         return nestSeedDurationTicks;
+    }
+
+    public int getMechanicalNestBaseEnergyPerTick() {
+        return mechanicalNestBaseEnergyPerTick;
+    }
+
+    public int getMechanicalNestEnergyPerRoostPerTick() {
+        return mechanicalNestEnergyPerRoostPerTick;
+    }
+
+    public double getMechanicalNestEnergyCostSpeedIncrease() {
+        return mechanicalNestEnergyCostSpeedIncrease;
+    }
+
+    public int getMechanicalNestRange() {
+        return mechanicalNestRange;
+    }
+
+    /**
+     * Returns the configured cost for a full slot of sixteen chickens at the
+     * requested tier. Tiers between 1 and 10 are linearly interpolated between
+     * the two configurable endpoints.
+     */
+    public int getMechanicalRoostFullSlotEnergyCost(int tier) {
+        int clampedTier = Math.max(1, Math.min(10, tier));
+        double progress = (clampedTier - 1) / 9.0D;
+        return Math.max(1, (int) Math.round(mechanicalRoostTier1EnergyCost
+                + (mechanicalRoostTier10EnergyCost - mechanicalRoostTier1EnergyCost) * progress));
+    }
+
+    public double getMechanicalRoostEnergyCostSpeedIncrease() {
+        return mechanicalRoostEnergyCostSpeedIncrease;
     }
 
     public boolean isVanillaEggLayingDisabled() {

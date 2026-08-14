@@ -27,6 +27,8 @@ enum AvianDousingMachineDataProvider implements IServerDataProvider<BlockAccesso
             builder.addChemical(machine.getChemicalEntryId(), machine.getChemicalAmount(), machine.getChemicalCapacity());
         }
         builder.addEnergy(machine.getEnergyStored(), machine.getEnergyCapacity());
+        builder.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.operation_cost",
+                machine.getEnergyCostForCurrentOperation()));
         if (machine.getSpecialInfusion() != AvianDousingMachineBlockEntity.SpecialInfusion.NONE
                 && machine.getSpecialAmount() > 0) {
             builder.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.special",

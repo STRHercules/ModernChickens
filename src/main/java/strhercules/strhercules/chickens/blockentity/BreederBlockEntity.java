@@ -89,7 +89,7 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
     @Nullable
     private ChickensChicken createParentFromSlot(ServerLevel level, int slot) {
         ItemStack stack = getItem(slot);
-        if (!ChickenItemHelper.isChicken(stack) || stack.isEmpty()) {
+        if (!ChickenItemHelper.isChicken(stack) || ChickenItemHelper.isRooster(stack) || stack.isEmpty()) {
             return null;
         }
         ChickensChicken parent = ModEntityTypes.CHICKENS_CHICKEN.get().create(level);
@@ -183,7 +183,7 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
             return null;
         }
         ChickenStats stats = ChickenItemHelper.getStats(stack);
-        return new ChickenContainerEntry(chicken, stats);
+        return new ChickenContainerEntry(chicken, stats, ChickenItemHelper.isRobotChicken(stack));
     }
 
     @Override
@@ -243,7 +243,7 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
      * with the block directly instead of the menu.
      */
     public boolean insertChicken(ItemStack stack) {
-        if (!ChickenItemHelper.isChicken(stack)) {
+        if (!ChickenItemHelper.isChicken(stack) || ChickenItemHelper.isRooster(stack)) {
             return false;
         }
         if (tryInsertIntoSlot(stack, LEFT_CHICKEN_SLOT)) {

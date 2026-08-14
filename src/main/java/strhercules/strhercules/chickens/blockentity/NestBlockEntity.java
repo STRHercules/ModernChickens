@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  * The aura itself is evaluated by nearby roosts via
  * {@link #getRoosterCount()} and {@link #hasActiveAura()}.
  */
-public class NestBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class NestBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int ROOSTER_SLOT = 0;
     public static final int SEED_SLOT = 1;
     public static final int INVENTORY_SIZE = 2;
@@ -48,6 +48,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     private static final int[] ACCESSIBLE_SLOTS = new int[] { ROOSTER_SLOT, SEED_SLOT };
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     /** Remaining ticks of aura powered by the currently consumed seed. */
     private int seedTicksRemaining = 0;
 
@@ -115,9 +116,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
         if (stack.isEmpty() || !ChickenItemHelper.isRooster(stack)) {
             return 0;
         }
-        int max = ChickensConfigHolder.get().getNestMaxRoosters();
-        max = Math.max(1, Math.min(16, max));
-        return Math.min(stack.getCount(), max);
+        return 1;
     }
 
     /**
@@ -192,33 +191,12 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
         if (newStack.isEmpty() || !ChickenItemHelper.isRooster(newStack)) {
             return false;
         }
-        ItemStack current = items.get(ROOSTER_SLOT);
-        int max = ChickensConfigHolder.get().getNestMaxRoosters();
-        max = Math.max(1, Math.min(16, max));
-        if (current.isEmpty()) {
-            int toMove = Math.min(max, newStack.getCount());
-            if (toMove <= 0) {
-                return false;
-            }
-            ItemStack moved = newStack.split(toMove);
-            items.set(ROOSTER_SLOT, moved);
-            setChanged();
-            return true;
-        }
-        if (!ItemStack.isSameItemSameComponents(current, newStack)) {
+        if (!items.get(ROOSTER_SLOT).isEmpty() || newStack.getCount() <= 0) {
             return false;
         }
-        int space = max - current.getCount();
-        if (space <= 0) {
-            return false;
-        }
-        int toMove = Math.min(space, newStack.getCount());
-        if (toMove <= 0) {
-            return false;
-        }
-        current.grow(toMove);
-        newStack.shrink(toMove);
+        items.set(ROOSTER_SLOT, newStack.split(1));
         setChanged();
+        notifyBlockUpdate();
         return true;
     }
 
@@ -289,13 +267,27 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
 
     @Override
     public void setItem(int index, ItemStack stack) {
+        if (index < 0 || index >= INVENTORY_SIZE) {
+            return;
+        }
+        if (level != null && level.isClientSide) {
+            items.set(index, stack.copy());
+            return;
+        }
+        if (index == ROOSTER_SLOT) {
+            if (!stack.isEmpty() && (!ChickenItemHelper.isRooster(stack) || !items.get(index).isEmpty())) {
+                return;
+            }
+            stack = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        } else if (index == SEED_SLOT && !stack.isEmpty() && !isNestSeed(stack)) {
+            return;
+        }
         items.set(index, stack);
         if (index == ROOSTER_SLOT) {
-            // Clamp rooster stacks against the configurable nest maximum.
-            int max = ChickensConfigHolder.get().getNestMaxRoosters();
-            max = Math.max(1, Math.min(16, max));
-            if (stack.getCount() > max) {
-                stack.setCount(max);
+            // A Nest has one rooster slot; do not allow the stack size to turn
+            // it into a multi-rooster aura source.
+            if (stack.getCount() > 1) {
+                stack.setCount(1);
             }
         } else if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
@@ -316,7 +308,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         if (index == ROOSTER_SLOT) {
-            return ChickenItemHelper.isRooster(stack);
+            return items.get(index).isEmpty() && ChickenItemHelper.isRooster(stack);
         }
         if (index == SEED_SLOT) {
             return isNestSeed(stack);
@@ -326,17 +318,26 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == ROOSTER_SLOT || index == SEED_SLOT;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false)
+                && (index == ROOSTER_SLOT || index == SEED_SLOT);
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return canPlaceItem(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && canPlaceItem(index, stack);
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return ACCESSIBLE_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? ACCESSIBLE_SLOTS : new int[0];
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     @Override
@@ -375,6 +376,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         tag.putInt("SeedTicks", seedTicksRemaining);
     }
@@ -382,6 +384,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         seedTicksRemaining = tag.getInt("SeedTicks");
     }

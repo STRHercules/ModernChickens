@@ -22,7 +22,7 @@ import java.util.Objects;
  * with a single input slot followed by the player inventory, while syncing the
  * machine's energy buffer back to the screen for tooltip rendering.
  */
-public class AvianFluxConverterMenu extends AbstractContainerMenu {
+public class AvianFluxConverterMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int INVENTORY_SIZE = AvianFluxConverterBlockEntity.SLOT_COUNT;
 
     private final AvianFluxConverterBlockEntity converter;
@@ -146,6 +146,11 @@ public class AvianFluxConverterMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public AvianFluxConverterBlockEntity getSideConfigurable() {
+        return converter;
     }
 
     public int getEnergy() {

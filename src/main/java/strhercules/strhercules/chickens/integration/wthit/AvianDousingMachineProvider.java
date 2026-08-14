@@ -27,6 +27,8 @@ final class AvianDousingMachineProvider implements IDataProvider<AvianDousingMac
             helper.addChemical(machine.getChemicalEntryId(), machine.getChemicalAmount(), machine.getChemicalCapacity());
         }
         helper.addEnergy(machine.getEnergyStored(), machine.getEnergyCapacity());
+        helper.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.operation_cost",
+                machine.getEnergyCostForCurrentOperation()));
         if (machine.getSpecialInfusion() != AvianDousingMachineBlockEntity.SpecialInfusion.NONE
                 && machine.getSpecialAmount() > 0) {
             helper.addText(Component.translatable("tooltip.chickens.avian_dousing_machine.special",

@@ -38,7 +38,7 @@ import net.minecraft.world.level.block.Block;
  * sided inventory access for automation while keeping the energy/hay bale
  * mechanic intact so nearby chickens can funnel eggs inside.
  */
-public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int HAY_SLOT = 0;
     public static final int DIRT_SLOT = 1;
     public static final int FIRST_OUTPUT_SLOT = 2;
@@ -61,6 +61,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     };
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
@@ -394,6 +395,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         tag.putInt("Energy", energy);
         tag.putInt("HayEnergy", hayEnergy);
@@ -407,6 +409,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         energy = Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY);
         hayEnergy = Mth.clamp(tag.getInt("HayEnergy"), 0, energy);
@@ -486,17 +489,21 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return IO_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? IO_SLOTS : new int[0];
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return isItemValid(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && isItemValid(index, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == DIRT_SLOT || index >= FIRST_OUTPUT_SLOT;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false)
+                && (index == DIRT_SLOT || index >= FIRST_OUTPUT_SLOT);
     }
 
     @Override
@@ -546,6 +553,11 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     public IEnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return energyStorage;
+        return MachineCapabilityWrappers.energy(energyStorage, sideConfig, direction);
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 }

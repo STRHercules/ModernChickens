@@ -33,7 +33,7 @@ import java.util.Objects;
  * energy, liquid, and chemical buffers back to the client so the GUI can render
  * live progress and gauge information.
  */
-public class AvianDousingMachineMenu extends AbstractContainerMenu {
+public class AvianDousingMachineMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int MACHINE_SLOTS = AvianDousingMachineBlockEntity.SLOT_COUNT
             + AvianDousingMachineBlockEntity.UPGRADE_SLOT_COUNT;
 
@@ -309,6 +309,11 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
         return access;
     }
 
+    @Override
+    public AvianDousingMachineBlockEntity getSideConfigurable() {
+        return machine;
+    }
+
     public int getEnergyStored() {
         return isServerSide() ? machine.getEnergyStored() : clientEnergy;
     }
@@ -323,6 +328,14 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu {
 
     public int getMaxProgress() {
         return isServerSide() ? machine.getMaxProgress() : clientMaxProgress;
+    }
+
+    public int getEnergyCostForMode(InfusionMode mode) {
+        return machine.getEnergyCostForMode(mode);
+    }
+
+    public int getEnergyCostForCurrentOperation() {
+        return machine.getEnergyCostForCurrentOperation();
     }
 
     public FluidStack getFluid() {

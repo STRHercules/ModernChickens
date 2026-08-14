@@ -71,7 +71,9 @@ public class CreativeCatcherItem extends Item {
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            ItemStack chickenStack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+            ItemStack chickenStack = new ItemStack(chicken.isRobotChicken()
+                    ? ModRegistry.ROBOT_CHICKEN_ITEM.get()
+                    : ModRegistry.CHICKEN_ITEM.get());
             ChickenItemHelper.copyFromEntity(chickenStack, chicken);
             ChickenItemHelper.setStats(chickenStack, MAX_STATS);
             serverLevel.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(
@@ -92,7 +94,9 @@ public class CreativeCatcherItem extends Item {
         }
 
         if (level instanceof ServerLevel serverLevel) {
-            ItemStack roosterStack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+            ItemStack roosterStack = new ItemStack(rooster.isRobotRooster()
+                    ? ModRegistry.ROBOT_ROOSTER_ITEM.get()
+                    : ModRegistry.CHICKEN_ITEM.get());
             ChickenItemHelper.setRooster(roosterStack, true);
             RoosterItemData.copyFromEntity(roosterStack, rooster);
             ChickenItemHelper.setStats(roosterStack, MAX_STATS);

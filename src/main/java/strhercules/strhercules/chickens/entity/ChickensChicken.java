@@ -9,6 +9,7 @@ import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChickenStats;
 import strhercules.chickens.item.FluxEggItem;
+import strhercules.chickens.item.UpgradeItem;
 import strhercules.chickens.registry.ModEntityTypes;
 import strhercules.chickens.spawn.ChickensSpawnManager;
 import strhercules.chickens.spawn.ChickensSpawnDebug;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -65,12 +67,24 @@ public class ChickensChicken extends Chicken {
     private static final EntityDataAccessor<Integer> DATA_GAIN = SynchedEntityData.defineId(ChickensChicken.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_STRENGTH = SynchedEntityData.defineId(ChickensChicken.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_LAY_PROGRESS = SynchedEntityData.defineId(ChickensChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_ROBOT_CHICKEN = SynchedEntityData.defineId(
+            ChickensChicken.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_ROBOT_UPGRADES_GIVEN = SynchedEntityData.defineId(
+            ChickensChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ROBOT_UPGRADES_REQUIRED = SynchedEntityData.defineId(
+            ChickensChicken.class, EntityDataSerializers.INT);
 
     private static final String TAG_TYPE = "Type";
     private static final String TAG_ANALYSED = "Analyzed";
     private static final String TAG_GROWTH = "Growth";
     private static final String TAG_GAIN = "Gain";
     private static final String TAG_STRENGTH = "Strength";
+    private static final String TAG_ROBOT_CHICKEN = "RobotChicken";
+    private static final String TAG_ROBOT_UPGRADES_GIVEN = "RobotUpgradesGiven";
+    private static final String TAG_ROBOT_UPGRADES_REQUIRED = "RobotUpgradesRequired";
+
+    public static final int ROBOT_MIN_UPGRADES = 8;
+    public static final int ROBOT_MAX_UPGRADES = 48;
 
     private int layTime;
 
@@ -90,6 +104,9 @@ public class ChickensChicken extends Chicken {
         builder.define(DATA_GAIN, 1);
         builder.define(DATA_STRENGTH, 1);
         builder.define(DATA_LAY_PROGRESS, 0);
+        builder.define(DATA_ROBOT_CHICKEN, false);
+        builder.define(DATA_ROBOT_UPGRADES_GIVEN, 0);
+        builder.define(DATA_ROBOT_UPGRADES_REQUIRED, 0);
     }
 
     public boolean getStatsAnalyzed() {
@@ -131,6 +148,64 @@ public class ChickensChicken extends Chicken {
     public void setChickenType(int type) {
         this.entityData.set(DATA_TYPE, type);
         this.resetTimeUntilNextEgg();
+    }
+
+    public boolean isRobotChicken() {
+        return this.entityData.get(DATA_ROBOT_CHICKEN);
+    }
+
+    public void setRobotChicken(boolean robotChicken) {
+        this.entityData.set(DATA_ROBOT_CHICKEN, robotChicken);
+        if (robotChicken) {
+            this.entityData.set(DATA_ROBOT_UPGRADES_GIVEN, this.getRobotUpgradesRequired());
+        }
+    }
+
+    public int getRobotUpgradesGiven() {
+        return this.entityData.get(DATA_ROBOT_UPGRADES_GIVEN);
+    }
+
+    public void setRobotUpgradesGiven(int upgrades) {
+        int maximum = Math.max(this.getRobotUpgradesRequired(), 0);
+        this.entityData.set(DATA_ROBOT_UPGRADES_GIVEN, Mth.clamp(upgrades, 0, maximum));
+    }
+
+    public int getRobotUpgradesRequired() {
+        return this.entityData.get(DATA_ROBOT_UPGRADES_REQUIRED);
+    }
+
+    public void setRobotUpgradesRequired(int upgrades) {
+        int clamped = upgrades == 0 ? 0 : Mth.clamp(upgrades, ROBOT_MIN_UPGRADES, ROBOT_MAX_UPGRADES);
+        this.entityData.set(DATA_ROBOT_UPGRADES_REQUIRED, clamped);
+        this.entityData.set(DATA_ROBOT_UPGRADES_GIVEN,
+                Mth.clamp(this.getRobotUpgradesGiven(), 0, Math.max(clamped, 0)));
+    }
+
+    private boolean isSmartChicken() {
+        return this.getChickenType() == ChickensRegistry.SMART_CHICKEN_ID;
+    }
+
+    /** Consumes one eligible upgrade and converts the Smart Chicken at the rolled threshold. */
+    public boolean feedRobotUpgrade(ItemStack upgrade, Player player) {
+        if (this.isRobotChicken() || !this.isSmartChicken() || !(upgrade.getItem() instanceof UpgradeItem)) {
+            return false;
+        }
+        if (this.getRobotUpgradesRequired() == 0) {
+            this.setRobotUpgradesRequired(this.random.nextInt(ROBOT_MAX_UPGRADES - ROBOT_MIN_UPGRADES + 1)
+                    + ROBOT_MIN_UPGRADES);
+        }
+        if (!player.getAbilities().instabuild) {
+            upgrade.shrink(1);
+        }
+        this.setRobotUpgradesGiven(this.getRobotUpgradesGiven() + 1);
+        if (this.getRobotUpgradesGiven() >= this.getRobotUpgradesRequired()) {
+            this.setRobotChicken(true);
+            if (this.level() instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY() + 0.6D,
+                        this.getZ(), 16, 0.3D, 0.35D, 0.3D, 0.04D);
+            }
+        }
+        return true;
     }
 
     public int getLayProgress() {
@@ -176,6 +251,9 @@ public class ChickensChicken extends Chicken {
         Component customName = this.getCustomName();
         if (customName != null) {
             return customName;
+        }
+        if (this.isRobotChicken()) {
+            return Component.translatable("entity.chickens.robot_chicken");
         }
         ChickensRegistryItem description = this.getChickenDescription();
         if (description == null) {
@@ -289,6 +367,12 @@ public class ChickensChicken extends Chicken {
     @Nullable
     @Override
     public ChickensChicken getBreedOffspring(ServerLevel level, AgeableMob partner) {
+        // Robot Chickens infect roosters through RoosterMateGoal. Returning no
+        // offspring here also prevents the Breeder machine from creating a
+        // Robot Rooster as a normal item result.
+        if (this.isRobotChicken()) {
+            return null;
+        }
         ChickensRegistryItem description = this.getChickenDescription();
         if (description == null) {
             return null;
@@ -371,6 +455,15 @@ public class ChickensChicken extends Chicken {
         ItemStack held = player.getItemInHand(hand);
         Level level = this.level();
 
+        // Upgrade items are the Robot Chicken's only food. The threshold is
+        // rolled on the first feeding and then persisted with the entity.
+        if (!this.isRobotChicken() && this.isSmartChicken() && held.getItem() instanceof UpgradeItem) {
+            if (!level.isClientSide) {
+                this.feedRobotUpgrade(held, player);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         // ── 1. Teaching: transform a vanilla/smart chicken into a breed ──────
         if (!level.isClientSide) {
             ChickensRegistryItem targetBreed = resolveTeachingTarget(held);
@@ -381,6 +474,7 @@ public class ChickensChicken extends Chicken {
                 boolean isSmartOrVanilla = current == null
                         || current == ChickensRegistry.getSmartChicken()
                         || current.getId() == 0;
+                isSmartOrVanilla &= !this.isRobotChicken();
                 if (isSmartOrVanilla) {
                     this.setChickenType(targetBreed.getId());
                     this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, 1.0F);
@@ -398,8 +492,13 @@ public class ChickensChicken extends Chicken {
         if (isNormalCatcher || isCreativeCatcher) {
             ChickensRegistryItem description = this.getChickenDescription();
             if (description != null && !level.isClientSide) {
-                ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+                ChickenItem chickenItem = (ChickenItem) (this.isRobotChicken()
+                        ? ModRegistry.ROBOT_CHICKEN_ITEM.get()
+                        : ModRegistry.CHICKEN_ITEM.get());
                 ItemStack stack = chickenItem.createFor(description);
+                if (this.isRobotChicken()) {
+                    ChickenItemHelper.copyFromEntity(stack, this);
+                }
                 // Creative Catcher → máximo 10/10/10; Catcher normal → base 1/1/1
                 ChickenStats stats = isCreativeCatcher
                         ? new ChickenStats(10, 10, 10, true)
@@ -488,6 +587,9 @@ public class ChickensChicken extends Chicken {
         tag.putInt(TAG_GROWTH, this.getGrowth());
         tag.putInt(TAG_GAIN, this.getGain());
         tag.putInt(TAG_STRENGTH, this.getStrength());
+        tag.putBoolean(TAG_ROBOT_CHICKEN, this.isRobotChicken());
+        tag.putInt(TAG_ROBOT_UPGRADES_GIVEN, this.getRobotUpgradesGiven());
+        tag.putInt(TAG_ROBOT_UPGRADES_REQUIRED, this.getRobotUpgradesRequired());
     }
 
     @Override
@@ -498,6 +600,11 @@ public class ChickensChicken extends Chicken {
         this.setGrowth(getStatusValue(tag, TAG_GROWTH));
         this.setGain(getStatusValue(tag, TAG_GAIN));
         this.setStrength(getStatusValue(tag, TAG_STRENGTH));
+        this.setRobotUpgradesRequired(tag.contains(TAG_ROBOT_UPGRADES_REQUIRED)
+                ? tag.getInt(TAG_ROBOT_UPGRADES_REQUIRED) : 0);
+        this.setRobotUpgradesGiven(tag.contains(TAG_ROBOT_UPGRADES_GIVEN)
+                ? tag.getInt(TAG_ROBOT_UPGRADES_GIVEN) : 0);
+        this.setRobotChicken(tag.getBoolean(TAG_ROBOT_CHICKEN));
         this.updateLayProgress();
     }
 

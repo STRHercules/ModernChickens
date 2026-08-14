@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -109,20 +110,36 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
     }
 
     private static int countActiveRoostersInNests(net.minecraft.world.level.Level level, BlockPos origin, int range) {
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         int total = 0;
-        for (int dx = -range; dx <= range; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dz = -range; dz <= range; dz++) {
-                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                    BlockEntity blockEntity = level.getBlockEntity(cursor);
-                    if (!(blockEntity instanceof NestBlockEntity nest)) {
+        int scanRange = Math.max(range, MechanicalNestBlockEntity.getMaximumAuraRange());
+        int minChunkX = (origin.getX() - scanRange) >> 4;
+        int maxChunkX = (origin.getX() + scanRange) >> 4;
+        int minChunkZ = (origin.getZ() - scanRange) >> 4;
+        int maxChunkZ = (origin.getZ() + scanRange) >> 4;
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                BlockPos probe = new BlockPos(chunkX << 4, origin.getY(), chunkZ << 4);
+                if (!level.hasChunkAt(probe)) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+                for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
+                    BlockPos nestPos = blockEntity.getBlockPos();
+                    if (Math.abs(nestPos.getY() - origin.getY()) > 1) {
                         continue;
                     }
-                    if (!nest.hasActiveAura()) {
-                        continue;
+                    if (blockEntity instanceof NestBlockEntity nest) {
+                        if (nest.hasActiveAura()
+                                && Math.abs(origin.getX() - nestPos.getX()) <= range
+                                && Math.abs(origin.getZ() - nestPos.getZ()) <= range) {
+                            total += Math.max(0, nest.getRoosterCount());
+                        }
+                    } else if (blockEntity instanceof MechanicalNestBlockEntity nest
+                            && nest.hasActiveAura()
+                            && Math.abs(origin.getX() - nestPos.getX()) <= nest.getAuraRange()
+                            && Math.abs(origin.getZ() - nestPos.getZ()) <= nest.getAuraRange()) {
+                        total += Math.max(0, nest.getRoosterCount());
                     }
-                    total += Math.max(0, nest.getRoosterCount());
                 }
             }
         }
@@ -154,7 +171,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
             return null;
         }
         ChickenStats stats = ChickenItemHelper.getStats(stack);
-        return new ChickenContainerEntry(description, stats);
+        return new ChickenContainerEntry(description, stats, ChickenItemHelper.isRobotChicken(stack));
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import strhercules.chickens.block.NestBlock;
 import strhercules.chickens.blockentity.NestBlockEntity;
 import strhercules.chickens.entity.Rooster;
+import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModEntityTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.LightTexture;
@@ -49,6 +50,8 @@ public class NestBlockEntityRenderer implements BlockEntityRenderer<NestBlockEnt
         if (roosterPreview == null) {
             return;
         }
+        roosterPreview.setRobotRooster(ChickenItemHelper.isRobotRooster(
+                nest.getItem(NestBlockEntity.ROOSTER_SLOT)));
 
         BlockState state = nest.getBlockState();
         if (!(state.getBlock() instanceof NestBlock)) {

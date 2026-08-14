@@ -26,6 +26,8 @@ import java.util.Set;
  */
 public class ChickensChickenRenderer extends ChickenRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensChickenRenderer");
+    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/entity/robot_chicken.png");
     private static final Set<ResourceLocation> VERIFIED_TEXTURES = new HashSet<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();
 
@@ -39,6 +41,9 @@ public class ChickensChickenRenderer extends ChickenRenderer {
     @Override
     public ResourceLocation getTextureLocation(Chicken chicken) {
         if (chicken instanceof ChickensChicken modChicken) {
+            if (modChicken.isRobotChicken()) {
+                return ROBOT_CHICKEN_TEXTURE;
+            }
             ChickensRegistryItem description = ChickensRegistry.getByType(modChicken.getChickenType());
             if (description != null) {
                 if (description.hasGeneratedTexture()) {

@@ -50,13 +50,14 @@ import javax.annotation.Nullable;
  * adjacent handlers each tick so automation can hook directly into the stored
  * fluids.
  */
-public class AvianFluidConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class AvianFluidConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
     private static final int DEFAULT_TANK_CAPACITY = FluidType.BUCKET_VOLUME * 8;
     private static final int DEFAULT_TRANSFER_RATE = FluidType.BUCKET_VOLUME * 2;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private final FluidTank tank = new FluidTank(DEFAULT_TANK_CAPACITY, stack -> {
         if (stack.isEmpty()) {
             return false;
@@ -142,6 +143,9 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
             if (tank.isEmpty()) {
                 return;
             }
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.FLUIDS, false)) {
+                continue;
+            }
             FluidStack toDrain = tank.drain(Math.min(transferRate, tank.getFluidAmount()),
                     IFluidHandler.FluidAction.SIMULATE);
             if (toDrain.isEmpty()) {
@@ -190,8 +194,13 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
         return Math.round(15.0F * getFluidAmount() / (float) capacity);
     }
 
-    public FluidTank getFluidTank(@Nullable Direction direction) {
-        return tank;
+    public IFluidHandler getFluidTank(@Nullable Direction direction) {
+        return MachineCapabilityWrappers.fluid(tank, sideConfig, direction);
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     @Override
@@ -260,17 +269,20 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return canPlaceItem(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && canPlaceItem(index, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return true;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false);
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return ACCESSIBLE_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? ACCESSIBLE_SLOTS : new int[0];
     }
 
     @Override
@@ -336,6 +348,7 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         CompoundTag tankTag = tank.writeToNBT(provider, new CompoundTag());
         tankTag.putInt("Capacity", tank.getCapacity());
@@ -350,6 +363,7 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("Tank", Tag.TAG_COMPOUND)) {
             CompoundTag tankTag = tag.getCompound("Tank");

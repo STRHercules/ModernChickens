@@ -4,6 +4,7 @@ import strhercules.chickens.ChickensMod;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.entity.MegaChicken;
+import strhercules.chickens.entity.MegaChickenSkin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -19,6 +20,10 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
             "chickens", "textures/entity/megachicken/mega_chicken.png");
     private static final ResourceLocation TAMED_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             "chickens", "textures/entity/megachicken/mega_chicken_tamed.png");
+    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/entity/megachicken/robot_chicken.png");
+    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            "chickens", "textures/entity/megachicken/robot_rooster.png");
     private static final Set<ResourceLocation> AVAILABLE_TEXTURES = new HashSet<>();
 
     public MegaChickenRenderer(EntityRendererProvider.Context context) {
@@ -29,6 +34,18 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
     public ResourceLocation getTextureLocation(MegaChicken chicken) {
         if (!chicken.isTamed()) {
             return UNTAMED_TEXTURE;
+        }
+        ResourceLocation robotTexture = switch (chicken.getRobotSkin()) {
+            case MegaChicken.ROBOT_SKIN_CHICKEN -> ROBOT_CHICKEN_TEXTURE;
+            case MegaChicken.ROBOT_SKIN_ROOSTER -> ROBOT_ROOSTER_TEXTURE;
+            default -> null;
+        };
+        if (robotTexture != null && hasTexture(robotTexture)) {
+            return robotTexture;
+        }
+        MegaChickenSkin directSkin = MegaChickenSkin.byId(chicken.getSkinId());
+        if (directSkin != null && hasTexture(directSkin.texture())) {
+            return directSkin.texture();
         }
         ResourceLocation appearance = appearanceTexture(chicken);
         return appearance == null ? TAMED_TEXTURE : appearance;

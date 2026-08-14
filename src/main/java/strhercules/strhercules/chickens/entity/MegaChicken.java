@@ -5,6 +5,7 @@ import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.ChickenStats;
 import strhercules.chickens.item.MegaChickenItem;
+import strhercules.chickens.item.MegaChickenSkinCrateItem;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -78,10 +79,19 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     private static final String TAG_LEFT_CHEST = "LeftChest";
     private static final String TAG_CHEST_EQUIPMENT_DATA = "MegaChickenChestEquipment";
     private static final String TAG_APPEARANCE_TYPE = "MegaChickenAppearanceType";
+    private static final String TAG_SKIN_ID = "MegaChickenSkinId";
+    private static final String TAG_ROBOT_SKIN = "MegaChickenRobotSkin";
+    private static final String TAG_SCALE_ADJUSTMENT = "MegaChickenScaleAdjustment";
     private static final String TAG_TAMING_SEEDS_REQUIRED = "TamingSeedsRequired";
     private static final String TAG_TAMING_SEEDS_GIVEN = "TamingSeedsGiven";
     private static final String TAG_FLYING_EGG = "FlyingEgg";
     private static final int DEFAULT_APPEARANCE_TYPE = -1;
+    public static final int ROBOT_SKIN_NONE = 0;
+    public static final int ROBOT_SKIN_CHICKEN = 1;
+    public static final int ROBOT_SKIN_ROOSTER = 2;
+    private static final float BASE_VISUAL_SCALE = 3.0F;
+    private static final float MAX_SCALE_ADJUSTMENT = 2.0F;
+    private static final float SCALE_STEP = 0.4F;
     private static final int MIN_TAMING_SEEDS = 16;
     private static final int MAX_TAMING_SEEDS = 64;
     private static final EntityDataAccessor<Integer> DATA_APPEARANCE_TYPE = SynchedEntityData.defineId(
@@ -89,6 +99,12 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     private static final EntityDataAccessor<Integer> DATA_TAMING_SEEDS_REQUIRED = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TAMING_SEEDS_GIVEN = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_SCALE_ADJUSTMENT = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<String> DATA_SKIN_ID = SynchedEntityData.defineId(
+            MegaChicken.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_ROBOT_SKIN = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_FLIGHT_ACTIVE = SynchedEntityData.defineId(
             MegaChicken.class, EntityDataSerializers.BOOLEAN);
@@ -118,6 +134,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         builder.define(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
         builder.define(DATA_TAMING_SEEDS_REQUIRED, 0);
         builder.define(DATA_TAMING_SEEDS_GIVEN, 0);
+        builder.define(DATA_SCALE_ADJUSTMENT, 0.0F);
+        builder.define(DATA_SKIN_ID, "");
+        builder.define(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
         builder.define(DATA_FLIGHT_ACTIVE, false);
     }
 
@@ -161,9 +180,37 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
+        if (held.is(Items.NETHER_STAR)) {
+            return applyScaleModifier(player, held, SCALE_STEP);
+        }
+        if (held.is(Items.DRAGON_BREATH)) {
+            return applyScaleModifier(player, held, -SCALE_STEP);
+        }
+        if (held.getItem() instanceof MegaChickenSkinCrateItem crate) {
+            if (!this.isOwnedByPlayer(player)) {
+                return InteractionResult.PASS;
+            }
+            if (!this.level().isClientSide) {
+                this.setSkinId(crate.skin().id());
+                held.consume(1, player);
+                this.spawnAppearanceParticles();
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        if (this.isOwnedByPlayer(player)
+                && (ChickenItemHelper.isRobotChicken(held) || ChickenItemHelper.isRobotRooster(held))) {
+            if (!this.level().isClientSide) {
+                this.setRobotSkin(ChickenItemHelper.isRobotRooster(held)
+                        ? ROBOT_SKIN_ROOSTER : ROBOT_SKIN_CHICKEN);
+                held.consume(1, player);
+                this.spawnAppearanceParticles();
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
         ChickensRegistryItem appearance = getAppearanceChicken(held);
         if (this.isTamed() && player.getUUID().equals(this.getOwnerUUID()) && appearance != null) {
             if (!this.level().isClientSide) {
+                this.setSkinId("");
                 this.setAppearanceType(appearance.getId());
                 held.consume(1, player);
                 this.spawnAppearanceParticles();
@@ -200,6 +247,96 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
 
     public void setAppearanceType(int type) {
         this.entityData.set(DATA_APPEARANCE_TYPE, type);
+        if (type != DEFAULT_APPEARANCE_TYPE) {
+            this.entityData.set(DATA_SKIN_ID, "");
+            this.entityData.set(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
+        }
+    }
+
+    public String getSkinId() {
+        return this.entityData.get(DATA_SKIN_ID);
+    }
+
+    public void setSkinId(String skinId) {
+        MegaChickenSkin skin = MegaChickenSkin.byId(skinId);
+        this.entityData.set(DATA_SKIN_ID, skin == null ? "" : skin.id());
+        this.entityData.set(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
+        if (skin != null) {
+            this.entityData.set(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
+        }
+    }
+
+    public int getRobotSkin() {
+        return this.entityData.get(DATA_ROBOT_SKIN);
+    }
+
+    public void setRobotSkin(int robotSkin) {
+        int clamped = Mth.clamp(robotSkin, ROBOT_SKIN_NONE, ROBOT_SKIN_ROOSTER);
+        this.entityData.set(DATA_ROBOT_SKIN, clamped);
+        if (clamped != ROBOT_SKIN_NONE) {
+            this.entityData.set(DATA_SKIN_ID, "");
+            this.entityData.set(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
+        }
+    }
+
+    public float getScaleAdjustment() {
+        return this.entityData.get(DATA_SCALE_ADJUSTMENT);
+    }
+
+    /** Returns the current scale relative to the existing 3x Mega Chicken model. */
+    public float getMegaChickenScale() {
+        return scaleMultiplier(getScaleAdjustment());
+    }
+
+    private static float scaleMultiplier(float adjustment) {
+        return (BASE_VISUAL_SCALE + Mth.clamp(adjustment, -2.0F, MAX_SCALE_ADJUSTMENT))
+                / BASE_VISUAL_SCALE;
+    }
+
+    private InteractionResult applyScaleModifier(Player player, ItemStack held, float delta) {
+        if (this.isTamed() && !this.isOwnedByPlayer(player)) {
+            return InteractionResult.PASS;
+        }
+        float current = getScaleAdjustment();
+        float updated = Mth.clamp(current + delta, -MAX_SCALE_ADJUSTMENT, MAX_SCALE_ADJUSTMENT);
+        if (Mth.equal(current, updated)) {
+            if (!this.level().isClientSide) {
+                player.displayClientMessage(Component.translatable(
+                        delta > 0.0F ? "message.chickens.mega_chicken.scale_max"
+                                : "message.chickens.mega_chicken.scale_min"), true);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        if (!this.level().isClientSide) {
+            this.setScaleAdjustment(updated);
+            held.consume(1, player);
+            player.displayClientMessage(Component.translatable("message.chickens.mega_chicken.scale",
+                    String.format(java.util.Locale.ROOT, "%.1f", updated)), true);
+        }
+        return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
+    public void setScaleAdjustment(float adjustment) {
+        float clamped = Mth.clamp(adjustment, -MAX_SCALE_ADJUSTMENT, MAX_SCALE_ADJUSTMENT);
+        this.entityData.set(DATA_SCALE_ADJUSTMENT, clamped);
+        applyScaleAttribute();
+        this.refreshDimensions();
+    }
+
+    private void applyScaleAttribute() {
+        var scale = this.getAttribute(Attributes.SCALE);
+        if (scale != null) {
+            scale.setBaseValue(scaleMultiplier(this.entityData.get(DATA_SCALE_ADJUSTMENT)));
+        }
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (accessor == DATA_SCALE_ADJUSTMENT && this.level().isClientSide) {
+            applyScaleAttribute();
+            this.refreshDimensions();
+        }
     }
 
     private void spawnAppearanceParticles() {
@@ -292,6 +429,11 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         this.syncChestFlags();
         super.addAdditionalSaveData(compound);
         compound.putInt(TAG_APPEARANCE_TYPE, this.getAppearanceType());
+        compound.putInt(TAG_ROBOT_SKIN, this.getRobotSkin());
+        compound.putFloat(TAG_SCALE_ADJUSTMENT, this.getScaleAdjustment());
+        if (!this.getSkinId().isEmpty()) {
+            compound.putString(TAG_SKIN_ID, this.getSkinId());
+        }
         compound.putBoolean(TAG_CHEST_EQUIPMENT_DATA, true);
         ItemStack right = this.chestEquipment.getItem(RIGHT_CHEST_SLOT);
         ItemStack left = this.chestEquipment.getItem(LEFT_CHEST_SLOT);
@@ -312,8 +454,17 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
-        this.setAppearanceType(compound.contains(TAG_APPEARANCE_TYPE, Tag.TAG_INT)
+        this.entityData.set(DATA_APPEARANCE_TYPE, compound.contains(TAG_APPEARANCE_TYPE, Tag.TAG_INT)
                 ? compound.getInt(TAG_APPEARANCE_TYPE) : DEFAULT_APPEARANCE_TYPE);
+        this.entityData.set(DATA_SKIN_ID, "");
+        this.entityData.set(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
+        if (compound.contains(TAG_SKIN_ID, Tag.TAG_STRING)) {
+            this.setSkinId(compound.getString(TAG_SKIN_ID));
+        } else if (compound.contains(TAG_ROBOT_SKIN, Tag.TAG_INT)) {
+            this.setRobotSkin(compound.getInt(TAG_ROBOT_SKIN));
+        }
+        this.setScaleAdjustment(compound.contains(TAG_SCALE_ADJUSTMENT, Tag.TAG_FLOAT)
+                ? compound.getFloat(TAG_SCALE_ADJUSTMENT) : 0.0F);
         boolean wasChested = this.hasChest();
         boolean hasEquipmentData = compound.getBoolean(TAG_CHEST_EQUIPMENT_DATA);
         this.chestEquipment.clearContent();

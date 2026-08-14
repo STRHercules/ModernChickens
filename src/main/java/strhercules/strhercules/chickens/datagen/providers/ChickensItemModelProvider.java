@@ -26,6 +26,7 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         blockItem("avian_dousing_machine");
         blockItem("incubator");
         blockItem("mechanical_roost");
+        blockItem("mechanical_nest");
         blockItem("henhouse");
         blockItem("henhouse_spruce");
         blockItem("henhouse_birch");
@@ -46,12 +47,15 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         generatedItem("storagecapacity", "storagecapacity");
         generatedItem("rangeupgrade", "rangeupgrade");
         generatedItem("rfupgrade", "rfupgrade");
+        generatedItem("configurator", "placementwand");
         generatedItem("gas_egg", "gas_egg");
         generatedItem("chemical_egg", "chemical_egg");
         generatedItem("mega_chicken", "mega_chicken");
         generatedItem("analyzer", "analyzer");
         generatedItem("colored_egg", "colored_egg");
         generatedItem("liquid_egg", "liquid_egg");
+        generatedItem("robot_chicken", "chicken/robot_chicken");
+        generatedItem("robot_rooster", "robot_rooster");
 
         // flux_egg
         fluxEgg();
@@ -59,7 +63,12 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         // Spawn eggs
         spawnEgg();
         withExistingParent("rooster_spawn_egg", mcLoc("item/template_spawn_egg"));
+        withExistingParent("robot_chicken_spawn_egg", mcLoc("item/template_spawn_egg"));
+        withExistingParent("robot_rooster_spawn_egg", mcLoc("item/template_spawn_egg"));
         megaChickenSpawnEgg();
+        for (strhercules.chickens.entity.MegaChickenSkin skin : strhercules.chickens.entity.MegaChickenSkin.values()) {
+            generatedSkinItem(skin.id() + "_skin_crate");
+        }
     }
 
    
@@ -71,6 +80,11 @@ public class ChickensItemModelProvider extends ItemModelProvider {
     private void generatedItem(String name, String texturePath) {
         ItemModelBuilder builder = withExistingParent(name, mcLoc("item/generated"));
         builder.texture("layer0", modLoc("item/" + texturePath));
+    }
+
+    private void generatedSkinItem(String name) {
+        ItemModelBuilder builder = withExistingParent(name, mcLoc("item/generated"));
+        builder.texture("layer0", modLoc("item/crate"));
     }
 
     private void fluxEgg() {

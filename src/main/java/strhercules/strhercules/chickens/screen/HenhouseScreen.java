@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
  * and progress bar math so players see the same UI they expect from the original
  * mod while interacting with the modern container.
  */
-public class HenhouseScreen extends AbstractContainerScreen<HenhouseMenu> {
+public class HenhouseScreen extends SideConfigurableScreen<HenhouseMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
         "textures/gui/henhouse.png");
 
@@ -50,6 +50,7 @@ public class HenhouseScreen extends AbstractContainerScreen<HenhouseMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }
 }

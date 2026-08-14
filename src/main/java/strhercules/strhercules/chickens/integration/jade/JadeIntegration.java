@@ -8,6 +8,7 @@ import strhercules.chickens.block.BreederBlock;
 import strhercules.chickens.block.CollectorBlock;
 import strhercules.chickens.block.HenhouseBlock;
 import strhercules.chickens.block.IncubatorBlock;
+import strhercules.chickens.block.MechanicalNestBlock;
 import strhercules.chickens.block.MechanicalRoostBlock;
 import strhercules.chickens.block.NestBlock;
 import strhercules.chickens.block.RoostBlock;
@@ -18,10 +19,12 @@ import strhercules.chickens.blockentity.BreederBlockEntity;
 import strhercules.chickens.blockentity.CollectorBlockEntity;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.blockentity.IncubatorBlockEntity;
+import strhercules.chickens.blockentity.MechanicalNestBlockEntity;
 import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.blockentity.NestBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.entity.ChickensChicken;
+import strhercules.chickens.entity.Rooster;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
@@ -54,6 +57,7 @@ public final class JadeIntegration implements IWailaPlugin {
         registration.registerBlockDataProvider(IncubatorDataProvider.INSTANCE, IncubatorBlockEntity.class);
         registration.registerBlockDataProvider(ChickenContainerDataProvider.INSTANCE, MechanicalRoostBlockEntity.class);
         registration.registerBlockDataProvider(NestDataProvider.INSTANCE, NestBlockEntity.class);
+        registration.registerBlockDataProvider(NestDataProvider.INSTANCE, MechanicalNestBlockEntity.class);
     }
 
     @Override
@@ -68,8 +72,10 @@ public final class JadeIntegration implements IWailaPlugin {
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, IncubatorBlock.class);
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, MechanicalRoostBlock.class);
         registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, NestBlock.class);
+        registration.registerBlockComponent(ChickensHudComponentProvider.INSTANCE, MechanicalNestBlock.class);
 
         registration.registerEntityComponent(ChickensChickenProvider.INSTANCE, ChickensChicken.class);
+        registration.registerEntityComponent(RoosterProvider.INSTANCE, Rooster.class);
         registration.addTooltipCollectedCallback(9999, JadeOverlaySanitiser.INSTANCE);
     }
 }

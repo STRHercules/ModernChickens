@@ -36,6 +36,8 @@ public final class TomlConfigBridge {
     private static final Set<String> INTEGER_KEYS = Set.of(
             "spawnProbability", "minBroodSize", "maxBroodSize", "roosterAuraRange",
             "nestMaxRoosters", "nestSeedDurationTicks", "collectorScanRange", "avianFluxCapacity",
+            "mechanicalNestBaseEnergyPerTick", "mechanicalNestEnergyPerRoostPerTick", "mechanicalNestRange",
+            "mechanicalRoostTier1EnergyCost", "mechanicalRoostTier10EnergyCost",
             "avianFluxMaxReceive", "avianFluxMaxExtract", "avianFluidConverterCapacity",
             "avianFluidConverterTransferRate", "avianChemicalConverterCapacity",
             "avianChemicalConverterTransferRate", "incubatorEnergyCost", "incubatorCapacity",
@@ -44,7 +46,8 @@ public final class TomlConfigBridge {
     private static final Set<String> DECIMAL_KEYS = Set.of(
             "netherSpawnChanceMultiplier", "overworldSpawnChance", "netherSpawnChance",
             "endSpawnChance", "roostSpeed", "breederSpeed", "roosterAuraMultiplier",
-            "fluxEggCapacityMultiplier", "layCoefficient");
+            "fluxEggCapacityMultiplier", "mechanicalNestEnergyCostSpeedIncrease",
+            "mechanicalRoostEnergyCostSpeedIncrease", "layCoefficient");
 
     private TomlConfigBridge() {
     }

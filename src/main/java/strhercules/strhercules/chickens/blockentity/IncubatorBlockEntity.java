@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
  * small RF buffer, and incubation progress so automation mods can interact
  * with the machine using vanilla container and NeoForge energy capabilities.
  */
-public class IncubatorBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class IncubatorBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 2;
     private static final int INPUT_SLOT = 0;
     private static final int OUTPUT_SLOT = 1;
@@ -52,6 +52,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
     private static final int DEFAULT_ENERGY_COST = 10_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private int capacity = DEFAULT_ENERGY_CAPACITY;
     private int maxReceive = DEFAULT_ENERGY_MAX_RECEIVE;
     private final MachineEnergyStorage energyStorage = new MachineEnergyStorage();
@@ -235,6 +236,9 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
             if (energyStorage.getEnergyStored() >= capacity) {
                 break;
             }
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
+                continue;
+            }
             IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
                     worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
@@ -289,8 +293,13 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
         return Math.round(15.0F * energyStorage.getEnergyStored() / (float) capacity);
     }
 
-    public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return energyStorage;
+    public IEnergyStorage getEnergyStorage(@Nullable Direction direction) {
+        return MachineCapabilityWrappers.energy(energyStorage, sideConfig, direction);
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     @Override
@@ -359,17 +368,21 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return canPlaceItem(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && canPlaceItem(index, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == OUTPUT_SLOT;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false)
+                && index == OUTPUT_SLOT;
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return IO_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? IO_SLOTS : new int[0];
     }
 
     @Override
@@ -408,6 +421,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("ReservedEnergy", energyReserved);
@@ -422,6 +436,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         int storedEnergy = tag.getInt("Energy");
         int storedReserved = tag.getInt("ReservedEnergy");

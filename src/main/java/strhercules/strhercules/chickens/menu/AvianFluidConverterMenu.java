@@ -26,7 +26,7 @@ import java.util.Objects;
  * while syncing the tank contents back to the client so the GUI can render
  * fluid gauges without polling the world every frame.
  */
-public class AvianFluidConverterMenu extends AbstractContainerMenu {
+public class AvianFluidConverterMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int INVENTORY_SIZE = AvianFluidConverterBlockEntity.SLOT_COUNT;
 
     private final AvianFluidConverterBlockEntity converter;
@@ -178,6 +178,11 @@ public class AvianFluidConverterMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public AvianFluidConverterBlockEntity getSideConfigurable() {
+        return converter;
     }
 
     public FluidStack getFluid() {

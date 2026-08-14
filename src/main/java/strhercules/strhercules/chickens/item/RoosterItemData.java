@@ -19,14 +19,20 @@ public final class RoosterItemData {
     private static final String TAG_ITEMS = "Items";
     private static final String TAG_ITEM_ID = "Item";
     private static final String TAG_ITEM_COUNT = "Count";
+    private static final String TAG_ROBOT_ROOSTER = "RobotRooster";
+    private static final String TAG_VIRUS_TICKS = "VirusTicks";
 
     private RoosterItemData() {
     }
 
     public static void copyFromEntity(ItemStack stack, Rooster rooster) {
+        ChickenItemHelper.setRooster(stack, true);
+        ChickenItemHelper.setRobotRooster(stack, rooster.isRobotRooster());
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
             CompoundTag root = tag.contains(TAG_ROOT) ? tag.getCompound(TAG_ROOT) : new CompoundTag();
             root.putInt(TAG_SEEDS, rooster.getSeeds());
+            root.putBoolean(TAG_ROBOT_ROOSTER, rooster.isRobotRooster());
+            root.putInt(TAG_VIRUS_TICKS, rooster.getVirusTicksRemaining());
             CompoundTag items = new CompoundTag();
             // Persist the single seed slot using a lightweight representation
             // (item id + count) so the stack does not depend on HolderLookup
@@ -46,9 +52,12 @@ public final class RoosterItemData {
     public static void applyToEntity(ItemStack stack, Rooster rooster) {
         CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         if (!data.contains(TAG_ROOT)) {
+            rooster.setRobotRooster(ChickenItemHelper.isRobotRooster(stack));
             return;
         }
         CompoundTag root = data.copyTag().getCompound(TAG_ROOT);
+        rooster.setRobotRooster(root.getBoolean(TAG_ROBOT_ROOSTER) || ChickenItemHelper.isRobotRooster(stack));
+        rooster.setVirusTicksRemaining(root.getInt(TAG_VIRUS_TICKS));
         rooster.setSeeds(root.getInt(TAG_SEEDS));
         if (root.contains(TAG_ITEMS)) {
             CompoundTag items = root.getCompound(TAG_ITEMS);

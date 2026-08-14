@@ -38,6 +38,7 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.ANALYZER.get());
                         output.accept(ModRegistry.CATCHER.get());
                         output.accept(ModRegistry.CREATIVE_CATCHER.get());
+                        output.accept(ModRegistry.CONFIGURATOR.get());
                         output.accept(ModRegistry.LAVA_CHICKEN.get());
                         output.accept(ModRegistry.SPEED_UPGRADE.get());
                         output.accept(ModRegistry.STACK_UPGRADE.get());
@@ -46,6 +47,8 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.RF_UPGRADE.get());
 
                         // Pollos (chicken item, todos los tipos)
+                        output.accept(ModRegistry.ROBOT_CHICKEN_ITEM.get());
+                        output.accept(ModRegistry.ROBOT_ROOSTER_ITEM.get());
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {
                             output.accept(ModRegistry.CHICKEN_ITEM.get().createFor(chicken));
                         }
@@ -61,6 +64,10 @@ public final class ModCreativeTabs {
                         output.accept(ModRegistry.AVIAN_DOUSING_MACHINE_ITEM.get());
                         output.accept(ModRegistry.INCUBATOR_ITEM.get());
                         output.accept(ModRegistry.MECHANICAL_ROOST_ITEM.get());
+                        output.accept(ModRegistry.MECHANICAL_NEST_ITEM.get());
+                        for (strhercules.chickens.entity.MegaChickenSkin skin : strhercules.chickens.entity.MegaChickenSkin.values()) {
+                            output.accept(ModRegistry.skinCrate(skin).get());
+                        }
 
                         // Gallineros (todas las variantes de madera)
                         for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {
@@ -68,6 +75,8 @@ public final class ModCreativeTabs {
                         }
 
                         // Huevos de spawn y huevos de color
+                        output.accept(ModRegistry.ROBOT_CHICKEN_SPAWN_EGG.get());
+                        output.accept(ModRegistry.ROBOT_ROOSTER_SPAWN_EGG.get());
                         output.accept(ModRegistry.ROOSTER_SPAWN_EGG.get());
                         output.accept(ModRegistry.MEGA_CHICKEN_SPAWN_EGG.get());
                         for (ChickensRegistryItem chicken : ChickensRegistry.getItems()) {

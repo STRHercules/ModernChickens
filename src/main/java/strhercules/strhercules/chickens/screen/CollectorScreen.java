@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
+public class CollectorScreen extends SideConfigurableScreen<CollectorMenu> {
     private static final ResourceLocation NONE_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/gui/collector_none.png");
     private static final ResourceLocation ONE_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
@@ -37,6 +37,7 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }
 

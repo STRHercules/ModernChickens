@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 
-public class NestScreen extends AbstractContainerScreen<NestMenu> {
+public class NestScreen extends SideConfigurableScreen<NestMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens", "textures/gui/nest.png");
 
     public NestScreen(NestMenu menu, Inventory playerInventory, Component title) {
@@ -35,6 +35,7 @@ public class NestScreen extends AbstractContainerScreen<NestMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }
 }

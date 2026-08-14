@@ -22,7 +22,7 @@ import java.util.Objects;
  * Menu wiring for the roost. It mirrors the slot layout of the 1.12 GUI while
  * syncing the drop progress to the client.
  */
-public class RoostMenu extends AbstractContainerMenu {
+public class RoostMenu extends AbstractContainerMenu implements SideConfigMenu {
     private final RoostBlockEntity roost;
     private final ContainerLevelAccess access;
     private final ContainerData data;
@@ -108,6 +108,11 @@ public class RoostMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public RoostBlockEntity getSideConfigurable() {
+        return roost;
     }
 
     public int getProgress() {

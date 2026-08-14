@@ -32,6 +32,7 @@ public final class ModCapabilities {
         // automation mods can interact with the roost-style blocks just like the
         // legacy item handler wrappers allowed.
         registerContainerCapability(event, ModBlockEntities.ROOST.get());
+        registerContainerCapability(event, ModBlockEntities.NEST.get());
         registerContainerCapability(event, ModBlockEntities.BREEDER.get());
         registerContainerCapability(event, ModBlockEntities.COLLECTOR.get());
         registerContainerCapability(event, ModBlockEntities.HENHOUSE.get());
@@ -41,6 +42,7 @@ public final class ModCapabilities {
         registerContainerCapability(event, ModBlockEntities.AVIAN_DOUSING_MACHINE.get());
         registerContainerCapability(event, ModBlockEntities.INCUBATOR.get());
         registerContainerCapability(event, ModBlockEntities.MECHANICAL_ROOST.get());
+        registerContainerCapability(event, ModBlockEntities.MECHANICAL_NEST.get());
 
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
@@ -61,6 +63,10 @@ public final class ModCapabilities {
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.MECHANICAL_ROOST.get(),
+                (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.MECHANICAL_NEST.get(),
                 (blockEntity, direction) -> blockEntity.getEnergyStorage(direction));
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,

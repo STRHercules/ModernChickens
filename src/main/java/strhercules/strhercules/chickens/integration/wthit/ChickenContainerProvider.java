@@ -45,6 +45,8 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
 
         if (container instanceof MechanicalRoostBlockEntity roost) {
             helper.addEnergy(roost.getEnergyStored(), roost.getEnergyCapacity());
+            helper.addText(Component.translatable("tooltip.chickens.mechanical_roost.operation_cost",
+                    roost.getEnergyCostPerOperation()));
         }
 
         boolean hasChickens = tag.getBoolean("HasChickens");

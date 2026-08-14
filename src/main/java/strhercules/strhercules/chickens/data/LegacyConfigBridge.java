@@ -104,6 +104,13 @@ public final class LegacyConfigBridge {
                 getInt(props, "general.roosterAuraRange",           current.getRoosterAuraRange()),
                 getInt(props, "general.nestMaxRoosters",            current.getNestMaxRoosters()),
                 getInt(props, "general.nestSeedDurationTicks",      current.getNestSeedDurationTicks()),
+                getInt(props, "general.mechanicalNestBaseEnergyPerTick", current.getMechanicalNestBaseEnergyPerTick()),
+                getInt(props, "general.mechanicalNestEnergyPerRoostPerTick", current.getMechanicalNestEnergyPerRoostPerTick()),
+                getDouble(props, "general.mechanicalNestEnergyCostSpeedIncrease", current.getMechanicalNestEnergyCostSpeedIncrease()),
+                getInt(props, "general.mechanicalNestRange",        current.getMechanicalNestRange()),
+                getInt(props, "general.mechanicalRoostTier1EnergyCost", current.getMechanicalRoostFullSlotEnergyCost(1)),
+                getInt(props, "general.mechanicalRoostTier10EnergyCost", current.getMechanicalRoostFullSlotEnergyCost(10)),
+                getDouble(props, "general.mechanicalRoostEnergyCostSpeedIncrease", current.getMechanicalRoostEnergyCostSpeedIncrease()),
                 getBool(props, "general.disableVanillaEggLaying",   current.isVanillaEggLayingDisabled()),
                 getInt(props, "general.collectorScanRange",         current.getCollectorScanRange()),
                 getBool(props, "general.avianFluxEffectsEnabled",   current.isAvianFluxEffectsEnabled()),
@@ -166,6 +173,13 @@ public final class LegacyConfigBridge {
             case "roosterAuraRange" -> props.setProperty("general.roosterAuraRange", value);
             case "nestMaxRoosters" -> props.setProperty("general.nestMaxRoosters", value);
             case "nestSeedDurationTicks" -> props.setProperty("general.nestSeedDurationTicks", value);
+            case "mechanicalNestBaseEnergyPerTick" -> props.setProperty("general.mechanicalNestBaseEnergyPerTick", value);
+            case "mechanicalNestEnergyPerRoostPerTick" -> props.setProperty("general.mechanicalNestEnergyPerRoostPerTick", value);
+            case "mechanicalNestEnergyCostSpeedIncrease" -> props.setProperty("general.mechanicalNestEnergyCostSpeedIncrease", value);
+            case "mechanicalNestRange" -> props.setProperty("general.mechanicalNestRange", value);
+            case "mechanicalRoostTier1EnergyCost" -> props.setProperty("general.mechanicalRoostTier1EnergyCost", value);
+            case "mechanicalRoostTier10EnergyCost" -> props.setProperty("general.mechanicalRoostTier10EnergyCost", value);
+            case "mechanicalRoostEnergyCostSpeedIncrease" -> props.setProperty("general.mechanicalRoostEnergyCostSpeedIncrease", value);
             case "disableEggLaying" -> props.setProperty("general.disableVanillaEggLaying", value);
             case "collectorScanRange" -> props.setProperty("general.collectorScanRange", value);
             case "avianFluxEffectsEnabled" -> props.setProperty("general.avianFluxEffectsEnabled", value);

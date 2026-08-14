@@ -81,7 +81,9 @@ public class ChickenCatcherItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (level instanceof ServerLevel serverLevel) {
-            ItemStack chickenStack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+            ItemStack chickenStack = new ItemStack(chicken.isRobotChicken()
+                    ? ModRegistry.ROBOT_CHICKEN_ITEM.get()
+                    : ModRegistry.CHICKEN_ITEM.get());
             ChickenItemHelper.copyFromEntity(chickenStack, chicken);
             serverLevel.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(serverLevel, position.x,
                     position.y + 0.2D, position.z, chickenStack));
@@ -124,7 +126,9 @@ public class ChickenCatcherItem extends Item {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (level instanceof ServerLevel serverLevel) {
-            ItemStack roosterStack = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+            ItemStack roosterStack = new ItemStack(rooster.isRobotRooster()
+                    ? ModRegistry.ROBOT_ROOSTER_ITEM.get()
+                    : ModRegistry.CHICKEN_ITEM.get());
             ChickenItemHelper.setRooster(roosterStack, true);
             RoosterItemData.copyFromEntity(roosterStack, rooster);
             serverLevel.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(serverLevel,

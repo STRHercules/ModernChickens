@@ -147,6 +147,16 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_roost", has(item("chickens:roost")))
                 .save(output, id("mechanical_roost"));
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:mechanical_nest"))
+                .pattern("IFI")
+                .pattern("FRF")
+                .pattern("IFI")
+                .define('I', Items.IRON_INGOT)
+                .define('F', item("chickens:flux_egg"))
+                .define('R', item("chickens:nest"))
+                .unlockedBy("has_nest", has(item("chickens:nest")))
+                .save(output, id("mechanical_nest"));
+
         henhouse(output, "henhouse", Items.OAK_PLANKS);
         henhouse(output, "henhouse_acacia", Items.ACACIA_PLANKS);
         henhouse(output, "henhouse_birch", Items.BIRCH_PLANKS);

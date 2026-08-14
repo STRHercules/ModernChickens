@@ -29,7 +29,7 @@ import java.util.Objects;
  * the GUI can reuse the same slot layout while synchronising the buffered
  * chemical information back to the client.
  */
-public class AvianChemicalConverterMenu extends AbstractContainerMenu {
+public class AvianChemicalConverterMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int INVENTORY_SIZE = AvianChemicalConverterBlockEntity.SLOT_COUNT;
 
     private final AvianChemicalConverterBlockEntity converter;
@@ -176,6 +176,11 @@ public class AvianChemicalConverterMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public AvianChemicalConverterBlockEntity getSideConfigurable() {
+        return converter;
     }
 
     public int getChemicalAmount() {

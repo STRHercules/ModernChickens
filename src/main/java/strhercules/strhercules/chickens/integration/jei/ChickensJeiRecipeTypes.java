@@ -8,6 +8,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public final class ChickensJeiRecipeTypes {
     public static final RecipeType<LayingRecipe> LAYING = RecipeType.create(ChickensMod.MOD_ID, "laying", LayingRecipe.class);
@@ -32,6 +33,10 @@ public final class ChickensJeiRecipeTypes {
             ChickensMod.MOD_ID, "wild_chickens", WildChickenRecipe.class);
     public static final RecipeType<LavaChickenRecipe> LAVA_CHICKEN = RecipeType.create(
             ChickensMod.MOD_ID, "lava_chicken", LavaChickenRecipe.class);
+    public static final RecipeType<RobotChickenUpgradeRecipe> ROBOT_CHICKEN_UPGRADE = RecipeType.create(
+            ChickensMod.MOD_ID, "robot_chicken_upgrade", RobotChickenUpgradeRecipe.class);
+    public static final RecipeType<RobotRoosterRecipe> ROBOT_ROOSTER = RecipeType.create(
+            ChickensMod.MOD_ID, "robot_rooster", RobotRoosterRecipe.class);
 
     private ChickensJeiRecipeTypes() {
     }
@@ -84,5 +89,12 @@ public final class ChickensJeiRecipeTypes {
     }
 
     public record LavaChickenRecipe(ItemStack lavaBucket, ItemStack lavaChicken) {
+    }
+
+    public record RobotChickenUpgradeRecipe(ItemStack smartChicken, List<ItemStack> upgrades,
+                                            ItemStack robotChicken, int minimumUpgrades, int maximumUpgrades) {
+    }
+
+    public record RobotRoosterRecipe(ItemStack robotChicken, ItemStack rooster, ItemStack robotRooster) {
     }
 }

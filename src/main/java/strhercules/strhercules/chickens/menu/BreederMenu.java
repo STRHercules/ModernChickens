@@ -23,7 +23,7 @@ import java.util.Objects;
  * Menu wiring for the breeder. Two parent slots, a seed slot, and three outputs
  * mirror the legacy GUI layout while syncing progress back to the client.
  */
-public class BreederMenu extends AbstractContainerMenu {
+public class BreederMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int INVENTORY_SIZE = BreederBlockEntity.INVENTORY_SIZE;
     private final BreederBlockEntity breeder;
     private final ContainerLevelAccess access;
@@ -113,6 +113,11 @@ public class BreederMenu extends AbstractContainerMenu {
         return access;
     }
 
+    @Override
+    public BreederBlockEntity getSideConfigurable() {
+        return breeder;
+    }
+
     public BreederBlockEntity getBreeder() {
         return breeder;
     }
@@ -128,7 +133,7 @@ public class BreederMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return ChickenItemHelper.isChicken(stack);
+            return ChickenItemHelper.isChicken(stack) && !ChickenItemHelper.isRooster(stack);
         }
 
         @Override

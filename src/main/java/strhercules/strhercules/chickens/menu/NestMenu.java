@@ -21,7 +21,7 @@ import java.util.Objects;
  * slot and rooster slot near the top of the GUI, followed by the standard
  * player inventory grid.
  */
-public class NestMenu extends AbstractContainerMenu {
+public class NestMenu extends AbstractContainerMenu implements SideConfigMenu {
     private final NestBlockEntity nest;
     private final ContainerLevelAccess access;
 
@@ -103,25 +103,41 @@ public class NestMenu extends AbstractContainerMenu {
         return access;
     }
 
+    @Override
+    public NestBlockEntity getSideConfigurable() {
+        return nest;
+    }
+
     private static class SeedSlot extends Slot {
+        private final NestBlockEntity nest;
+
         public SeedSlot(NestBlockEntity nest, int index, int x, int y) {
             super(nest, index, x, y);
+            this.nest = nest;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return NestBlockEntity.isNestSeed(stack);
+            return nest.canPlaceItem(getContainerSlot(), stack);
         }
     }
 
     private static class RoosterSlot extends Slot {
+        private final NestBlockEntity nest;
+
         public RoosterSlot(NestBlockEntity nest, int index, int x, int y) {
             super(nest, index, x, y);
+            this.nest = nest;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return ChickenItemHelper.isRooster(stack);
+            return nest.canPlaceItem(getContainerSlot(), stack);
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return 1;
         }
     }
 }

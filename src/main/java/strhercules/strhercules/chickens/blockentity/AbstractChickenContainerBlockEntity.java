@@ -41,7 +41,8 @@ import java.util.Objects;
  * container tracks chicken stacks, internal timers and output slots while
  * remaining agnostic about the concrete drop behaviour.
  */
-public abstract class AbstractChickenContainerBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
+        implements WorldlyContainer, MenuProvider, SideConfigurable {
     /** Minecraft 1.21.1's normal ItemStack codec accepts counts only up to 99. */
     protected static final int MAX_SERIALIZED_STACK_SIZE = 99;
     /** Machine slots may hold this many items through the virtual-count format. */
@@ -51,10 +52,16 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     protected static final class ChickenContainerEntry {
         private final ChickensRegistryItem chicken;
         private final ChickenStats stats;
+        private final boolean robotChicken;
 
         public ChickenContainerEntry(ChickensRegistryItem chicken, ChickenStats stats) {
+            this(chicken, stats, false);
+        }
+
+        public ChickenContainerEntry(ChickensRegistryItem chicken, ChickenStats stats, boolean robotChicken) {
             this.chicken = Objects.requireNonNull(chicken, "chicken");
             this.stats = Objects.requireNonNull(stats, "stats");
+            this.robotChicken = robotChicken;
         }
 
         public ChickensRegistryItem chicken() {
@@ -63,6 +70,10 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
 
         public ChickenStats stats() {
             return stats;
+        }
+
+        public boolean robotChicken() {
+            return robotChicken;
         }
 
         public ItemStack createDrop(RandomSource random) {
@@ -100,12 +111,12 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
             if (!(obj instanceof ChickenContainerEntry other)) {
                 return false;
             }
-            return chicken == other.chicken && stats.equals(other.stats);
+            return chicken == other.chicken && stats.equals(other.stats) && robotChicken == other.robotChicken;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(chicken, stats);
+            return Objects.hash(chicken, stats, robotChicken);
         }
     }
 
@@ -114,13 +125,17 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
      * chickens sitting inside a container without needing to understand the
      * internal inventory layout.
      */
-    public record RenderData(ChickensRegistryItem chicken, ChickenStats stats, int count) {
+    public record RenderData(ChickensRegistryItem chicken, ChickenStats stats, int count, boolean robotChicken) {
+        public RenderData(ChickensRegistryItem chicken, ChickenStats stats, int count) {
+            this(chicken, stats, count, false);
+        }
     }
 
     private final NonNullList<ItemStack> items;
     private final NonNullList<ItemStack> upgradeItems;
     private final ChickenContainerEntry[] chickenData;
     private final ContainerData dataAccess;
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private boolean needsChickenUpdate = true;
     private boolean skipNextTimerReset = false;
     private int timeUntilNextDrop = 0;
@@ -156,6 +171,11 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
                 return getContainerDataCount();
             }
         };
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     protected int getContainerDataCount() {
@@ -399,7 +419,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
                 }
             }
         }
-        return new RenderData(entry.chicken(), entry.stats(), stack.getCount());
+        return new RenderData(entry.chicken(), entry.stats(), stack.getCount(), entry.robotChicken());
     }
 
     public ContainerData getDataAccess() {
@@ -746,6 +766,9 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
+        if (!sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)) {
+            return false;
+        }
         if (index >= items.size()) {
             return canPlaceUpgrade(index - items.size(), stack);
         }
@@ -764,11 +787,16 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index >= getOutputSlotIndex() && index < getActiveStorageSize();
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false)
+                && index >= getOutputSlotIndex() && index < getActiveStorageSize();
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
+        if (!sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                && !sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)) {
+            return new int[0];
+        }
         int[] slots = new int[getContainerSize()];
         for (int i = 0; i < slots.length; i++) {
             slots[i] = i;
@@ -803,6 +831,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     @Override
     protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        sideConfig.save(tag);
         saveItems(tag, registries);
         saveUpgrades(tag, registries);
         if (!pendingOutput.isEmpty()) {
@@ -816,6 +845,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity im
     @Override
     protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, registries);
         loadUpgrades(tag, registries);
         loadVirtualItemCounts(tag);

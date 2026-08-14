@@ -23,7 +23,7 @@ import java.util.Objects;
  * progress, and per-egg RF cost back to the client so the GUI can render live
  * gauges while exposing standard furnace-style slots for automation.
  */
-public class IncubatorMenu extends AbstractContainerMenu {
+public class IncubatorMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int MACHINE_SLOTS = IncubatorBlockEntity.SLOT_COUNT;
     private static final int PLAYER_INVENTORY_ROWS = 3;
     private static final int PLAYER_COLUMNS = 9;
@@ -216,6 +216,11 @@ public class IncubatorMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public IncubatorBlockEntity getSideConfigurable() {
+        return incubator;
     }
 
     public int getEnergy() {

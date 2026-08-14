@@ -699,6 +699,23 @@ public final class ChickensDataLoader {
         }
         int nestSeedDurationTicks = ensureNonNegative(props, "general.nestSeedDurationTicks",
                 readInt(props, "general.nestSeedDurationTicks", 20 * 60));
+        int mechanicalNestBaseEnergyPerTick = ensureNonNegative(props, "general.mechanicalNestBaseEnergyPerTick",
+                readInt(props, "general.mechanicalNestBaseEnergyPerTick", 500));
+        int mechanicalNestEnergyPerRoostPerTick = ensureNonNegative(props,
+                "general.mechanicalNestEnergyPerRoostPerTick",
+                readInt(props, "general.mechanicalNestEnergyPerRoostPerTick", 1_000));
+        double mechanicalNestEnergyCostSpeedIncrease = ensureNonNegative(props,
+                "general.mechanicalNestEnergyCostSpeedIncrease",
+                readDouble(props, "general.mechanicalNestEnergyCostSpeedIncrease", 0.35D));
+        int mechanicalNestRange = ensureNonNegative(props, "general.mechanicalNestRange",
+                readInt(props, "general.mechanicalNestRange", 5));
+        int mechanicalRoostTier1EnergyCost = ensurePositive(props, "general.mechanicalRoostTier1EnergyCost",
+                readInt(props, "general.mechanicalRoostTier1EnergyCost", 12_500), 1);
+        int mechanicalRoostTier10EnergyCost = ensurePositive(props, "general.mechanicalRoostTier10EnergyCost",
+                readInt(props, "general.mechanicalRoostTier10EnergyCost", 650_000), 1);
+        double mechanicalRoostEnergyCostSpeedIncrease = ensureNonNegative(props,
+                "general.mechanicalRoostEnergyCostSpeedIncrease",
+                readDouble(props, "general.mechanicalRoostEnergyCostSpeedIncrease", 0.15D));
         boolean disableEggLaying = readBoolean(props, "general.disableVanillaEggLaying", false);
         int collectorRange = readInt(props, "general.collectorScanRange", 4);
         boolean avianFluxEffects = readBoolean(props, "general.avianFluxEffectsEnabled", true);
@@ -739,6 +756,10 @@ public final class ChickensDataLoader {
                 overworldChance, netherChance, endChance, alwaysShowStats,
                 roostSpeed, breederSpeed, roosterAuraMultiplier, roosterAuraRange,
                 nestMaxRoosters, nestSeedDurationTicks,
+                mechanicalNestBaseEnergyPerTick, mechanicalNestEnergyPerRoostPerTick,
+                mechanicalNestEnergyCostSpeedIncrease, mechanicalNestRange,
+                mechanicalRoostTier1EnergyCost, mechanicalRoostTier10EnergyCost,
+                mechanicalRoostEnergyCostSpeedIncrease,
                 disableEggLaying, collectorRange, avianFluxEffects,
                 Math.max(0.0D, fluxEggMultiplier), avianCapacity, avianReceive, avianExtract,
                 avianFluidCapacity, avianFluidTransfer, avianFluidEffects,
@@ -835,6 +856,14 @@ public final class ChickensDataLoader {
         if (value < 0) {
             props.setProperty(key, "0");
             return 0;
+        }
+        return value;
+    }
+
+    private static double ensureNonNegative(Properties props, String key, double value) {
+        if (value < 0.0D) {
+            props.setProperty(key, "0.0");
+            return 0.0D;
         }
         return value;
     }

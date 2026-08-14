@@ -60,6 +60,8 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
         incubator();
         mechanicalRoost();
         mechanicalRoostActive();
+        mechanicalNest();
+        mechanicalNestActive();
         manureBlock();
         nest();
         nurserySorter();
@@ -5199,6 +5201,92 @@ public class ChickensBlockModelProvider extends BlockModelProvider {
             "compressor_side",
             "compressor_side"
         );
+    }
+
+    private void mechanicalNest() {
+        mechanicalNestModel(
+                "mechanical_nest",
+                "mechanical_nest_bottom",
+                "mechanical_nest_top",
+                "mechanical_nest_front",
+                "mechanical_nest_side"
+        ).renderType(mcLoc("translucent"));
+    }
+
+    private void mechanicalNestActive() {
+        mechanicalNestModel(
+                "mechanical_nest_active",
+                "mechanical_nest_bottom",
+                "mechanical_nest_top_active",
+                "mechanical_nest_front_active",
+                "mechanical_nest_side"
+        ).renderType(mcLoc("translucent"));
+    }
+
+    private BlockModelBuilder mechanicalNestModel(String modelName, String bottomTexture, String topTexture,
+            String frontTexture, String sideTexture) {
+        BlockModelBuilder builder = getBuilder(modelName);
+        builder.parent(getExistingFile(mcLoc("block/block")));
+        builder.ao(false);
+        builder.texture("bottom", machineTexture(bottomTexture));
+        builder.texture("front", machineTexture(frontTexture));
+        builder.texture("front_idle", machineTexture("mechanical_nest_front"));
+        builder.texture("side", machineTexture(sideTexture));
+        builder.texture("top", machineTexture(topTexture));
+
+        addMechanicalNestElement(builder, 0, 0, 1, 1, 16, 15,
+                face("#side", 0, 0, 1, 16), face("#side", 0, 0, 16, 16),
+                face("#side", 15, 0, 16, 16), face("#side", 0, 0, 16, 16),
+                face("#side", 0, 0, 16, 1), face("#side", 0, 15, 16, 16));
+        addMechanicalNestElement(builder, 15, 0, 1, 16, 16, 15,
+                face(null, 0, 0, 16, 16), face("#side", 0, 0, 16, 16),
+                face("#side", 15, 0, 16, 16), face("#side", 0, 0, 16, 16),
+                face("#side", 0, 0, 16, 1), face("#side", 0, 15, 16, 16));
+        addMechanicalNestElement(builder, 0, 16, 0, 16, 17, 16,
+                face("#front_idle", 0, 15, 16, 16), face("#bottom", 0, 0, 16, 1),
+                face("#side", 0, 15, 16, 16), face("#bottom", 0, 15, 16, 16),
+                face("#top", 0, 0, 16, 16), face("#bottom", 0, 0, 16, 16));
+        addMechanicalNestElement(builder, 1, 0, 1, 15, 2, 15,
+                face("#bottom", 0, 0, 16, 16), face("#bottom", 0, 0, 16, 16),
+                face("#bottom", 0, 0, 16, 16), face("#bottom", 0, 0, 16, 16),
+                face("#bottom", 0, 0, 16, 16), face("#bottom", 0, 0, 16, 16));
+        addMechanicalNestElement(builder, 0, 0, 0, 16, 16, 1,
+                face("#front", 0, 0, 16, 16), face("#bottom", 0, 0, 1, 16),
+                face("#front", 0, 0, 16, 16), face("#bottom", 15, 0, 16, 16),
+                face("#bottom", 0, 15, 16, 16), face("#bottom", 0, 15, 16, 16));
+        addMechanicalNestElement(builder, 0, 0, 15, 16, 16, 16,
+                face("#side", 0, 0, 16, 16), face("#side", 0, 0, 1, 16),
+                face("#side", 0, 0, 16, 16), face("#side", 15, 0, 16, 16),
+                face("#side", 0, 0, 16, 1), face("#side", 0, 15, 16, 16));
+        return builder.renderType(mcLoc("translucent"));
+    }
+
+    private static MechanicalNestFace face(String texture, float u1, float v1, float u2, float v2) {
+        return new MechanicalNestFace(texture, u1, v1, u2, v2);
+    }
+
+    private void addMechanicalNestElement(BlockModelBuilder builder, float fromX, float fromY, float fromZ,
+            float toX, float toY, float toZ, MechanicalNestFace north, MechanicalNestFace east,
+            MechanicalNestFace south, MechanicalNestFace west, MechanicalNestFace up, MechanicalNestFace down) {
+        var element = builder.element().from(fromX, fromY, fromZ).to(toX, toY, toZ);
+        addMechanicalNestFace(element, Direction.NORTH, north);
+        addMechanicalNestFace(element, Direction.EAST, east);
+        addMechanicalNestFace(element, Direction.SOUTH, south);
+        addMechanicalNestFace(element, Direction.WEST, west);
+        addMechanicalNestFace(element, Direction.UP, up);
+        addMechanicalNestFace(element, Direction.DOWN, down);
+        element.end();
+    }
+
+    private static void addMechanicalNestFace(ModelBuilder<?>.ElementBuilder element, Direction direction,
+            MechanicalNestFace face) {
+        if (face.texture() != null) {
+            element.face(direction).texture(face.texture())
+                    .uvs(face.u1(), face.v1(), face.u2(), face.v2()).end();
+        }
+    }
+
+    private record MechanicalNestFace(String texture, float u1, float v1, float u2, float v2) {
     }
 
     /** Generated from manure_block.json */

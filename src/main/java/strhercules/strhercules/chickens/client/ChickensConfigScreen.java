@@ -35,6 +35,8 @@ public final class ChickensConfigScreen extends Screen {
     private static final Set<String> INTEGER_KEYS = Set.of(
             "spawnProbability", "minBroodSize", "maxBroodSize", "roosterAuraRange",
             "nestMaxRoosters", "nestSeedDurationTicks", "collectorScanRange", "avianFluxCapacity",
+            "mechanicalNestBaseEnergyPerTick", "mechanicalNestEnergyPerRoostPerTick", "mechanicalNestRange",
+            "mechanicalRoostTier1EnergyCost", "mechanicalRoostTier10EnergyCost",
             "avianFluxMaxReceive", "avianFluxMaxExtract", "avianFluidConverterCapacity",
             "avianFluidConverterTransferRate", "avianChemicalConverterCapacity",
             "avianChemicalConverterTransferRate", "incubatorEnergyCost", "incubatorCapacity",
@@ -43,7 +45,8 @@ public final class ChickensConfigScreen extends Screen {
     private static final Set<String> DECIMAL_KEYS = Set.of(
             "netherSpawnChanceMultiplier", "overworldSpawnChance", "netherSpawnChance",
             "endSpawnChance", "roostSpeed", "breederSpeed", "roosterAuraMultiplier",
-            "fluxEggCapacityMultiplier", "layCoefficient");
+            "fluxEggCapacityMultiplier", "mechanicalNestEnergyCostSpeedIncrease",
+            "mechanicalRoostEnergyCostSpeedIncrease", "layCoefficient");
     private static final int ROW_HEIGHT = 24;
     private static final int CONTENT_TOP = 54;
     private static final int CONTENT_BOTTOM = 28;

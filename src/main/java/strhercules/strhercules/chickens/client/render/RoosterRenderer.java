@@ -13,6 +13,8 @@ import net.minecraft.util.Mth;
 public class RoosterRenderer extends MobRenderer<Rooster, RoosterModel> {
     private static final ResourceLocation ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/entity/rooster.png");
+    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+            "textures/entity/robot_rooster.png");
 
     public RoosterRenderer(EntityRendererProvider.Context context) {
         super(context, new RoosterModel(context.bakeLayer(RoosterModel.LAYER_LOCATION)), 0.3F);
@@ -20,7 +22,7 @@ public class RoosterRenderer extends MobRenderer<Rooster, RoosterModel> {
 
     @Override
     public ResourceLocation getTextureLocation(Rooster rooster) {
-        return ROOSTER_TEXTURE;
+        return rooster.isRobotRooster() ? ROBOT_ROOSTER_TEXTURE : ROOSTER_TEXTURE;
     }
 
     @Override

@@ -53,13 +53,14 @@ import java.util.Map;
  * and the contents are exposed through Mekanism's chemical capability when the
  * API is available at runtime.
  */
-public class AvianChemicalConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class AvianChemicalConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
     private static final int DEFAULT_TANK_CAPACITY = 8_000;
     private static final int DEFAULT_TRANSFER_RATE = 2_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private final Map<Direction, Object> capabilityCache = new EnumMap<>(Direction.class);
 
     private int chemicalAmount;
@@ -164,6 +165,9 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             if (chemicalAmount <= 0) {
                 break;
             }
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.CHEMICALS, false)) {
+                continue;
+            }
             Object handler = MekanismChemicalHelper.getBlockChemicalHandler(level,
                     worldPosition.relative(direction), direction.getOpposite());
             if (handler == null) {
@@ -267,8 +271,16 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
         if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
             return null;
         }
-        return capabilityCache.computeIfAbsent(direction == null ? Direction.NORTH : direction, side ->
-                AvianChemicalHandlerFactory.create(this, side));
+        if (direction == null) {
+            return MachineCapabilityWrappers.chemical(AvianChemicalHandlerFactory.create(this, null), sideConfig, null);
+        }
+        return capabilityCache.computeIfAbsent(direction, side ->
+                MachineCapabilityWrappers.chemical(AvianChemicalHandlerFactory.create(this, side), sideConfig, side));
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     @Override
@@ -337,17 +349,20 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return canPlaceItem(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && canPlaceItem(index, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return true;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false);
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return ACCESSIBLE_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? ACCESSIBLE_SLOTS : new int[0];
     }
 
     @Override
@@ -413,6 +428,7 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         CompoundTag tankTag = new CompoundTag();
         tankTag.putInt("Amount", chemicalAmount);
@@ -433,6 +449,7 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("ChemicalTank", Tag.TAG_COMPOUND)) {
             CompoundTag tankTag = tag.getCompound("ChemicalTank");

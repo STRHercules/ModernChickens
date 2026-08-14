@@ -1,6 +1,7 @@
 package strhercules.chickens.integration.jade;
 
 import strhercules.chickens.ChickensMod;
+import strhercules.chickens.blockentity.MechanicalNestBlockEntity;
 import strhercules.chickens.blockentity.NestBlockEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -20,27 +21,39 @@ enum NestDataProvider implements IServerDataProvider<BlockAccessor> {
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
-        if (!(accessor.getBlockEntity() instanceof NestBlockEntity nest)) {
+        HudData.Builder builder = HudData.builder();
+        if (accessor.getBlockEntity() instanceof NestBlockEntity nest) {
+            appendNestData(builder,
+                    Math.max(0, strhercules.chickens.config.ChickensConfigHolder.get().getRoosterAuraRange()),
+                    nest.getSeedTicksRemaining(), nest.getBoostDurationTicks(), nest.getBoostMultiplier(),
+                    nest.getEffectiveBoostMultiplier(), nest.getConflictingActiveNestCount());
+        } else if (accessor.getBlockEntity() instanceof MechanicalNestBlockEntity nest) {
+            builder.addText(Component.translatable("tooltip.chickens.nest.range", nest.getAuraRange()));
+            builder.addText(Component.translatable("tooltip.chickens.nest.active_roosts",
+                    nest.getActiveBoostedRoostCount()));
+            builder.addText(Component.translatable("tooltip.chickens.nest.energy_usage", nest.getEnergyCost()));
+            builder.addText(Component.translatable("tooltip.chickens.nest.multiplier",
+                    formatMultiplier(nest.getBoostMultiplier()), formatMultiplier(nest.getEffectiveBoostMultiplier())));
+            builder.addText(Component.translatable("tooltip.chickens.nest.conflict",
+                    nest.getConflictingActiveNestCount()));
+            builder.addEnergy(nest.getEnergyStored(), nest.getEnergyCapacity());
+        } else {
             return;
         }
+        HudData.write(data, builder.build());
+    }
 
-        int configuredDuration = nest.getBoostDurationTicks();
-        int remainingDuration = nest.getSeedTicksRemaining();
+    private static void appendNestData(HudData.Builder builder, int range, int remainingDuration, int configuredDuration,
+            double multiplier, double effectiveMultiplier, int conflictingNestCount) {
         int configuredSeconds = Mth.ceil(configuredDuration / 20.0F);
         int remainingSeconds = Mth.ceil(remainingDuration / 20.0F);
-        double multiplier = nest.getBoostMultiplier();
-        double effectiveMultiplier = nest.getEffectiveBoostMultiplier();
 
-        HudData.Builder builder = HudData.builder();
-        builder.addText(Component.translatable("tooltip.chickens.nest.range",
-                Math.max(0, strhercules.chickens.config.ChickensConfigHolder.get().getRoosterAuraRange())));
+        builder.addText(Component.translatable("tooltip.chickens.nest.range", Math.max(0, range)));
         builder.addText(Component.translatable("tooltip.chickens.nest.duration",
                 remainingSeconds, configuredSeconds));
         builder.addText(Component.translatable("tooltip.chickens.nest.multiplier",
                 formatMultiplier(multiplier), formatMultiplier(effectiveMultiplier)));
-        builder.addText(Component.translatable("tooltip.chickens.nest.conflict",
-                nest.getConflictingActiveNestCount()));
-        HudData.write(data, builder.build());
+        builder.addText(Component.translatable("tooltip.chickens.nest.conflict", conflictingNestCount));
     }
 
     @Override

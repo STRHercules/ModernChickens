@@ -11,8 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -25,19 +23,18 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
  * RF-powered roost with four chicken inputs and four output rows per input.
- * Completed output that does not fit in a row's visible slots is retained in
- * that row's persisted internal buffer.
+ * A row only completes an operation when its generated output fits in that
+ * row's visible output slots.
  */
 public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEntity {
     public static final int CHICKEN_SLOT_COUNT = 4;
@@ -48,7 +45,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     public static final int UPGRADE_SLOT_COUNT = 2;
 
     private static final int MAX_RF_UPGRADES = 3;
-    private static final int MAX_OUTPUT_COUNT_PER_CYCLE = 64;
+    private static final int REFERENCE_CHICKEN_COUNT = 16;
     private static final int DEFAULT_ENERGY_CAPACITY = 1_000_000;
     private static final int DEFAULT_ENERGY_MAX_RECEIVE = 100_000;
     private static final double DEFAULT_SPEED_MULTIPLIER = 2.0D;
@@ -60,7 +57,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     private final int[] rowProgress = new int[CHICKEN_SLOT_COUNT];
     private final int[] rowRawLayTime = new int[CHICKEN_SLOT_COUNT];
     private final double[] rowAppliedSpeedMultiplier = new double[CHICKEN_SLOT_COUNT];
-    private final List<List<ItemStack>> rowPendingOutputs = new ArrayList<>(CHICKEN_SLOT_COUNT);
     private final ContainerData rowData = new ContainerData() {
         @Override
         public int get(int index) {
@@ -87,9 +83,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     public MechanicalRoostBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MECHANICAL_ROOST.get(), pos, state,
                 INVENTORY_SIZE, CHICKEN_SLOT_COUNT, UPGRADE_SLOT_COUNT);
-        for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
-            rowPendingOutputs.add(new ArrayList<>());
-        }
         syncWithConfig();
     }
 
@@ -102,7 +95,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         pullEnergyFromNeighbors(level);
         refreshRowData(level);
         for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
-            flushRowPendingOutput(row);
             tickRow(level, row);
         }
         rowTimersLoaded = false;
@@ -176,30 +168,31 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         if (output.isEmpty()) {
             return false;
         }
-        int energyCost = getEnergyCostPerEgg();
+        if (!canFitInRowOutputs(row, output)) {
+            return false;
+        }
+        int energyCost = getEnergyCostForRow(row);
         if (!energyStorage.consumeEnergy(energyCost)) {
             return false;
         }
-        queueRowOutput(row, output);
+        insertIntoRowOutputs(row, output);
+        setChanged();
         return true;
     }
 
-    private void queueRowOutput(int row, ItemStack output) {
-        ItemStack remaining = insertIntoRowOutputs(row, output);
-        if (remaining.isEmpty()) {
-            return;
-        }
-        List<ItemStack> pending = rowPendingOutputs.get(row);
-        if (!pending.isEmpty()) {
-            ItemStack last = pending.get(pending.size() - 1);
-            if (ItemStack.isSameItemSameComponents(last, remaining)) {
-                last.grow(remaining.getCount());
-                setChanged();
-                return;
+    private boolean canFitInRowOutputs(int row, ItemStack output) {
+        int remaining = output.getCount();
+        int start = getOutputSlotIndex() + row * 4;
+        for (int slot = start; slot < start + 4 && remaining > 0; slot++) {
+            ItemStack existing = getItem(slot);
+            if (existing.isEmpty()) {
+                remaining -= Math.min(getMaxStackSizeForSlot(slot, output), remaining);
+            } else if (ItemStack.isSameItemSameComponents(existing, output)) {
+                remaining -= Math.min(Math.max(getMaxStackSizeForSlot(slot, existing) - existing.getCount(), 0),
+                        remaining);
             }
         }
-        pending.add(remaining);
-        setChanged();
+        return remaining <= 0;
     }
 
     private ItemStack insertIntoRowOutputs(int row, ItemStack output) {
@@ -221,20 +214,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
             }
         }
         return remaining;
-    }
-
-    private void flushRowPendingOutput(int row) {
-        List<ItemStack> pending = rowPendingOutputs.get(row);
-        for (int index = 0; index < pending.size();) {
-            ItemStack remaining = insertIntoRowOutputs(row, pending.get(index));
-            if (remaining.isEmpty()) {
-                pending.remove(index);
-                setChanged();
-                continue;
-            }
-            pending.set(index, remaining);
-            break;
-        }
     }
 
     private void resetRowTimer(Level level, int row) {
@@ -344,14 +323,34 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     private static int countActiveRoostersInNests(Level level, BlockPos origin, int range) {
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         int total = 0;
-        for (int dx = -range; dx <= range; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dz = -range; dz <= range; dz++) {
-                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                    BlockEntity blockEntity = level.getBlockEntity(cursor);
-                    if (blockEntity instanceof NestBlockEntity nest && nest.hasActiveAura()) {
+        int scanRange = Math.max(range, MechanicalNestBlockEntity.getMaximumAuraRange());
+        int minChunkX = (origin.getX() - scanRange) >> 4;
+        int maxChunkX = (origin.getX() + scanRange) >> 4;
+        int minChunkZ = (origin.getZ() - scanRange) >> 4;
+        int maxChunkZ = (origin.getZ() + scanRange) >> 4;
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                BlockPos probe = new BlockPos(chunkX << 4, origin.getY(), chunkZ << 4);
+                if (!level.hasChunkAt(probe)) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+                for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
+                    BlockPos nestPos = blockEntity.getBlockPos();
+                    if (Math.abs(nestPos.getY() - origin.getY()) > 1) {
+                        continue;
+                    }
+                    if (blockEntity instanceof NestBlockEntity nest) {
+                        if (nest.hasActiveAura()
+                                && Math.abs(origin.getX() - nestPos.getX()) <= range
+                                && Math.abs(origin.getZ() - nestPos.getZ()) <= range) {
+                            total += Math.max(0, nest.getRoosterCount());
+                        }
+                    } else if (blockEntity instanceof MechanicalNestBlockEntity nest
+                            && nest.hasActiveAura()
+                            && Math.abs(origin.getX() - nestPos.getX()) <= nest.getAuraRange()
+                            && Math.abs(origin.getZ() - nestPos.getZ()) <= nest.getAuraRange()) {
                         total += Math.max(0, nest.getRoosterCount());
                     }
                 }
@@ -394,7 +393,8 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         if (description == null) {
             return null;
         }
-        return new ChickenContainerEntry(description, ChickenItemHelper.getStats(stack));
+        return new ChickenContainerEntry(description, ChickenItemHelper.getStats(stack),
+                ChickenItemHelper.isRobotChicken(stack));
     }
 
     @Override
@@ -413,7 +413,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         if (!Objects.equals(rowChickenData[slot], current)) {
             rowChickenData[slot] = current;
         }
-        return new RenderData(current.chicken(), current.stats(), stack.getCount());
+        return new RenderData(current.chicken(), current.stats(), stack.getCount(), current.robotChicken());
     }
 
     @Override
@@ -536,11 +536,47 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     public int getEnergyCostPerEgg() {
-        return Math.max(1, ChickensConfigHolder.get().getIncubatorEnergyCost());
+        int statusRow = getStatusRow();
+        if (statusRow >= 0) {
+            return getEnergyCostForRow(statusRow);
+        }
+        for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
+            if (getChickenEntryForCost(row) != null) {
+                return getEnergyCostForRow(row);
+            }
+        }
+        return 0;
     }
 
     public int getEnergyCostPerOperation() {
         return getEnergyCostPerEgg();
+    }
+
+    private int getEnergyCostForRow(int row) {
+        ChickenContainerEntry entry = getChickenEntryForCost(row);
+        if (entry == null) {
+            return 0;
+        }
+        int chickenCount = Math.max(1, getItem(row).getCount());
+        int fullSlotCost = ChickensConfigHolder.get()
+                .getMechanicalRoostFullSlotEnergyCost(entry.chicken().getTier());
+        long baseCost = ((long) fullSlotCost * chickenCount + REFERENCE_CHICKEN_COUNT - 1)
+                / REFERENCE_CHICKEN_COUNT;
+        double speedMultiplier = Math.pow(
+                1.0D + Math.max(0.0D,
+                        ChickensConfigHolder.get().getMechanicalRoostEnergyCostSpeedIncrease()),
+                getUpgradeCount(SPEED_UPGRADE_SLOT));
+        long scaledCost = Math.round(baseCost * speedMultiplier);
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(1L, scaledCost));
+    }
+
+    @Nullable
+    private ChickenContainerEntry getChickenEntryForCost(int row) {
+        if (row < 0 || row >= CHICKEN_SLOT_COUNT) {
+            return null;
+        }
+        ChickenContainerEntry entry = rowChickenData[row];
+        return entry != null ? entry : createChickenData(row, getItem(row));
     }
 
     public boolean pullChickensOut(Player player) {
@@ -573,43 +609,13 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     @Override
-    public boolean isEmpty() {
-        if (!super.isEmpty()) {
-            return false;
-        }
-        for (List<ItemStack> pending : rowPendingOutputs) {
-            if (!pending.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
     public void clearContent() {
         super.clearContent();
-        for (List<ItemStack> pending : rowPendingOutputs) {
-            pending.clear();
-        }
         syncWithConfig();
     }
 
-    @Override
-    public void dropBufferedOutput() {
-        super.dropBufferedOutput();
-        if (level == null || level.isClientSide) {
-            return;
-        }
-        for (List<ItemStack> pending : rowPendingOutputs) {
-            for (ItemStack stack : pending) {
-                dropLegalStack(stack);
-            }
-            pending.clear();
-        }
-    }
-
     public IEnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return energyStorage;
+        return MachineCapabilityWrappers.energy(energyStorage, sideConfig(), direction);
     }
 
     public int getComparatorOutput() {
@@ -623,6 +629,9 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         for (Direction direction : Direction.values()) {
             if (energyStorage.getEnergyStored() >= capacity) {
                 return;
+            }
+            if (!sideConfig().allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
+                continue;
             }
             IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
                     worldPosition.relative(direction), direction.getOpposite());
@@ -649,9 +658,13 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         var config = ChickensConfigHolder.get();
         int configuredCapacity = Math.max(1, config.getIncubatorEnergyCapacity());
         int configuredReceive = Math.max(1, config.getIncubatorEnergyMaxReceive());
+        long maximumOperationCost = (long) config.getMechanicalRoostFullSlotEnergyCost(10)
+                * CHICKEN_SLOT_COUNT;
+        double maximumSpeedMultiplier = Math.pow(1.0D
+                + Math.max(0.0D, config.getMechanicalRoostEnergyCostSpeedIncrease()), 5);
+        long maximumConfiguredCost = Math.round(maximumOperationCost * maximumSpeedMultiplier);
         int minimumCapacity = (int) Math.min(Integer.MAX_VALUE,
-                Math.max((long) DEFAULT_ENERGY_CAPACITY,
-                        (long) Math.max(1, config.getIncubatorEnergyCost()) * MAX_OUTPUT_COUNT_PER_CYCLE));
+                Math.max((long) DEFAULT_ENERGY_CAPACITY, maximumConfiguredCost));
         configuredCapacity = Math.max(configuredCapacity, minimumCapacity);
         int rfUpgrades = Math.min(getUpgradeCount(RF_UPGRADE_SLOT), MAX_RF_UPGRADES);
         capacity = (int) Math.min(Integer.MAX_VALUE, (long) configuredCapacity * (1L << rfUpgrades));
@@ -679,19 +692,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         tag.putIntArray("RowTimeElapsed", rowTimeElapsed);
         tag.putIntArray("RowProgress", rowProgress);
         tag.putIntArray("RowRawLayTime", rowRawLayTime);
-        ListTag pendingRows = new ListTag();
-        for (List<ItemStack> pending : rowPendingOutputs) {
-            CompoundTag rowTag = new CompoundTag();
-            ListTag stacks = new ListTag();
-            for (ItemStack stack : pending) {
-                if (!stack.isEmpty()) {
-                    stacks.add(saveVirtualStack(stack, provider));
-                }
-            }
-            rowTag.put("Items", stacks);
-            pendingRows.add(rowTag);
-        }
-        tag.put("RowPendingOutputs", pendingRows);
     }
 
     @Override
@@ -703,26 +703,6 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         loadRowValues(tag.getIntArray("RowTimeElapsed"), rowTimeElapsed, Integer.MAX_VALUE);
         loadRowValues(tag.getIntArray("RowProgress"), rowProgress, 1000);
         loadRowValues(tag.getIntArray("RowRawLayTime"), rowRawLayTime, Integer.MAX_VALUE);
-        for (List<ItemStack> pending : rowPendingOutputs) {
-            pending.clear();
-        }
-        if (tag.contains("RowPendingOutputs", Tag.TAG_LIST)) {
-            ListTag pendingRows = tag.getList("RowPendingOutputs", Tag.TAG_COMPOUND);
-            int rowCount = Math.min(CHICKEN_SLOT_COUNT, pendingRows.size());
-            for (int row = 0; row < rowCount; row++) {
-                CompoundTag rowTag = pendingRows.getCompound(row);
-                if (!rowTag.contains("Items", Tag.TAG_LIST)) {
-                    continue;
-                }
-                ListTag stacks = rowTag.getList("Items", Tag.TAG_COMPOUND);
-                for (int index = 0; index < stacks.size(); index++) {
-                    ItemStack stack = loadVirtualStack(stacks.getCompound(index), provider);
-                    if (!stack.isEmpty()) {
-                        rowPendingOutputs.get(row).add(stack);
-                    }
-                }
-            }
-        }
         for (int row = 0; row < CHICKEN_SLOT_COUNT; row++) {
             rowChickenData[row] = null;
         }

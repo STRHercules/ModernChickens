@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
  * Client screen for the roost container. Uses the original Roost GUI art and
  * arrow progress overlay.
  */
-public class RoostScreen extends AbstractContainerScreen<RoostMenu> {
+public class RoostScreen extends SideConfigurableScreen<RoostMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
             "textures/gui/roost.png");
     private static final int PROGRESS_X = 48;
@@ -49,6 +49,7 @@ public class RoostScreen extends AbstractContainerScreen<RoostMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

@@ -16,6 +16,19 @@ roosterAuraMultiplier = 1.25
 roosterAuraRange = 4
 nestMaxRoosters = 1
 nestSeedDurationTicks = 1200
+# Mechanical Nest drains this base amount plus the per-roost amount every tick
+# while it is actively boosting at least one roost.
+mechanicalNestBaseEnergyPerTick = 500
+mechanicalNestEnergyPerRoostPerTick = 1000
+# Added energy-cost multiplier per installed Speed Upgrade (5 upgrades = 2.75x).
+mechanicalNestEnergyCostSpeedIncrease = 0.35
+# Fixed Mechanical Nest horizontal aura range; Range Upgrades do not apply.
+mechanicalNestRange = 5
+# Cost for one operation with a full slot of 16 chickens at these tier endpoints.
+mechanicalRoostTier1EnergyCost = 12500
+mechanicalRoostTier10EnergyCost = 650000
+# Preserves the existing 15% compounded Mechanical Roost Speed Upgrade cost increase.
+mechanicalRoostEnergyCostSpeedIncrease = 0.15
 disableEggLaying = false
 collectorScanRange = 4
 avianFluxEffectsEnabled = true

@@ -90,6 +90,13 @@ These are the packaged defaults. Values are validated or clamped by the runtime 
 | `roosterAuraRange` | Integer | `4` | Maximum block distance for a Roost to find a rooster aura. Negative values become 0. |
 | `nestMaxRoosters` | Integer | `1` | Maximum roosters in one Nest that contribute to the aura. Effective range is 1-16. |
 | `nestSeedDurationTicks` | Integer | `1200` | Seed-powered aura duration. Minecraft runs at 20 ticks per second, so 1200 is 60 seconds. Zero disables seed-powered aura time. |
+| `mechanicalNestBaseEnergyPerTick` | Integer | `500` | Base FE/t used by a Mechanical Nest while it is actively boosting at least one roost. Negative values become 0. |
+| `mechanicalNestEnergyPerRoostPerTick` | Integer | `1000` | Additional FE/t for each active roost being boosted by a Mechanical Nest. Negative values become 0. |
+| `mechanicalNestEnergyCostSpeedIncrease` | Decimal | `0.35` | Additive energy-cost increase per Mechanical Nest Speed Upgrade. Five upgrades therefore multiply Nest usage by `2.75`. |
+| `mechanicalNestRange` | Integer | `5` | Fixed horizontal aura range for Mechanical Nests. Range Upgrades do not apply to Mechanical Nests. |
+| `mechanicalRoostTier1EnergyCost` | Integer | `12500` | Mechanical Roost operation cost for a full slot of 16 tier-1 chickens. Values below 1 become 1. |
+| `mechanicalRoostTier10EnergyCost` | Integer | `650000` | Mechanical Roost operation cost for a full slot of 16 tier-10 chickens. Tiers 1-10 interpolate linearly between the tier endpoints. |
+| `mechanicalRoostEnergyCostSpeedIncrease` | Decimal | `0.15` | Compounded energy-cost increase per Mechanical Roost Speed Upgrade. The default preserves the existing 15% per-upgrade cost increase. |
 | `disableEggLaying` | Boolean | `false` | Prevents vanilla chickens from laying vanilla eggs. It does not disable Modern Chickens production. |
 | `collectorScanRange` | Integer | `4` | Search range used by Collectors for collectable output. |
 | `avianFluxEffectsEnabled` | Boolean | `true` | Enables Avian Flux Converter light and particle effects without disabling energy transfer. |

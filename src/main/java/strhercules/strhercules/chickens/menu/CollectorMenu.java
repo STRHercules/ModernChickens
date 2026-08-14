@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.Objects;
 
 /** Collector menu with 13-column storage and four upgrade slots. */
-public class CollectorMenu extends AbstractContainerMenu {
+public class CollectorMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int STORAGE_SLOT_COUNT = CollectorBlockEntity.MAX_STORAGE_SLOTS;
     private final CollectorBlockEntity collector;
     private final ContainerLevelAccess access;
@@ -129,6 +129,11 @@ public class CollectorMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public CollectorBlockEntity getSideConfigurable() {
+        return collector;
     }
 
     public int getCapacityLevel() {

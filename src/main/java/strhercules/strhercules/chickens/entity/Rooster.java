@@ -3,6 +3,7 @@ package strhercules.chickens.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -38,6 +39,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SimpleContainerData;
@@ -67,6 +70,10 @@ import java.util.List;
 public class Rooster extends Chicken implements Container, MenuProvider {
     private static final EntityDataAccessor<Integer> DATA_SEEDS = SynchedEntityData.defineId(Rooster.class,
             EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_ROBOT_ROOSTER = SynchedEntityData.defineId(
+            Rooster.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_VIRUS_TICKS = SynchedEntityData.defineId(
+            Rooster.class, EntityDataSerializers.INT);
 
     /** Single inventory slot used for storing wheat seeds and similar food. */
     private static final int SEED_SLOT = 0;
@@ -75,6 +82,10 @@ public class Rooster extends Chicken implements Container, MenuProvider {
 
     private static final String TAG_SEEDS = "Seeds";
     private static final String TAG_ITEMS = "Items";
+    private static final String TAG_ROBOT_ROOSTER = "RobotRooster";
+    private static final String TAG_VIRUS_TICKS = "VirusTicks";
+
+    public static final int ROBOT_VIRUS_DURATION_TICKS = 2400;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 
@@ -88,6 +99,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         // simple progress bar, mirroring the legacy Hatchery rooster HUD.
         super.defineSynchedData(builder);
         builder.define(DATA_SEEDS, 0);
+        builder.define(DATA_ROBOT_ROOSTER, false);
+        builder.define(DATA_VIRUS_TICKS, 0);
     }
 
     @Override
@@ -124,6 +137,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         if (this.tickCount % 5 == 0) {
             convertSeeds();
         }
+        tickRobotVirus();
     }
 
     @Override
@@ -154,6 +168,68 @@ public class Rooster extends Chicken implements Container, MenuProvider {
      */
     public void setSeeds(int value) {
         this.entityData.set(DATA_SEEDS, Mth.clamp(value, 0, MAX_SEEDS));
+    }
+
+    public boolean isRobotRooster() {
+        return this.entityData.get(DATA_ROBOT_ROOSTER);
+    }
+
+    public void setRobotRooster(boolean robotRooster) {
+        this.entityData.set(DATA_ROBOT_ROOSTER, robotRooster);
+        if (robotRooster) {
+            this.entityData.set(DATA_VIRUS_TICKS, 0);
+        }
+    }
+
+    public int getVirusTicksRemaining() {
+        return this.entityData.get(DATA_VIRUS_TICKS);
+    }
+
+    public void setVirusTicksRemaining(int ticks) {
+        this.entityData.set(DATA_VIRUS_TICKS, this.isRobotRooster()
+                ? 0 : Mth.clamp(ticks, 0, ROBOT_VIRUS_DURATION_TICKS));
+    }
+
+    public boolean startRobotVirus() {
+        if (this.isRobotRooster() || this.getVirusTicksRemaining() > 0
+                || !(this.level() instanceof ServerLevel serverLevel)
+                || serverLevel.dimension() != Level.OVERWORLD) {
+            return false;
+        }
+        this.setVirusTicksRemaining(ROBOT_VIRUS_DURATION_TICKS);
+        return true;
+    }
+
+    private void tickRobotVirus() {
+        int remaining = this.getVirusTicksRemaining();
+        if (remaining <= 0 || this.isRobotRooster()) {
+            return;
+        }
+        if (this.tickCount % 10 == 0 && this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY() + 0.6D,
+                    this.getZ(), 4, 0.25D, 0.35D, 0.25D, 0.03D);
+        }
+        remaining--;
+        if (remaining <= 0) {
+            completeRobotVirus();
+        } else {
+            this.setVirusTicksRemaining(remaining);
+        }
+    }
+
+    private void completeRobotVirus() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        this.setRobotRooster(true);
+        serverLevel.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY() + 0.65D, this.getZ(),
+                28, 0.35D, 0.5D, 0.35D, 0.08D);
+        serverLevel.sendParticles(ParticleTypes.POOF, this.getX(), this.getY() + 0.65D, this.getZ(),
+                20, 0.35D, 0.45D, 0.35D, 0.06D);
+        serverLevel.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 0.9D, this.getZ(),
+                18, 0.3D, 0.5D, 0.3D, 0.08D);
+        serverLevel.playSound(null, this.blockPosition(), SoundEvents.CHICKEN_EGG, SoundSource.NEUTRAL,
+                0.8F, 0.55F);
     }
 
     /**
@@ -221,7 +297,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
 
         @Override
         public boolean canUse() {
-            if (rooster.isBaby() || rooster.getSeeds() < SEED_COST) {
+            if (rooster.isBaby() || rooster.isRobotRooster() || rooster.getVirusTicksRemaining() > 0
+                    || rooster.getSeeds() < SEED_COST) {
                 return false;
             }
             hen = findHen();
@@ -275,6 +352,12 @@ public class Rooster extends Chicken implements Container, MenuProvider {
             if (!(rooster.level() instanceof ServerLevel level) || hen == null) {
                 return;
             }
+            if (hen instanceof ChickensChicken robotChicken && robotChicken.isRobotChicken()) {
+                if (level.dimension() == Level.OVERWORLD && rooster.startRobotVirus()) {
+                    rooster.consumeSeeds(SEED_COST);
+                }
+                return;
+            }
             AgeableMob child = hen.getBreedOffspring(level, rooster);
             if (child == null) {
                 return;
@@ -292,6 +375,9 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         Component custom = this.getCustomName();
         if (custom != null) {
             return custom;
+        }
+        if (this.isRobotRooster()) {
+            return Component.translatable("entity.chickens.robot_rooster");
         }
         // Use a dedicated translation key so resource packs can localise roosters
         // independently of vanilla chickens.
@@ -416,6 +502,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt(TAG_SEEDS, getSeeds());
+        tag.putBoolean(TAG_ROBOT_ROOSTER, isRobotRooster());
+        tag.putInt(TAG_VIRUS_TICKS, getVirusTicksRemaining());
         ListTag list = new ListTag();
         for (int i = 0; i < items.size(); i++) {
             ItemStack stack = items.get(i);
@@ -438,6 +526,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         setSeeds(tag.getInt(TAG_SEEDS));
+        setRobotRooster(tag.getBoolean(TAG_ROBOT_ROOSTER));
+        setVirusTicksRemaining(tag.getInt(TAG_VIRUS_TICKS));
         // Rebuild the single-slot inventory so saved seed stacks survive
         // across world reloads instead of being dropped due to a cleared list.
         for (int i = 0; i < items.size(); i++) {

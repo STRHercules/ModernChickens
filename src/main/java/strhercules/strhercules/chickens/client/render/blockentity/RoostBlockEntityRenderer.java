@@ -42,7 +42,7 @@ public class RoostBlockEntityRenderer implements BlockEntityRenderer<RoostBlockE
             int packedLight, int packedOverlay) {
         ItemStack slotStack = roost.getItem(RoostBlockEntity.CHICKEN_SLOT);
         if (!slotStack.isEmpty() && ChickenItemHelper.isRooster(slotStack)) {
-            renderRooster(roost, slotStack.getCount(), poseStack, buffer);
+            renderRooster(roost, slotStack, poseStack, buffer);
             return;
         }
 
@@ -54,6 +54,7 @@ public class RoostBlockEntityRenderer implements BlockEntityRenderer<RoostBlockE
         if (chicken == null) {
             return;
         }
+        chicken.setRobotChicken(data.robotChicken());
 
         BlockState state = roost.getBlockState();
         if (!(state.getBlock() instanceof RoostBlock)) {
@@ -74,7 +75,7 @@ public class RoostBlockEntityRenderer implements BlockEntityRenderer<RoostBlockE
         poseStack.popPose();
     }
 
-    private void renderRooster(RoostBlockEntity roost, int count, PoseStack poseStack, MultiBufferSource buffer) {
+    private void renderRooster(RoostBlockEntity roost, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer) {
         Level level = roost.getLevel();
         if (level == null) {
             return;
@@ -85,6 +86,7 @@ public class RoostBlockEntityRenderer implements BlockEntityRenderer<RoostBlockE
         if (roosterPreview == null) {
             return;
         }
+        roosterPreview.setRobotRooster(ChickenItemHelper.isRobotRooster(stack));
 
         BlockState state = roost.getBlockState();
         if (!(state.getBlock() instanceof RoostBlock)) {
@@ -97,7 +99,7 @@ public class RoostBlockEntityRenderer implements BlockEntityRenderer<RoostBlockE
         poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
         poseStack.translate(0.0D, 0.0D, FRONT_OFFSET);
 
-        float scale = Math.min(BASE_SCALE, BASE_SCALE + (count - 1) * SCALE_PER_CHICKEN);
+        float scale = Math.min(BASE_SCALE, BASE_SCALE + (stack.getCount() - 1) * SCALE_PER_CHICKEN);
         poseStack.scale(scale, scale, scale);
 
         dispatcher.render(roosterPreview, 0.0D, 0.0D, 0.0D, 180.0F, 0.0F, poseStack, buffer, LightTexture.FULL_BRIGHT);

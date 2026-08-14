@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 
-public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxConverterMenu> {
+public class AvianFluxConverterScreen extends SideConfigurableScreen<AvianFluxConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
             "textures/gui/fluxconverter.png");
     private static final int ENERGY_BAR_X = 103;
@@ -44,6 +44,7 @@ public class AvianFluxConverterScreen extends AbstractContainerScreen<AvianFluxC
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderEnergyTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

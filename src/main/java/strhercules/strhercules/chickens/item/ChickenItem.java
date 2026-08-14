@@ -2,6 +2,8 @@ package strhercules.chickens.item;
 
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.blockentity.BreederBlockEntity;
+import strhercules.chickens.blockentity.MechanicalNestBlockEntity;
+import strhercules.chickens.blockentity.NestBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.entity.ChickensChicken;
 import strhercules.chickens.entity.Rooster;
@@ -43,10 +45,16 @@ public class ChickenItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
+        if (ChickenItemHelper.isRobotRooster(stack)) {
+            return Component.translatable("entity.chickens.robot_rooster");
+        }
         if (ChickenItemHelper.isRooster(stack)) {
             // Rooster stacks should display the rooster entity name rather than
             // the generic chicken item label.
             return Component.translatable("entity.chickens.rooster");
+        }
+        if (ChickenItemHelper.isRobotChicken(stack)) {
+            return Component.translatable("entity.chickens.robot_chicken");
         }
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
@@ -66,11 +74,23 @@ public class ChickenItem extends Item {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         // Prioritise inserting rooster stacks into nests so roosts remain
         // dedicated to production chickens.
-        if (blockEntity instanceof strhercules.chickens.blockentity.NestBlockEntity nest) {
+        if (blockEntity instanceof NestBlockEntity nest) {
+            if (!ChickenItemHelper.isRooster(stack) || !nest.canPlaceItem(NestBlockEntity.ROOSTER_SLOT, stack)) {
+                return InteractionResult.PASS;
+            }
             if (!level.isClientSide && nest.putRoosters(stack)) {
                 return InteractionResult.CONSUME;
             }
-            return InteractionResult.SUCCESS;
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (blockEntity instanceof MechanicalNestBlockEntity mechanicalNest) {
+            if (!mechanicalNest.canInsertRooster(stack)) {
+                return InteractionResult.PASS;
+            }
+            if (!level.isClientSide && mechanicalNest.putRooster(stack)) {
+                return InteractionResult.CONSUME;
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (blockEntity instanceof RoostBlockEntity roost) {
             if (!level.isClientSide && roost.putChicken(stack)) {
@@ -131,8 +151,17 @@ public class ChickenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        if (ChickenItemHelper.isRobotRooster(stack)) {
+            tooltip.add(Component.translatable("item.chickens.robot_rooster.tooltip")
+                    .withStyle(ChatFormatting.GRAY));
+            return;
+        }
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
+            if (ChickenItemHelper.isRobotChicken(stack)) {
+                tooltip.add(Component.translatable("item.chickens.robot_chicken.tooltip")
+                        .withStyle(ChatFormatting.GRAY));
+            }
             tooltip.add(Component.translatable("item.chickens.chicken.type",
                             chicken.getDisplayName())
                     .withStyle(ChatFormatting.GRAY));

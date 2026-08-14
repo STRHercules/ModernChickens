@@ -15,15 +15,15 @@ import net.minecraft.world.entity.player.Inventory;
  * Client screen for the Avian Fluid Converter. Renders a vertical tank gauge
  * whose grey fill is tinted from the stored fluid.
  */
-public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFluidConverterMenu> {
+public class AvianFluidConverterScreen extends SideConfigurableScreen<AvianFluidConverterMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
             "textures/gui/fluidchemicalconverter.png");
-    private static final int TANK_X = 103;
-    private static final int TANK_Y = 14;
-    private static final int TANK_WIDTH = 13;
-    private static final int TANK_HEIGHT = 58;
-    private static final int TANK_TEXTURE_X = 195;
-    private static final int TANK_TEXTURE_Y = 0;
+    private static final int TANK_X = 104;
+    private static final int TANK_Y = 15;
+    private static final int TANK_WIDTH = 10;
+    private static final int TANK_HEIGHT = 55;
+    private static final int TANK_TEXTURE_X = 196;
+    private static final int TANK_TEXTURE_Y = 1;
 
     public AvianFluidConverterScreen(AvianFluidConverterMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -50,6 +50,7 @@ public class AvianFluidConverterScreen extends AbstractContainerScreen<AvianFlui
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(graphics, mouseX, mouseY, partialTicks);
         super.render(graphics, mouseX, mouseY, partialTicks);
+        renderSideConfig(graphics, mouseX, mouseY);
         renderTankTooltip(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

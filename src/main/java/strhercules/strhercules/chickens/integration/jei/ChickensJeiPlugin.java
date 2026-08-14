@@ -21,6 +21,8 @@ import strhercules.chickens.integration.jei.category.IncubatorCategory;
 import strhercules.chickens.integration.jei.category.HenhousingCategory;
 import strhercules.chickens.integration.jei.category.LayingCategory;
 import strhercules.chickens.integration.jei.category.LavaChickenCategory;
+import strhercules.chickens.integration.jei.category.RobotChickenUpgradeCategory;
+import strhercules.chickens.integration.jei.category.RobotRoosterCategory;
 import strhercules.chickens.integration.jei.category.RoostingCategory;
 import strhercules.chickens.integration.jei.category.TeachingCategory;
 import strhercules.chickens.integration.jei.category.ThrowingCategory;
@@ -79,11 +81,17 @@ public class ChickensJeiPlugin implements IModPlugin {
             if (!(stack.getItem() instanceof ChickenItem)) {
                 return IIngredientSubtypeInterpreter.NONE;
             }
+            if (ChickenItemHelper.isRobotRooster(stack)) {
+                return "robot_rooster";
+            }
+            if (ChickenItemHelper.isRooster(stack)) {
+                return "rooster";
+            }
             ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
             if (chicken == null) {
                 return IIngredientSubtypeInterpreter.NONE;
             }
-            return String.valueOf(chicken.getId());
+            return chicken.getId() + (ChickenItemHelper.isRobotChicken(stack) ? ":robot" : "");
         });
     }
 
@@ -103,9 +111,11 @@ public class ChickensJeiPlugin implements IModPlugin {
                 new AvianChemicalConverterCategory(guiHelper),
                 new AvianDousingCategory(guiHelper),
                 new IncubatorCategory(guiHelper),
-                new TeachingCategory(guiHelper),
+            new TeachingCategory(guiHelper),
                 new WildChickensCategory(guiHelper),
-                new LavaChickenCategory(guiHelper)
+                new LavaChickenCategory(guiHelper),
+                new RobotChickenUpgradeCategory(guiHelper),
+                new RobotRoosterCategory(guiHelper)
         );
     }
 
@@ -126,6 +136,8 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipes(ChickensJeiRecipeTypes.TEACHING, buildTeachingRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.WILD_CHICKENS, buildWildChickenRecipes());
         registration.addRecipes(ChickensJeiRecipeTypes.LAVA_CHICKEN, buildLavaChickenRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.ROBOT_CHICKEN_UPGRADE, buildRobotChickenUpgradeRecipes());
+        registration.addRecipes(ChickensJeiRecipeTypes.ROBOT_ROOSTER, buildRobotRoosterRecipes());
     }
 
     @Override
@@ -152,6 +164,11 @@ public class ChickensJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(Items.BOOK), ChickensJeiRecipeTypes.TEACHING);
         registration.addRecipeCatalyst(new ItemStack(ModRegistry.LAVA_CHICKEN.get()),
                 ChickensJeiRecipeTypes.LAVA_CHICKEN);
+        registration.addRecipeCatalyst(new ItemStack(ModRegistry.CHICKEN_ITEM.get()),
+                ChickensJeiRecipeTypes.ROBOT_CHICKEN_UPGRADE, ChickensJeiRecipeTypes.ROBOT_ROOSTER);
+        for (ItemStack upgrade : buildRobotUpgradeItems()) {
+            registration.addRecipeCatalyst(upgrade, ChickensJeiRecipeTypes.ROBOT_CHICKEN_UPGRADE);
+        }
     }
 
     private static List<ChickensJeiRecipeTypes.LayingRecipe> buildLayingRecipes() {
@@ -509,6 +526,49 @@ public class ChickensJeiPlugin implements IModPlugin {
         return List.of(new ChickensJeiRecipeTypes.LavaChickenRecipe(
                 new ItemStack(Items.LAVA_BUCKET),
                 new ItemStack(ModRegistry.LAVA_CHICKEN.get())));
+    }
+
+    private static List<ChickensJeiRecipeTypes.RobotChickenUpgradeRecipe> buildRobotChickenUpgradeRecipes() {
+        ChickensRegistryItem smartChicken = ChickensRegistry.getSmartChicken();
+        if (smartChicken == null || !smartChicken.isEnabled()) {
+            return List.of();
+        }
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        ItemStack robotChicken = new ItemStack(ModRegistry.ROBOT_CHICKEN_ITEM.get());
+        ChickenItemHelper.setChickenType(robotChicken, smartChicken.getId());
+        ChickenItemHelper.setRobotChicken(robotChicken, true);
+        return List.of(new ChickensJeiRecipeTypes.RobotChickenUpgradeRecipe(
+                chickenItem.createFor(smartChicken),
+                buildRobotUpgradeItems(),
+                robotChicken,
+                strhercules.chickens.entity.ChickensChicken.ROBOT_MIN_UPGRADES,
+                strhercules.chickens.entity.ChickensChicken.ROBOT_MAX_UPGRADES));
+    }
+
+    private static List<ItemStack> buildRobotUpgradeItems() {
+        return List.of(
+                new ItemStack(ModRegistry.SPEED_UPGRADE.get()),
+                new ItemStack(ModRegistry.RF_UPGRADE.get()),
+                new ItemStack(ModRegistry.STORAGE_CAPACITY_UPGRADE.get()),
+                new ItemStack(ModRegistry.STACK_UPGRADE.get()),
+                new ItemStack(ModRegistry.RANGE_UPGRADE.get()));
+    }
+
+    private static List<ChickensJeiRecipeTypes.RobotRoosterRecipe> buildRobotRoosterRecipes() {
+        ChickensRegistryItem smartChicken = ChickensRegistry.getSmartChicken();
+        if (smartChicken == null || !smartChicken.isEnabled()) {
+            return List.of();
+        }
+        ChickenItem chickenItem = (ChickenItem) ModRegistry.CHICKEN_ITEM.get();
+        ItemStack robotChicken = new ItemStack(ModRegistry.ROBOT_CHICKEN_ITEM.get());
+        ChickenItemHelper.setChickenType(robotChicken, smartChicken.getId());
+        ChickenItemHelper.setRobotChicken(robotChicken, true);
+
+        ItemStack rooster = new ItemStack(ModRegistry.CHICKEN_ITEM.get());
+        ChickenItemHelper.setRooster(rooster, true);
+        ItemStack robotRooster = new ItemStack(ModRegistry.ROBOT_ROOSTER_ITEM.get());
+        ChickenItemHelper.setRobotRooster(robotRooster, true);
+        return List.of(new ChickensJeiRecipeTypes.RobotRoosterRecipe(robotChicken, rooster, robotRooster));
     }
 
     private static List<ItemStack> buildHenhouseCatalysts() {

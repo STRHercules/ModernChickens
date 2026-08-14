@@ -43,6 +43,8 @@ enum ChickenContainerDataProvider implements IServerDataProvider<BlockAccessor> 
 
         if (container instanceof MechanicalRoostBlockEntity roost) {
             builder.addEnergy(roost.getEnergyStored(), roost.getEnergyCapacity());
+            builder.addText(Component.translatable("tooltip.chickens.mechanical_roost.operation_cost",
+                    roost.getEnergyCostPerOperation()));
         }
 
         boolean hasChickens = tag.getBoolean("HasChickens");

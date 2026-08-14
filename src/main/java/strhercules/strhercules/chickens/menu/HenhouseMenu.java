@@ -21,7 +21,7 @@ import java.util.Objects;
  * It wires the hay/dirt slots plus the 3x3 output grid and keeps the vanilla
  * quick-move rules so automation behaves exactly like before.
  */
-public class HenhouseMenu extends AbstractContainerMenu {
+public class HenhouseMenu extends AbstractContainerMenu implements SideConfigMenu {
     private final HenhouseBlockEntity henhouse;
     private final ContainerLevelAccess access;
     private final ContainerData data;
@@ -119,6 +119,11 @@ public class HenhouseMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public HenhouseBlockEntity getSideConfigurable() {
+        return henhouse;
     }
 
     public int getEnergy() {

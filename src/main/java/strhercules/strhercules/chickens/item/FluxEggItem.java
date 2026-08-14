@@ -32,6 +32,13 @@ public class FluxEggItem extends Item {
         super(properties);
     }
 
+    @Override
+    public ItemStack getDefaultInstance() {
+        ItemStack stack = super.getDefaultInstance();
+        setEnergy(stack, getMinimumCapacity(), getMinimumCapacity());
+        return stack;
+    }
+
     /**
      * Factory helper mirroring the legacy egg creators. The returned stack
      * starts charged to the provided capacity so automated farms can drop the
@@ -117,7 +124,9 @@ public class FluxEggItem extends Item {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return true;
+        // The RF bar is drawn by the client item decorator at the top of the
+        // slot so vanilla's bottom-edge bar cannot cover the stack count.
+        return false;
     }
 
     @Override

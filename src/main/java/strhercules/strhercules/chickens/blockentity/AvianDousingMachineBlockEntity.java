@@ -71,7 +71,7 @@ import java.util.Map;
  * owns three internal buffers (RF, fluid, chemical) and only crafts when the
  * configured recipe costs are satisfied, keeping all automation-friendly.
  */
-public class AvianDousingMachineBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class AvianDousingMachineBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 2;
     public static final int SPEED_UPGRADE_SLOT = 0;
     public static final int RF_UPGRADE_SLOT = 1;
@@ -103,6 +103,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
     private final NonNullList<ItemStack> upgradeItems = NonNullList.withSize(UPGRADE_SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private final FluidTank liquidTank = new FluidTank(LIQUID_CAPACITY) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
@@ -291,7 +292,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private boolean hasResourcesFor(OperationPlan plan) {
         if (plan.recipe() != null) {
-            if (energyStorage.getEnergyStored() < plan.recipe().energyCost()) {
+            if (energyStorage.getEnergyStored() < getEnergyCost(plan)) {
                 return false;
             }
             return switch (plan.recipe().reagentType()) {
@@ -302,13 +303,15 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             };
         }
         if (plan.mode() == InfusionMode.CHEMICAL) {
-            return energyStorage.getEnergyStored() >= CHEMICAL_ENERGY_COST && chemicalAmount >= CHEMICAL_COST;
+            return energyStorage.getEnergyStored() >= getEnergyCostForMode(InfusionMode.CHEMICAL)
+                    && chemicalAmount >= CHEMICAL_COST;
         }
         if (plan.mode() == InfusionMode.LIQUID) {
-            return energyStorage.getEnergyStored() >= LIQUID_ENERGY_COST && liquidTank.getFluidAmount() >= plan.liquidCost();
+            return energyStorage.getEnergyStored() >= getEnergyCostForMode(InfusionMode.LIQUID)
+                    && liquidTank.getFluidAmount() >= plan.liquidCost();
         }
         if (plan.mode() == InfusionMode.SPECIAL) {
-            return energyStorage.getEnergyStored() >= SPECIAL_ENERGY_COST
+            return energyStorage.getEnergyStored() >= getEnergyCostForMode(InfusionMode.SPECIAL)
                     && specialInfusion == plan.special() && specialAmount >= SPECIAL_LIQUID_CAPACITY;
         }
         return false;
@@ -332,9 +335,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return;
         }
 
-        int energyCost = plan.recipe() != null ? plan.recipe().energyCost()
-                : plan.mode() == InfusionMode.CHEMICAL ? CHEMICAL_ENERGY_COST
-                : plan.mode() == InfusionMode.SPECIAL ? SPECIAL_ENERGY_COST : LIQUID_ENERGY_COST;
+        int energyCost = getEnergyCost(plan);
         if (!energyStorage.consumeEnergy(energyCost)) {
             return;
         }
@@ -468,6 +469,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (energyStorage.getEnergyStored() >= capacity) {
                 break;
             }
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
+                continue;
+            }
             IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
                     worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
@@ -500,6 +504,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return false;
         }
         for (Direction direction : Direction.values()) {
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.FLUIDS, true)) {
+                continue;
+            }
             IFluidHandler neighbor = level.getCapability(Capabilities.FluidHandler.BLOCK,
                     worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
@@ -522,6 +529,9 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return false;
         }
         for (Direction direction : Direction.values()) {
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.CHEMICALS, true)) {
+                continue;
+            }
             Object neighbor = MekanismChemicalHelper.getBlockChemicalHandler(level, worldPosition.relative(direction),
                     direction.getOpposite());
             Object available = MekanismChemicalHelper.extractChemical(neighbor,
@@ -674,17 +684,21 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == OUTPUT_SLOT;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false)
+                && index == OUTPUT_SLOT;
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return index == INPUT_SLOT && isDousableChicken(stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && index == INPUT_SLOT && isDousableChicken(stack);
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return IO_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? IO_SLOTS : new int[0];
     }
 
     @Override
@@ -725,12 +739,17 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         return new AvianDousingMachineMenu(id, inventory, this);
     }
 
-    public FluidTank getFluidTank(@Nullable Direction direction) {
-        return liquidTank;
+    public IFluidHandler getFluidTank(@Nullable Direction direction) {
+        return MachineCapabilityWrappers.fluid(liquidTank, sideConfig, direction);
     }
 
     public IEnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return energyStorage;
+        return MachineCapabilityWrappers.energy(energyStorage, sideConfig, direction);
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     public int getEnergyStored() {
@@ -777,6 +796,35 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     public int getMaxProgress() {
         return Math.max(1, (int) Math.ceil(MAX_PROGRESS
                 / (1.0D + 0.2D * getUpgradeCount(SPEED_UPGRADE_SLOT))));
+    }
+
+    public int getEnergyCostForMode(InfusionMode mode) {
+        return scaleEnergyCost(switch (mode) {
+            case CHEMICAL -> CHEMICAL_ENERGY_COST;
+            case SPECIAL -> SPECIAL_ENERGY_COST;
+            case ITEM -> LIQUID_ENERGY_COST;
+            case LIQUID, NONE -> LIQUID_ENERGY_COST;
+        });
+    }
+
+    public int getEnergyCostForCurrentOperation() {
+        OperationPlan plan = choosePlan();
+        return plan.mode() == InfusionMode.NONE ? getEnergyCostForMode(InfusionMode.NONE) : getEnergyCost(plan);
+    }
+
+    private int getEnergyCost(OperationPlan plan) {
+        return scaleEnergyCost(plan.recipe() != null
+                ? plan.recipe().energyCost()
+                : switch (plan.mode()) {
+                    case CHEMICAL -> CHEMICAL_ENERGY_COST;
+                    case SPECIAL -> SPECIAL_ENERGY_COST;
+                    case ITEM, LIQUID, NONE -> LIQUID_ENERGY_COST;
+                });
+    }
+
+    private int scaleEnergyCost(int baseCost) {
+        double scaled = Math.max(1, baseCost) * Math.pow(1.15D, getUpgradeCount(SPEED_UPGRADE_SLOT));
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(1L, Math.round(scaled)));
     }
 
     public int getUpgradeCount(int slot) {
@@ -872,6 +920,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         saveUpgrades(tag, provider);
         tag.putInt("Energy", energyStorage.getEnergyStored());
@@ -904,6 +953,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         loadUpgrades(tag, provider);
         syncUpgradeLimits();
@@ -960,8 +1010,11 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
             return null;
         }
-        Direction key = direction == null ? Direction.NORTH : direction;
-        return chemicalHandlers.computeIfAbsent(key, side -> DousingChemicalHandlerFactory.create(this));
+        if (direction == null) {
+            return MachineCapabilityWrappers.chemical(DousingChemicalHandlerFactory.create(this), sideConfig, null);
+        }
+        return chemicalHandlers.computeIfAbsent(direction, side -> MachineCapabilityWrappers.chemical(
+                DousingChemicalHandlerFactory.create(this), sideConfig, side));
     }
 
     private void invalidateChemicalHandlers() {

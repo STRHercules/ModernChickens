@@ -44,7 +44,7 @@ import javax.annotation.Nullable;
  * synchronises its energy buffer to the menu so the GUI can render live
  * progress bars without repeatedly probing the storage backend.
  */
-public class AvianFluxConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
+public class AvianFluxConverterBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 1;
     private static final int[] ACCESSIBLE_SLOTS = new int[] { 0 };
     private static final int DEFAULT_CAPACITY = 50_000;
@@ -52,6 +52,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     private static final int DEFAULT_MAX_EXTRACT = 4_000;
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final MachineSideConfig sideConfig = new MachineSideConfig();
     private final EnergyStorage energyStorage = new EnergyStorage(DEFAULT_CAPACITY, DEFAULT_MAX_RECEIVE, DEFAULT_MAX_EXTRACT) {
         @Override
         public int receiveEnergy(int requestedReceive, boolean simulate) {
@@ -164,15 +165,26 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         if (stored <= 0 || energy >= capacity) {
             return false;
         }
-        int transferred = energyStorage.receiveEnergy(stored, false);
+        int transferable = energyStorage.receiveEnergy(stored, true);
+        if (transferable <= 0 || (transferable < stored && stack.getCount() > 1)) {
+            // Keep a stack of identical eggs intact unless one whole egg can be
+            // consumed. A partially drained egg cannot share its slot with the
+            // remaining full eggs.
+            return false;
+        }
+        int transferred = energyStorage.receiveEnergy(transferable, false);
         if (transferred <= 0) {
             return false;
         }
-        int remaining = stored - transferred;
-        FluxEggItem.setStoredEnergy(stack, remaining);
-        if (remaining <= 0) {
-            // Remove the depleted shell once its Redstone Flux payload is exhausted.
-            items.set(0, ItemStack.EMPTY);
+        if (stack.getCount() > 1 && transferred == stored) {
+            stack.shrink(1);
+        } else {
+            int remaining = stored - transferred;
+            FluxEggItem.setStoredEnergy(stack, remaining);
+            if (remaining <= 0) {
+                // Remove the depleted shell once its Redstone Flux payload is exhausted.
+                items.set(0, ItemStack.EMPTY);
+            }
         }
         return true;
     }
@@ -183,6 +195,9 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         for (Direction direction : Direction.values()) {
             if (energy <= 0) {
                 return;
+            }
+            if (!sideConfig.allows(direction, MachineSideConfig.Channel.ENERGY, false)) {
+                continue;
             }
             BlockPos targetPos = worldPosition.relative(direction);
             IEnergyStorage target = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos,
@@ -219,8 +234,13 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         return Math.round(15.0F * energy / (float) capacity);
     }
 
-    public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return energyStorage;
+    public IEnergyStorage getEnergyStorage(@Nullable Direction direction) {
+        return MachineCapabilityWrappers.energy(energyStorage, sideConfig, direction);
+    }
+
+    @Override
+    public MachineSideConfig sideConfig() {
+        return sideConfig;
     }
 
     /**
@@ -305,17 +325,20 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return true;
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, false);
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return canPlaceItem(index, stack);
+        return sideConfig.allows(direction, MachineSideConfig.Channel.ITEMS, true)
+                && canPlaceItem(index, stack);
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return ACCESSIBLE_SLOTS;
+        return sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, true)
+                || sideConfig.allows(side, MachineSideConfig.Channel.ITEMS, false)
+                ? ACCESSIBLE_SLOTS : new int[0];
     }
 
     @Override
@@ -381,6 +404,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        sideConfig.save(tag);
         ContainerHelper.saveAllItems(tag, items, provider);
         tag.putInt("Energy", energy);
         tag.putInt("Capacity", capacity);
@@ -393,6 +417,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        sideConfig.load(tag);
         ContainerHelper.loadAllItems(tag, items, provider);
         if (tag.contains("Capacity")) {
             capacity = Math.max(1, tag.getInt("Capacity"));

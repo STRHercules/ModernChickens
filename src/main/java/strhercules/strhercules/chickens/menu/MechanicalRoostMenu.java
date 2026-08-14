@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.Objects;
 
 /** Container layout for the four-row Mechanical Roost GUI. */
-public class MechanicalRoostMenu extends AbstractContainerMenu {
+public class MechanicalRoostMenu extends AbstractContainerMenu implements SideConfigMenu {
     private static final int PLAYER_INVENTORY_ROWS = 3;
     private static final int PLAYER_COLUMNS = 9;
     private final MechanicalRoostBlockEntity roost;
@@ -167,6 +167,11 @@ public class MechanicalRoostMenu extends AbstractContainerMenu {
 
     public ContainerLevelAccess getAccess() {
         return access;
+    }
+
+    @Override
+    public MechanicalRoostBlockEntity getSideConfigurable() {
+        return roost;
     }
 
     public int getProgress() {

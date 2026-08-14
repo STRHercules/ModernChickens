@@ -24,6 +24,7 @@ import strhercules.chickens.client.render.blockentity.AvianFluxConverterBlockEnt
 import strhercules.chickens.client.render.blockentity.AvianFluidConverterBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.RoostBlockEntityRenderer;
 import strhercules.chickens.client.render.blockentity.NestBlockEntityRenderer;
+import strhercules.chickens.client.render.blockentity.MechanicalNestBlockEntityRenderer;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.network.MegaChickenFlightPayload;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -42,6 +43,7 @@ import strhercules.chickens.screen.MegaChickenScreen;
 import strhercules.chickens.screen.RoostScreen;
 import strhercules.chickens.screen.MechanicalRoostScreen;
 import strhercules.chickens.screen.NestScreen;
+import strhercules.chickens.screen.MechanicalNestScreen;
 import strhercules.chickens.screen.RoosterScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -59,6 +61,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -95,6 +98,7 @@ public final class ChickensClient {
         event.registerEntityRenderer(ModEntityTypes.MEGA_CHICKEN.get(), MegaChickenRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ROOST.get(), RoostBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.NEST.get(), NestBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.MECHANICAL_NEST.get(), MechanicalNestBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.BREEDER.get(), BreederBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.COLLECTOR.get(), CollectorBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.AVIAN_FLUX_CONVERTER.get(),
@@ -174,12 +178,25 @@ public final class ChickensClient {
     }
 
     @SubscribeEvent
+    public static void onRegisterItemDecorations(RegisterItemDecorationsEvent event) {
+        event.register(ModRegistry.FLUX_EGG.get(), (graphics, font, stack, x, y) -> {
+            int barX = x + 2;
+            int barY = y + 1;
+            int barWidth = stack.getBarWidth();
+            graphics.fill(barX, barY, barX + 13, barY + 2, 0xFF000000);
+            graphics.fill(barX, barY, barX + barWidth, barY + 1, stack.getBarColor() | 0xFF000000);
+            return false;
+        });
+    }
+
+    @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         // Bind the container to its screen so the henhouse GUI renders correctly on the client.
         event.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
         event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
         event.register(ModMenuTypes.MECHANICAL_ROOST.get(), MechanicalRoostScreen::new);
         event.register(ModMenuTypes.NEST.get(), NestScreen::new);
+        event.register(ModMenuTypes.MECHANICAL_NEST.get(), MechanicalNestScreen::new);
         event.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
         event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
         event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);

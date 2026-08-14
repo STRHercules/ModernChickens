@@ -18,11 +18,17 @@ import javax.annotation.Nullable;
  */
 public final class ChickenItemHelper {
     public static final String TAG_CHICKEN_TYPE = "ChickenType";
+    public static final String TAG_ROBOT_CHICKEN = "RobotChicken";
     private static final String TAG_ROOSTER = "IsRooster";
+    private static final String TAG_ROBOT_ROOSTER = "IsRobotRooster";
+    private static final String TAG_ROBOT_UPGRADES_GIVEN = "RobotUpgradesGiven";
+    private static final String TAG_ROBOT_UPGRADES_REQUIRED = "RobotUpgradesRequired";
     private static final String TAG_STATS = "ChickenStats";
     // Reserved custom model id used for rooster stacks so the chicken item
     // model can swap to the dedicated rooster sprite.
     public static final int ROOSTER_MODEL_ID = 900000;
+    public static final int ROBOT_ROOSTER_MODEL_ID = 900001;
+    public static final int ROBOT_CHICKEN_MODEL_ID = 900002;
 
     private ChickenItemHelper() {
     }
@@ -67,6 +73,39 @@ public final class ChickenItemHelper {
         return data.contains(TAG_ROOSTER) && data.copyTag().getBoolean(TAG_ROOSTER);
     }
 
+    public static void setRobotChicken(ItemStack stack, boolean robotChicken) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (robotChicken) {
+                tag.putBoolean(TAG_ROBOT_CHICKEN, true);
+            } else {
+                tag.remove(TAG_ROBOT_CHICKEN);
+                tag.remove(TAG_ROBOT_UPGRADES_GIVEN);
+                tag.remove(TAG_ROBOT_UPGRADES_REQUIRED);
+            }
+        });
+    }
+
+    public static boolean isRobotChicken(ItemStack stack) {
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        return data.contains(TAG_ROBOT_CHICKEN) && data.copyTag().getBoolean(TAG_ROBOT_CHICKEN);
+    }
+
+    public static void setRobotRooster(ItemStack stack, boolean robotRooster) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (robotRooster) {
+                tag.putBoolean(TAG_ROOSTER, true);
+                tag.putBoolean(TAG_ROBOT_ROOSTER, true);
+            } else {
+                tag.remove(TAG_ROBOT_ROOSTER);
+            }
+        });
+    }
+
+    public static boolean isRobotRooster(ItemStack stack) {
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        return data.contains(TAG_ROBOT_ROOSTER) && data.copyTag().getBoolean(TAG_ROBOT_ROOSTER);
+    }
+
     @Nullable
     public static ChickensRegistryItem resolve(ItemStack stack) {
         if (isRooster(stack)) {
@@ -94,6 +133,15 @@ public final class ChickenItemHelper {
         setChickenType(stack, chicken.getChickenType());
         setStats(stack, new ChickenStats(chicken.getGrowth(), chicken.getGain(), chicken.getStrength(),
                 chicken.getStatsAnalyzed()));
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            if (chicken.isRobotChicken()) {
+                tag.putBoolean(TAG_ROBOT_CHICKEN, true);
+            } else {
+                tag.remove(TAG_ROBOT_CHICKEN);
+            }
+            tag.putInt(TAG_ROBOT_UPGRADES_GIVEN, chicken.getRobotUpgradesGiven());
+            tag.putInt(TAG_ROBOT_UPGRADES_REQUIRED, chicken.getRobotUpgradesRequired());
+        });
     }
 
     public static void applyToEntity(ItemStack stack, ChickensChicken chicken) {
@@ -101,6 +149,11 @@ public final class ChickenItemHelper {
         ChickenStats stats = getStats(stack);
         CompoundTag tag = stats.toTag();
         tag.putInt("Type", getChickenType(stack));
+        tag.putBoolean(TAG_ROBOT_CHICKEN, isRobotChicken(stack));
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag custom = data.copyTag();
+        tag.putInt(TAG_ROBOT_UPGRADES_GIVEN, custom.getInt(TAG_ROBOT_UPGRADES_GIVEN));
+        tag.putInt(TAG_ROBOT_UPGRADES_REQUIRED, custom.getInt(TAG_ROBOT_UPGRADES_REQUIRED));
         chicken.readAdditionalSaveData(tag);
         chicken.setStatsAnalyzed(stats.analysed());
     }

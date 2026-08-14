@@ -19,6 +19,13 @@ public final class ChickensConfigHolder {
             4,                       // roosterAuraRange
             1,                       // nestMaxRoosters (single rooster by default)
             20 * 60,                 // nestSeedDurationTicks (60 seconds per seed)
+            500,                     // mechanicalNestBaseEnergyPerTick
+            1_000,                   // mechanicalNestEnergyPerRoostPerTick
+            0.35D,                   // mechanicalNestEnergyCostSpeedIncrease
+            5,                       // mechanicalNestRange
+            12_500,                  // mechanicalRoostTier1EnergyCost (full slot of 16)
+            650_000,                 // mechanicalRoostTier10EnergyCost (full slot of 16)
+            0.15D,                   // mechanicalRoostEnergyCostSpeedIncrease
             false,                   // disableVanillaEggLaying
             4,                       // collectorScanRange
             true,                    // avianFluxEffectsEnabled
