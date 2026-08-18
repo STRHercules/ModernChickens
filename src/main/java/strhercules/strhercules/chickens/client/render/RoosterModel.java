@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class RoosterModel extends AgeableListModel<Rooster> {
     public static final ModelLayerLocation LAYER_LOCATION =
-            new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "rooster"), "main");
+            new ModelLayerLocation(new ResourceLocation(ChickensMod.MOD_ID, "rooster"), "main");
 
     private final ModelPart head;
     private final ModelPart rightLeg;

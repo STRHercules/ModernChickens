@@ -3,7 +3,7 @@ package strhercules.chickens.menu;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -26,7 +26,7 @@ public class HenhouseMenu extends AbstractContainerMenu implements SideConfigMen
     private final ContainerLevelAccess access;
     private final ContainerData data;
 
-    public HenhouseMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public HenhouseMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
@@ -74,7 +74,7 @@ public class HenhouseMenu extends AbstractContainerMenu implements SideConfigMen
         };
     }
 
-    private static HenhouseBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static HenhouseBlockEntity resolveBlockEntity(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(inventory, "playerInventory");
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();

@@ -1,5 +1,6 @@
 package strhercules.chickens.entity;
 
+import strhercules.chickens.ChickenFood;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -46,7 +47,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import strhercules.chickens.registry.ModMenuTypes;
 import strhercules.chickens.menu.RoosterMenu;
 
@@ -55,7 +56,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Lightweight NeoForge port of Hatchery's rooster entity. This class focuses on
+ * Lightweight Forge port of Hatchery's rooster entity. This class focuses on
  * two core behaviours from the original mod:
  * <ul>
  * <li>Roosters never lay eggs themselves; they are utility birds rather than
@@ -94,13 +95,13 @@ public class Rooster extends Chicken implements Container, MenuProvider {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData() {
         // Track the converted seed charge so client GUIs and overlays can show a
         // simple progress bar, mirroring the legacy Hatchery rooster HUD.
-        super.defineSynchedData(builder);
-        builder.define(DATA_SEEDS, 0);
-        builder.define(DATA_ROBOT_ROOSTER, false);
-        builder.define(DATA_VIRUS_TICKS, 0);
+        super.defineSynchedData();
+        this.entityData.define(DATA_SEEDS, 0);
+        this.entityData.define(DATA_ROBOT_ROOSTER, false);
+        this.entityData.define(DATA_VIRUS_TICKS, 0);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.4D));
         this.goalSelector.addGoal(2, new RoosterMateGoal(this));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, stack -> stack.is(ItemTags.CHICKEN_FOOD), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, ChickenFood.INGREDIENT, false));
         this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1D));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -145,9 +146,9 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         ItemStack held = player.getItemInHand(hand);
         // Open the rooster inventory when the player interacts with an empty hand
         // or holds seeds, mirroring the legacy Hatchery behaviour.
-        if (hand == InteractionHand.MAIN_HAND && (held.isEmpty() || held.is(ItemTags.CHICKEN_FOOD))) {
+        if (hand == InteractionHand.MAIN_HAND && (held.isEmpty() || ChickenFood.test(held))) {
             if (!level().isClientSide) {
-                player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
+                net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) player, this, buffer -> buffer.writeVarInt(this.getId()));
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
         }
@@ -245,7 +246,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         if (stack.isEmpty()) {
             return false;
         }
-        if (!stack.is(ItemTags.CHICKEN_FOOD)) {
+        if (!ChickenFood.test(stack)) {
             return false;
         }
         if (stack.getCount() < 2) {
@@ -317,7 +318,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         @Override
         public boolean canContinueToUse() {
             return hen != null && rooster.getSeeds() >= SEED_COST && hen.isAlive() && !hen.isBaby()
-                    && hen.isInLove() && !hen.isPanicking() && mateTime < 60;
+                    && hen.isInLove() && mateTime < 60;
         }
 
         @Override
@@ -343,7 +344,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
         private Chicken findHen() {
             List<Chicken> chickens = rooster.level().getEntitiesOfClass(Chicken.class,
                     rooster.getBoundingBox().inflate(SEARCH_RANGE), candidate -> candidate != rooster
-                            && !(candidate instanceof Rooster) && !candidate.isBaby() && !candidate.isPanicking()
+                            && !(candidate instanceof Rooster) && !candidate.isBaby()
                             && (candidate.isInLove() || candidate.canFallInLove()));
             return chickens.stream().min(java.util.Comparator.comparingDouble(rooster::distanceToSqr)).orElse(null);
         }
@@ -466,8 +467,8 @@ public class Rooster extends Chicken implements Container, MenuProvider {
             return;
         }
         items.set(index, stack);
-        if (!stack.isEmpty() && stack.getCount() > getMaxStackSize(stack)) {
-            stack.setCount(getMaxStackSize(stack));
+        if (!stack.isEmpty() && stack.getCount() > Math.min(stack.getMaxStackSize(), getMaxStackSize())) {
+            stack.setCount(Math.min(stack.getMaxStackSize(), getMaxStackSize()));
         }
         setChanged();
     }
@@ -516,7 +517,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
             // HolderLookup-aware ItemStack encoder so registry lookups stay
             // consistent with block entity containers.
             HolderLookup.Provider registries = level().registryAccess();
-            stack.save(registries, itemTag);
+            stack.save(itemTag);
             list.add(itemTag);
         }
         tag.put(TAG_ITEMS, list);
@@ -539,7 +540,7 @@ public class Rooster extends Chicken implements Container, MenuProvider {
             int slot = itemTag.getByte("Slot") & 255;
             if (slot >= 0 && slot < items.size()) {
                 HolderLookup.Provider registries = level().registryAccess();
-                items.set(slot, ItemStack.parse(registries, itemTag).orElse(ItemStack.EMPTY));
+                items.set(slot, ItemStack.of(itemTag));
             }
         }
     }

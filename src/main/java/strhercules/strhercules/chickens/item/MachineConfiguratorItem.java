@@ -1,9 +1,10 @@
 package strhercules.chickens.item;
 
+import net.minecraft.nbt.CompoundTag;
+import javax.annotation.Nullable;
 import strhercules.chickens.blockentity.MachineSideConfig;
 import strhercules.chickens.blockentity.SideConfigurable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -11,7 +12,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -66,7 +67,7 @@ public final class MachineConfiguratorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip,
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip,
             TooltipFlag flag) {
         tooltip.add(Component.translatable("item.chickens.configurator.channel", channelName(channel(stack)))
                 .withStyle(ChatFormatting.GRAY));
@@ -74,15 +75,15 @@ public final class MachineConfiguratorItem extends Item {
     }
 
     private static MachineSideConfig.Channel channel(ItemStack stack) {
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        int ordinal = data.copyTag().getInt(CHANNEL_TAG);
+        CompoundTag data = ItemData.read(stack);
+        int ordinal = data.getInt(CHANNEL_TAG);
         return ordinal >= 0 && ordinal < MachineSideConfig.Channel.values().length
                 ? MachineSideConfig.Channel.values()[ordinal]
                 : MachineSideConfig.Channel.ITEMS;
     }
 
     private static void setChannel(ItemStack stack, MachineSideConfig.Channel channel) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putInt(CHANNEL_TAG, channel.ordinal()));
+        ItemData.update(stack, tag -> tag.putInt(CHANNEL_TAG, channel.ordinal()));
     }
 
     private static String channelName(MachineSideConfig.Channel channel) {

@@ -21,6 +21,6 @@ final class AvianFluidConverterProvider implements IDataProvider<AvianFluidConve
         }
         HudOverlayHelper helper = new HudOverlayHelper();
         helper.addFluid(blockEntity.getFluid().copy(), blockEntity.getTankCapacity());
-        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
+        writer.add(HudOverlayHelper.class, result -> result.add(helper));
     }
 }

@@ -14,7 +14,7 @@ import java.util.Locale;
 enum RoosterProvider implements IEntityComponentProvider {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation ID = new ResourceLocation(
             ChickensMod.MOD_ID, "rooster");
 
     @Override

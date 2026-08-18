@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
  * background while exposing the seed slot and player inventory.
  */
 public class RoosterScreen extends AbstractContainerScreen<RoosterMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/rooster.png");
 
     // Seed bar geometry mirrors the legacy Hatchery rooster GUI: a 13px wide
@@ -56,7 +56,7 @@ public class RoosterScreen extends AbstractContainerScreen<RoosterMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

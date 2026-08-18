@@ -13,7 +13,7 @@ import snownee.jade.api.IServerDataProvider;
 enum AvianFluxConverterDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "avian_flux_converter");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "avian_flux_converter");
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {

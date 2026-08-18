@@ -16,13 +16,13 @@ import java.util.Set;
 
 /** Renderer for the supplied 3x Mega Chicken model and its tame-state equipment. */
 public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChickenModel> {
-    private static final ResourceLocation UNTAMED_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation UNTAMED_TEXTURE = new ResourceLocation(
             "chickens", "textures/entity/megachicken/mega_chicken.png");
-    private static final ResourceLocation TAMED_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TAMED_TEXTURE = new ResourceLocation(
             "chickens", "textures/entity/megachicken/mega_chicken_tamed.png");
-    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = new ResourceLocation(
             "chickens", "textures/entity/megachicken/robot_chicken.png");
-    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = new ResourceLocation(
             "chickens", "textures/entity/megachicken/robot_rooster.png");
     private static final Set<ResourceLocation> AVAILABLE_TEXTURES = new HashSet<>();
 
@@ -62,7 +62,7 @@ public final class MegaChickenRenderer extends MobRenderer<MegaChicken, MegaChic
         if (name.endsWith(".png")) {
             name = name.substring(0, name.length() - 4);
         }
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+        ResourceLocation texture = new ResourceLocation(ChickensMod.MOD_ID,
                 "textures/entity/megachicken/" + name.toLowerCase(Locale.ROOT) + ".png");
         return hasTexture(texture) ? texture : null;
     }

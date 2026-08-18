@@ -1,5 +1,12 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.block.BreederBlock;
@@ -344,5 +351,24 @@ public class BreederBlockEntity extends AbstractChickenContainerBlockEntity {
         }
         tooltip.add(Component.translatable("tooltip.chickens.breeder.seeds", data.getInt("SeedCount")));
         super.appendTooltip(tooltip, data);
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
     }
 }

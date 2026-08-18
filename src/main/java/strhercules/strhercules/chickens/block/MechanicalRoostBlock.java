@@ -1,6 +1,6 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.MechanicalRoostBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -27,13 +27,12 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
 /** RF-powered four-row roost with sided item and energy capabilities. */
 public class MechanicalRoostBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<MechanicalRoostBlock> CODEC = simpleCodec(MechanicalRoostBlock::new);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public MechanicalRoostBlock() {
@@ -50,10 +49,6 @@ public class MechanicalRoostBlock extends HorizontalDirectionalBlock implements 
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<MechanicalRoostBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -76,7 +71,7 @@ public class MechanicalRoostBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof MechanicalRoostBlockEntity roost)) {
@@ -89,7 +84,7 @@ public class MechanicalRoostBlock extends HorizontalDirectionalBlock implements 
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(roost, pos);
+            NetworkHooks.openScreen(serverPlayer, roost, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

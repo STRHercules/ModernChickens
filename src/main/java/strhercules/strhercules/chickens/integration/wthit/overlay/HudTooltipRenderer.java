@@ -24,8 +24,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -35,11 +35,11 @@ import java.util.Locale;
  * mirroring Mekanism's WTHIT overlay.
  */
 public final class HudTooltipRenderer implements IBlockComponentProvider {
-    public static final ResourceLocation HUD_TAG = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "hud_overlay");
+    public static final ResourceLocation HUD_TAG = new ResourceLocation(ChickensMod.MOD_ID, "hud_overlay");
 
     @Override
     public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
-        HudOverlayHelper helper = accessor.getData().get(HudOverlayHelper.TYPE);
+        HudOverlayHelper helper = accessor.getData().get(HudOverlayHelper.class);
         if (helper == null || helper.isEmpty()) {
             return;
         }
@@ -82,7 +82,7 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
         int amount = Math.max(stack.getAmount(), 0);
         Component text = amount <= 0
                 ? Component.translatable("tooltip.chickens.avian_dousing_machine.empty")
-                : Component.literal(String.format("%s: %s mB", stack.getHoverName().getString(), formatCompact(amount)));
+                : Component.literal(String.format("%s: %s mB", stack.getDisplayName().getString(), formatCompact(amount)));
         TextureAtlasSprite sprite = resolveFluidSprite(stack);
         int tint = stack.isEmpty() ? 0xFF6F6F6F : (IClientFluidTypeExtensions.of(stack.getFluid()).getTintColor(stack) | 0xFF000000);
         return new HudBarComponent(text, sprite, tint, amount / (float) capacity);
@@ -97,7 +97,7 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
         int tint;
         if (item == null || amount <= 0) {
             text = Component.translatable("tooltip.chickens.avian_dousing_machine.empty");
-            sprite = getMissingSprite();
+            sprite = getEmptySprite();
             tint = 0xFF6F6F6F;
         } else {
             text = Component.literal(String.format("%s: %s mB", item.getDisplayName().getString(), formatCompact(amount)));
@@ -111,13 +111,13 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
         long capacity = Math.max(entry.capacity(), 1L);
         long energy = Math.max(entry.energy(), 0L);
         Component text = Component.literal(String.format("%s / %s", formatEnergy(energy), formatEnergy(capacity)));
-        TextureAtlasSprite sprite = getAtlas().getSprite(ResourceLocation.withDefaultNamespace("block/redstone_block"));
+        TextureAtlasSprite sprite = getAtlas().getSprite(new ResourceLocation("minecraft", "block/redstone_block"));
         return new HudBarComponent(text, sprite, 0xFFE6C63E, (float) Math.min(1.0, energy / (double) capacity));
     }
 
     private static TextureAtlasSprite resolveFluidSprite(FluidStack stack) {
         if (stack.isEmpty()) {
-            return getAtlas().getSprite(ResourceLocation.withDefaultNamespace("block/water_still"));
+            return getAtlas().getSprite(new ResourceLocation("minecraft", "block/water_still"));
         }
         IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(stack.getFluid());
         BlockPos pos = BlockPos.ZERO;
@@ -133,7 +133,7 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
             }
         }
         if (texture == null) {
-            texture = ResourceLocation.withDefaultNamespace("block/water_still");
+            texture = new ResourceLocation("minecraft", "block/water_still");
         }
         return getAtlas().getSprite(texture);
     }
@@ -142,8 +142,10 @@ public final class HudTooltipRenderer implements IBlockComponentProvider {
         return Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
     }
 
-    private static TextureAtlasSprite getMissingSprite() {
-        return Minecraft.getInstance().getModelManager().getMissingModel().getParticleIcon();
+    /** Flat neutral sprite for an empty chemical bar; the missing-texture icon
+     *  used to leak through here as a magenta checkerboard. */
+    private static TextureAtlasSprite getEmptySprite() {
+        return getAtlas().getSprite(new ResourceLocation("minecraft", "block/white_concrete"));
     }
 
     private static ChemicalEggRegistryItem resolveChemical(int id) {

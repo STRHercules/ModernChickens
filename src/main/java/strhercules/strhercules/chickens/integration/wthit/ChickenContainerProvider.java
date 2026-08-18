@@ -58,7 +58,7 @@ final class ChickenContainerProvider<T extends AbstractChickenContainerBlockEnti
             helper.addText(Component.translatable("tooltip.chickens.wthit.eta",
                     describeEta(normaliseRemainingTicks(etaTicks, step))));
         }
-        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
+        writer.add(HudOverlayHelper.class, result -> result.add(helper));
     }
 
     private static int normaliseRemainingTicks(int remaining, int step) {

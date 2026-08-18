@@ -1,18 +1,19 @@
 package strhercules.chickens.integration.mekanism;
 
+import strhercules.chickens.blockentity.NeighbourCaps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.registries.IForgeRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,26 +22,33 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Reflection-driven bridge into Mekanism's chemical registry. The mod does not
- * depend on Mekanism at compile time, so this helper inspects the API at
+ * Reflection-driven bridge into the Mekanism chemical registries. The mod does
+ * not depend on Mekanism at compile time, so this helper inspects the API at
  * runtime when it is present and extracts the data required to mirror gas and
  * chemical resources as chickens.
  */
 public final class MekanismChemicalHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensMekanismHook");
 
+    private record ChemicalType(String name,
+                                IForgeRegistry<Object> registry,
+                                boolean gaseous,
+                                ResourceLocation emptyId,
+                                Constructor<?> stackConstructor,
+                                @Nullable Capability<Object> capability,
+                                @Nullable Class<?> handlerInterface) {
+    }
+
     private static final boolean AVAILABLE;
-    private static final Registry<Object> CHEMICAL_REGISTRY;
-    private static final ResourceLocation EMPTY_CHEMICAL_NAME;
+    private static final List<ChemicalType> TYPES;
+
     private static final Method CHEMICAL_GET_ICON;
     private static final Method CHEMICAL_GET_TINT;
     private static final Method CHEMICAL_GET_TEXT_COMPONENT;
-    private static final Method CHEMICAL_IS_GASEOUS;
-    private static final Method CHEMICAL_IS_RADIOACTIVE;
+    private static final Method CHEMICAL_HAS_ATTRIBUTE;
+    private static final Class<?> RADIATION_ATTRIBUTE_CLASS;
 
-    private static final Class<?> CHEMICAL_CLASS;
     private static final Class<?> CHEMICAL_STACK_CLASS;
-    private static final Class<?> CHEMICAL_HANDLER_CLASS;
     private static final Class<?> ACTION_CLASS;
 
     private static final Object ACTION_EXECUTE;
@@ -49,92 +57,41 @@ public final class MekanismChemicalHelper {
 
     private static final Method CHEMICAL_STACK_GET_AMOUNT;
     private static final Method CHEMICAL_STACK_IS_EMPTY;
-    private static final Method CHEMICAL_STACK_GET_CHEMICAL;
+    private static final Method CHEMICAL_STACK_GET_TYPE;
     private static final Method CHEMICAL_HANDLER_INSERT;
     private static final Method CHEMICAL_HANDLER_EXTRACT_AMOUNT;
     private static final Method CHEMICAL_HANDLER_EXTRACT_STACK;
-    private static final Method REGISTRY_WRAP_AS_HOLDER;
-
-    @SuppressWarnings("rawtypes")
-    private static final java.lang.reflect.Constructor CHEMICAL_STACK_CTOR;
-
-    @SuppressWarnings("rawtypes")
-    private static final java.lang.reflect.Constructor CHEMICAL_STACK_CTOR_LEGACY;
-
-    private static final net.neoforged.neoforge.capabilities.BlockCapability<Object, Direction> CHEMICAL_BLOCK_CAPABILITY;
 
     static {
         boolean present = false;
-        Registry<Object> registry = null;
-        ResourceLocation empty = null;
+        List<ChemicalType> types = List.of();
         Method getIcon = null;
         Method getTint = null;
         Method getTextComponent = null;
-        Method isGaseous = null;
-        Method isRadioactive = null;
-        Class<?> chemicalClass = null;
-        Class<?> stackClass = null;
-        Class<?> handlerClass = null;
+        Method hasAttribute = null;
+        Class<?> radiationClass = null;
+        Class<?> chemicalStackClass = null;
         Class<?> actionClass = null;
         Object actionExecute = null;
         Object actionSimulate = null;
         Object emptyStack = null;
         Method getAmount = null;
         Method isEmpty = null;
-        Method getChemical = null;
+        Method getType = null;
         Method insert = null;
         Method extractAmount = null;
         Method extractStack = null;
-        java.lang.reflect.Constructor<?> stackCtor = null;
-        java.lang.reflect.Constructor<?> legacyStackCtor = null;
-        BlockCapability<Object, Direction> blockCapability = null;
-        Method wrapAsHolderLocal = null;
         try {
             Class<?> apiClass = Class.forName("mekanism.api.MekanismAPI");
-            Field chemicalRegistryField = apiClass.getField("CHEMICAL_REGISTRY");
-            @SuppressWarnings("unchecked")
-            Registry<Object> castRegistry = (Registry<Object>) chemicalRegistryField.get(null);
-            registry = castRegistry;
+            Class<?> chemicalClass = Class.forName("mekanism.api.chemical.Chemical");
 
-            if (registry != null) {
-                try {
-                    wrapAsHolderLocal = registry.getClass().getMethod("wrapAsHolder", Object.class);
-                } catch (NoSuchMethodException ignored) {
-                    wrapAsHolderLocal = null;
-                }
-            }
-
-            Field emptyChemicalField;
-            try {
-                emptyChemicalField = apiClass.getField("EMPTY_CHEMICAL_NAME");
-                empty = (ResourceLocation) emptyChemicalField.get(null);
-            } catch (NoSuchFieldException ignored) {
-                // Mekanism 10.7.11+ renamed EMPTY_CHEMICAL_NAME to EMPTY_CHEMICAL_KEY.
-                try {
-                    Field emptyKeyField = apiClass.getField("EMPTY_CHEMICAL_KEY");
-                    Object holderKey = emptyKeyField.get(null);
-                    if (holderKey instanceof net.minecraft.resources.ResourceKey<?> resourceKey) {
-                        empty = resourceKey.location();
-                    }
-                } catch (NoSuchFieldException secondary) {
-                    // Ignore; fallback leaves empty null.
-                }
-            }
-
-            chemicalClass = Class.forName("mekanism.api.chemical.Chemical");
-            try {
-                // Mekanism 10.7 renamed getTexture -> getIcon; prefer the modern name but keep legacy support.
-                getIcon = chemicalClass.getMethod("getIcon");
-            } catch (NoSuchMethodException missingIcon) {
-                getIcon = chemicalClass.getMethod("getTexture");
-            }
+            getIcon = chemicalClass.getMethod("getIcon");
             getTint = chemicalClass.getMethod("getTint");
             getTextComponent = chemicalClass.getMethod("getTextComponent");
-            isGaseous = chemicalClass.getMethod("isGaseous");
-            isRadioactive = chemicalClass.getMethod("isRadioactive");
+            hasAttribute = chemicalClass.getMethod("has", Class.class);
+            radiationClass = Class.forName("mekanism.api.chemical.gas.attribute.GasAttributes$Radiation");
 
-            stackClass = Class.forName("mekanism.api.chemical.ChemicalStack");
-            handlerClass = Class.forName("mekanism.api.chemical.IChemicalHandler");
+            chemicalStackClass = Class.forName("mekanism.api.chemical.ChemicalStack");
             actionClass = Class.forName("mekanism.api.Action");
             @SuppressWarnings("unchecked")
             Enum<?> execute = Enum.valueOf((Class<Enum>) actionClass, "EXECUTE");
@@ -142,69 +99,111 @@ public final class MekanismChemicalHelper {
             Enum<?> simulate = Enum.valueOf((Class<Enum>) actionClass, "SIMULATE");
             actionExecute = execute;
             actionSimulate = simulate;
-            emptyStack = stackClass.getField("EMPTY").get(null);
-            try {
-                stackCtor = stackClass.getConstructor(Class.forName("net.minecraft.core.Holder"), long.class);
-            } catch (NoSuchMethodException ctorMissing) {
-                stackCtor = null;
-            }
-            try {
-                legacyStackCtor = stackClass.getConstructor(chemicalClass, long.class);
-            } catch (NoSuchMethodException legacyMissing) {
-                legacyStackCtor = null;
-            }
-            getAmount = stackClass.getMethod("getAmount");
-            isEmpty = stackClass.getMethod("isEmpty");
-            getChemical = stackClass.getMethod("getChemical");
-            insert = handlerClass.getMethod("insertChemical", stackClass, actionClass);
-            extractAmount = handlerClass.getMethod("extractChemical", long.class, actionClass);
-            extractStack = handlerClass.getMethod("extractChemical", stackClass, actionClass);
 
-            @SuppressWarnings("unchecked")
-            BlockCapability<Object, Direction> capability = (BlockCapability<Object, Direction>) BlockCapability.createSided(
-                    ResourceLocation.fromNamespaceAndPath("mekanism", "chemical_handler"), (Class<Object>) handlerClass);
-            blockCapability = capability;
+            getAmount = chemicalStackClass.getMethod("getAmount");
+            isEmpty = chemicalStackClass.getMethod("isEmpty");
+            getType = chemicalStackClass.getMethod("getType");
+
+            Class<?> chemicalHandlerClass = Class.forName("mekanism.api.chemical.IChemicalHandler");
+            insert = chemicalHandlerClass.getMethod("insertChemical", chemicalStackClass, actionClass);
+            extractAmount = chemicalHandlerClass.getMethod("extractChemical", long.class, actionClass);
+            extractStack = chemicalHandlerClass.getMethod("extractChemical", chemicalStackClass, actionClass);
+
+            List<ChemicalType> resolved = new ArrayList<>(4);
+            addType(resolved, apiClass, chemicalClass, "gas", "gasRegistry", "EMPTY_GAS",
+                    "mekanism.api.chemical.gas.GasStack", "mekanism.api.providers.IGasProvider",
+                    "GAS_HANDLER", "mekanism.api.chemical.gas.IGasHandler", true);
+            addType(resolved, apiClass, chemicalClass, "infuse_type", "infuseTypeRegistry", "EMPTY_INFUSE_TYPE",
+                    "mekanism.api.chemical.infuse.InfusionStack", "mekanism.api.providers.IInfuseTypeProvider",
+                    "INFUSION_HANDLER", "mekanism.api.chemical.infuse.IInfusionHandler", false);
+            addType(resolved, apiClass, chemicalClass, "pigment", "pigmentRegistry", "EMPTY_PIGMENT",
+                    "mekanism.api.chemical.pigment.PigmentStack", "mekanism.api.providers.IPigmentProvider",
+                    "PIGMENT_HANDLER", "mekanism.api.chemical.pigment.IPigmentHandler", false);
+            addType(resolved, apiClass, chemicalClass, "slurry", "slurryRegistry", "EMPTY_SLURRY",
+                    "mekanism.api.chemical.slurry.SlurryStack", "mekanism.api.providers.ISlurryProvider",
+                    "SLURRY_HANDLER", "mekanism.api.chemical.slurry.ISlurryHandler", false);
+
+            if (resolved.isEmpty()) {
+                throw new IllegalStateException("No Mekanism chemical registries could be resolved");
+            }
+            types = List.copyOf(resolved);
+            emptyStack = Class.forName("mekanism.api.chemical.gas.GasStack").getField("EMPTY").get(null);
             present = true;
-        } catch (ReflectiveOperationException | LinkageError ex) {
+        } catch (ReflectiveOperationException | LinkageError | IllegalStateException ex) {
             LOGGER.debug("Mekanism API not detected; chemical chickens will stay disabled", ex);
         }
         AVAILABLE = present;
-        CHEMICAL_REGISTRY = registry;
-        EMPTY_CHEMICAL_NAME = empty;
+        TYPES = types;
         CHEMICAL_GET_ICON = getIcon;
         CHEMICAL_GET_TINT = getTint;
         CHEMICAL_GET_TEXT_COMPONENT = getTextComponent;
-        CHEMICAL_IS_GASEOUS = isGaseous;
-        CHEMICAL_IS_RADIOACTIVE = isRadioactive;
-        CHEMICAL_CLASS = chemicalClass;
-        CHEMICAL_STACK_CLASS = stackClass;
-        CHEMICAL_HANDLER_CLASS = handlerClass;
+        CHEMICAL_HAS_ATTRIBUTE = hasAttribute;
+        RADIATION_ATTRIBUTE_CLASS = radiationClass;
+        CHEMICAL_STACK_CLASS = chemicalStackClass;
         ACTION_CLASS = actionClass;
         ACTION_EXECUTE = actionExecute;
         ACTION_SIMULATE = actionSimulate;
         EMPTY_STACK = emptyStack;
         CHEMICAL_STACK_GET_AMOUNT = getAmount;
         CHEMICAL_STACK_IS_EMPTY = isEmpty;
-        CHEMICAL_STACK_GET_CHEMICAL = getChemical;
+        CHEMICAL_STACK_GET_TYPE = getType;
         CHEMICAL_HANDLER_INSERT = insert;
         CHEMICAL_HANDLER_EXTRACT_AMOUNT = extractAmount;
         CHEMICAL_HANDLER_EXTRACT_STACK = extractStack;
-        CHEMICAL_STACK_CTOR = stackCtor;
-        CHEMICAL_STACK_CTOR_LEGACY = legacyStackCtor;
-        CHEMICAL_BLOCK_CAPABILITY = blockCapability;
-        REGISTRY_WRAP_AS_HOLDER = wrapAsHolderLocal;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addType(List<ChemicalType> target,
+                                Class<?> apiClass,
+                                Class<?> chemicalClass,
+                                String name,
+                                String registryAccessor,
+                                String emptyField,
+                                String stackClassName,
+                                String providerClassName,
+                                String capabilityField,
+                                String handlerClassName,
+                                boolean gaseous) {
+        try {
+            IForgeRegistry<Object> registry =
+                    (IForgeRegistry<Object>) apiClass.getMethod(registryAccessor).invoke(null);
+            if (registry == null) {
+                return;
+            }
+            Object empty = apiClass.getField(emptyField).get(null);
+            ResourceLocation emptyId =
+                    (ResourceLocation) chemicalClass.getMethod("getRegistryName").invoke(empty);
+            Constructor<?> stackConstructor = Class.forName(stackClassName)
+                    .getConstructor(Class.forName(providerClassName), long.class);
+            target.add(new ChemicalType(name, registry, gaseous, emptyId, stackConstructor,
+                    resolveCapability(capabilityField), findClass(handlerClassName)));
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            LOGGER.debug("Mekanism {} registry unavailable", name, ex);
+        }
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private static Capability<Object> resolveCapability(String fieldName) {
+        try {
+            Class<?> capabilities = Class.forName("mekanism.common.capabilities.Capabilities");
+            return (Capability<Object>) capabilities.getField(fieldName).get(null);
+        } catch (ReflectiveOperationException | LinkageError ex) {
+            LOGGER.debug("Mekanism capability {} unavailable", fieldName, ex);
+            return null;
+        }
     }
 
     private MekanismChemicalHelper() {
     }
 
     public static boolean isAvailable() {
-        return AVAILABLE && CHEMICAL_REGISTRY != null
+        return AVAILABLE && !TYPES.isEmpty()
                 && CHEMICAL_GET_ICON != null
                 && CHEMICAL_GET_TINT != null
                 && CHEMICAL_GET_TEXT_COMPONENT != null
-                && CHEMICAL_IS_GASEOUS != null
-                && CHEMICAL_IS_RADIOACTIVE != null;
+                && CHEMICAL_HAS_ATTRIBUTE != null
+                && RADIATION_ATTRIBUTE_CLASS != null;
     }
 
     public static Collection<ChemicalData> getChemicals() {
@@ -212,77 +211,119 @@ public final class MekanismChemicalHelper {
             return Collections.emptyList();
         }
         List<ChemicalData> results = new ArrayList<>();
-        for (Object chemical : CHEMICAL_REGISTRY) {
-            try {
-                ResourceLocation id = CHEMICAL_REGISTRY.getKey(chemical);
-                if (id == null || id.equals(EMPTY_CHEMICAL_NAME)) {
-                    continue;
+        for (ChemicalType type : TYPES) {
+            for (Object chemical : type.registry().getValues()) {
+                try {
+                    ResourceLocation id = type.registry().getKey(chemical);
+                    if (id == null || id.equals(type.emptyId())) {
+                        continue;
+                    }
+                    ResourceLocation texture = (ResourceLocation) CHEMICAL_GET_ICON.invoke(chemical);
+                    if (texture == null) {
+                        continue;
+                    }
+                    int tint = (int) CHEMICAL_GET_TINT.invoke(chemical);
+                    Component name = ((Component) CHEMICAL_GET_TEXT_COMPONENT.invoke(chemical)).copy();
+                    results.add(new ChemicalData(id, texture, name, tint, type.gaseous(), hasRadiation(chemical)));
+                } catch (IllegalAccessException | InvocationTargetException ex) {
+                    LOGGER.warn("Unable to read Mekanism chemical data", ex);
                 }
-                ResourceLocation texture = (ResourceLocation) CHEMICAL_GET_ICON.invoke(chemical);
-                if (texture == null) {
-                    continue;
-                }
-                int tint = (int) CHEMICAL_GET_TINT.invoke(chemical);
-                Component name = ((Component) CHEMICAL_GET_TEXT_COMPONENT.invoke(chemical)).copy();
-                boolean gaseous = (boolean) CHEMICAL_IS_GASEOUS.invoke(chemical);
-                boolean radioactive = (boolean) CHEMICAL_IS_RADIOACTIVE.invoke(chemical);
-                results.add(new ChemicalData(id, texture, name, tint, gaseous, radioactive));
-            } catch (IllegalAccessException | InvocationTargetException ex) {
-                LOGGER.warn("Unable to read Mekanism chemical data", ex);
             }
         }
         return results;
     }
 
-    /**
-     * @return {@code true} when Mekanism's chemical capability classes are
-     *         present on the classpath and reflective lookups succeeded.
-     */
-    public static boolean isChemicalCapabilityAvailable() {
-        return isAvailable()
-                && CHEMICAL_HANDLER_CLASS != null
-                && CHEMICAL_BLOCK_CAPABILITY != null
-                && ACTION_CLASS != null
-                && (CHEMICAL_STACK_CTOR_LEGACY != null || CHEMICAL_STACK_CTOR != null);
+    private static boolean hasRadiation(Object chemical) {
+        try {
+            return (boolean) CHEMICAL_HAS_ATTRIBUTE.invoke(chemical, RADIATION_ATTRIBUTE_CLASS);
+        } catch (IllegalAccessException | InvocationTargetException ex) {
+            LOGGER.debug("Unable to inspect Mekanism chemical radioactivity", ex);
+            return false;
+        }
     }
 
     @Nullable
-    public static BlockCapability<Object, Direction> getChemicalBlockCapability() {
-        return isChemicalCapabilityAvailable() ? CHEMICAL_BLOCK_CAPABILITY : null;
+    private static ChemicalType typeForId(ResourceLocation id) {
+        for (ChemicalType type : TYPES) {
+            if (type.registry().containsKey(id)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static ChemicalType typeForChemical(Object chemical) {
+        for (ChemicalType type : TYPES) {
+            if (type.registry().getKey(chemical) != null) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return {@code true} when the Mekanism chemical capability classes are
+     *         present on the classpath and reflective lookups succeeded.
+     */
+    public static boolean isChemicalCapabilityAvailable() {
+        return isAvailable() && ACTION_CLASS != null && !getChemicalCapabilities().isEmpty();
+    }
+
+    public static List<Capability<Object>> getChemicalCapabilities() {
+        if (!AVAILABLE) {
+            return List.of();
+        }
+        List<Capability<Object>> capabilities = new ArrayList<>(TYPES.size());
+        for (ChemicalType type : TYPES) {
+            if (type.capability() != null) {
+                capabilities.add(type.capability());
+            }
+        }
+        return capabilities;
+    }
+
+    public static boolean isChemicalCapability(Capability<?> capability) {
+        for (ChemicalType type : TYPES) {
+            if (type.capability() != null && type.capability() == capability) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
     public static Object createStack(ResourceLocation id, long amount) {
-        if (id == null || amount <= 0) {
+        if (id == null || amount <= 0 || !isAvailable()) {
             return EMPTY_STACK;
         }
-        Object chemical = getChemical(id);
-        if (chemical == null) {
+        ChemicalType type = typeForId(id);
+        if (type == null) {
             return EMPTY_STACK;
         }
-        return createStack(chemical, amount);
+        return buildStack(type, type.registry().getValue(id), amount);
     }
 
     @Nullable
     public static Object createStack(Object chemical, long amount) {
-        if (!isChemicalCapabilityAvailable() || chemical == null || amount <= 0) {
+        if (!isAvailable() || chemical == null || amount <= 0) {
+            return EMPTY_STACK;
+        }
+        ChemicalType type = typeForChemical(chemical);
+        return type == null ? EMPTY_STACK : buildStack(type, chemical, amount);
+    }
+
+    @Nullable
+    private static Object buildStack(ChemicalType type, @Nullable Object chemical, long amount) {
+        if (chemical == null) {
             return EMPTY_STACK;
         }
         try {
-            if (CHEMICAL_STACK_CTOR_LEGACY != null && CHEMICAL_CLASS != null
-                    && CHEMICAL_CLASS.isInstance(chemical)) {
-                return CHEMICAL_STACK_CTOR_LEGACY.newInstance(chemical, amount);
-            }
-            if (CHEMICAL_STACK_CTOR != null && REGISTRY_WRAP_AS_HOLDER != null && CHEMICAL_REGISTRY != null) {
-                Object holder = REGISTRY_WRAP_AS_HOLDER.invoke(CHEMICAL_REGISTRY, chemical);
-                if (holder != null) {
-                    return CHEMICAL_STACK_CTOR.newInstance(holder, amount);
-                }
-            }
+            return type.stackConstructor().newInstance(chemical, amount);
         } catch (ReflectiveOperationException ex) {
-            LOGGER.warn("Unable to construct Mekanism ChemicalStack", ex);
+            LOGGER.warn("Unable to construct a Mekanism {} stack", type.name(), ex);
+            return EMPTY_STACK;
         }
-        return EMPTY_STACK;
     }
 
     public static boolean isStackEmpty(@Nullable Object stack) {
@@ -311,12 +352,11 @@ public final class MekanismChemicalHelper {
 
     @Nullable
     public static ResourceLocation getStackChemicalId(@Nullable Object stack) {
-        if (stack == null || CHEMICAL_STACK_GET_CHEMICAL == null) {
+        if (stack == null || CHEMICAL_STACK_GET_TYPE == null) {
             return null;
         }
         try {
-            Object chemical = CHEMICAL_STACK_GET_CHEMICAL.invoke(stack);
-            return getChemicalId(chemical);
+            return getChemicalId(CHEMICAL_STACK_GET_TYPE.invoke(stack));
         } catch (IllegalAccessException | InvocationTargetException ex) {
             LOGGER.warn("Unable to read Mekanism ChemicalStack chemical", ex);
             return null;
@@ -335,20 +375,21 @@ public final class MekanismChemicalHelper {
             Object action = simulate ? ACTION_SIMULATE : ACTION_EXECUTE;
             return CHEMICAL_HANDLER_INSERT.invoke(handler, stack, action);
         } catch (IllegalAccessException | InvocationTargetException ex) {
-            LOGGER.warn("Unable to insert chemical into Mekanism handler", ex);
+            LOGGER.warn("Unable to insert chemical into a Mekanism handler", ex);
             return stack;
         }
     }
 
     public static Object extractChemical(Object handler, long amount, boolean simulate) {
-        if (!isChemicalCapabilityAvailable() || handler == null || CHEMICAL_HANDLER_EXTRACT_AMOUNT == null || amount <= 0) {
+        if (!isChemicalCapabilityAvailable() || handler == null || CHEMICAL_HANDLER_EXTRACT_AMOUNT == null
+                || amount <= 0) {
             return EMPTY_STACK;
         }
         try {
             Object action = simulate ? ACTION_SIMULATE : ACTION_EXECUTE;
             return CHEMICAL_HANDLER_EXTRACT_AMOUNT.invoke(handler, amount, action);
         } catch (IllegalAccessException | InvocationTargetException ex) {
-            LOGGER.warn("Unable to extract chemical from Mekanism handler", ex);
+            LOGGER.warn("Unable to extract chemical from a Mekanism handler", ex);
             return EMPTY_STACK;
         }
     }
@@ -362,17 +403,23 @@ public final class MekanismChemicalHelper {
             Object action = simulate ? ACTION_SIMULATE : ACTION_EXECUTE;
             return CHEMICAL_HANDLER_EXTRACT_STACK.invoke(handler, template, action);
         } catch (IllegalAccessException | InvocationTargetException ex) {
-            LOGGER.warn("Unable to extract typed chemical from Mekanism handler", ex);
+            LOGGER.warn("Unable to extract a typed chemical from a Mekanism handler", ex);
             return EMPTY_STACK;
         }
     }
 
     @Nullable
     public static Object getBlockChemicalHandler(@Nullable Level level, BlockPos pos, Direction direction) {
-        if (!isChemicalCapabilityAvailable() || level == null || CHEMICAL_BLOCK_CAPABILITY == null) {
+        if (level == null) {
             return null;
         }
-        return level.getCapability(CHEMICAL_BLOCK_CAPABILITY, pos, direction);
+        for (Capability<Object> capability : getChemicalCapabilities()) {
+            Object handler = NeighbourCaps.find(level, pos, capability, direction);
+            if (handler != null) {
+                return handler;
+            }
+        }
+        return null;
     }
 
     public static Object getAction(boolean execute) {
@@ -381,37 +428,65 @@ public final class MekanismChemicalHelper {
 
     @Nullable
     public static Object getChemical(ResourceLocation id) {
-        if (!isAvailable() || id == null || CHEMICAL_REGISTRY == null) {
+        if (!isAvailable() || id == null) {
             return null;
         }
-        return CHEMICAL_REGISTRY.get(id);
+        ChemicalType type = typeForId(id);
+        return type == null ? null : type.registry().getValue(id);
     }
 
     @Nullable
     public static ResourceLocation getChemicalId(Object chemical) {
-        if (!isAvailable() || chemical == null || CHEMICAL_REGISTRY == null) {
+        if (!isAvailable() || chemical == null) {
             return null;
         }
-        return CHEMICAL_REGISTRY.getKey(chemical);
+        ChemicalType type = typeForChemical(chemical);
+        return type == null ? null : type.registry().getKey(chemical);
     }
 
     public static boolean isRadioactive(@Nullable ResourceLocation id) {
-        if (id == null || CHEMICAL_IS_RADIOACTIVE == null) {
+        if (id == null || CHEMICAL_HAS_ATTRIBUTE == null || RADIATION_ATTRIBUTE_CLASS == null) {
             return false;
         }
         Object chemical = getChemical(id);
-        if (chemical == null) {
-            return false;
+        return chemical != null && hasRadiation(chemical);
+    }
+
+    /** The capability that matches a chemical family. Exposing a single tank under
+     *  every family would make Mekanism report the same contents once per family. */
+    @Nullable
+    public static Capability<Object> capabilityForChemical(@Nullable ResourceLocation id) {
+        if (id == null) {
+            return null;
         }
+        ChemicalType type = typeForId(id);
+        return type == null ? null : type.capability();
+    }
+
+    /** The handler interface backing a chemical capability. Each Mekanism chemical
+     *  family declares its own { getEmptyStack} return type, so a proxy may only
+     *  implement one of them at a time. */
+    @Nullable
+    public static Class<?> handlerInterfaceFor(Capability<?> capability) {
+        for (ChemicalType type : TYPES) {
+            if (type.capability() != null && type.capability() == capability) {
+                return type.handlerInterface();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Class<?> findClass(String name) {
         try {
-            return (boolean) CHEMICAL_IS_RADIOACTIVE.invoke(chemical);
-        } catch (IllegalAccessException | InvocationTargetException ex) {
-            LOGGER.debug("Unable to inspect Mekanism chemical radioactivity", ex);
-            return false;
+            return Class.forName(name);
+        } catch (ClassNotFoundException | LinkageError ex) {
+            LOGGER.debug("Mekanism handler interface {} unavailable", name, ex);
+            return null;
         }
     }
 
-    /** Returns Mekanism's runtime tint for a chemical, or white when unavailable. */
+    /** Returns the Mekanism runtime tint for a chemical, or white when unavailable. */
     public static int getChemicalTint(@Nullable ResourceLocation id) {
         if (id == null || CHEMICAL_GET_TINT == null) {
             return 0xFFFFFF;

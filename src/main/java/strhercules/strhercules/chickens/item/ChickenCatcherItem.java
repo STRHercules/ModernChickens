@@ -65,7 +65,7 @@ public class ChickenCatcherItem extends Item {
                     playSound(level, position, SoundEvents.CHICKEN_EGG);
                     EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
                             ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-                    stack.hurtAndBreak(1, player, slot);
+                    stack.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(slot));
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -93,7 +93,7 @@ public class ChickenCatcherItem extends Item {
             EquipmentSlot slot = hand == net.minecraft.world.InteractionHand.MAIN_HAND
                     ? EquipmentSlot.MAINHAND
                     : EquipmentSlot.OFFHAND;
-            stack.hurtAndBreak(1, player, slot);
+            stack.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(slot));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -113,7 +113,7 @@ public class ChickenCatcherItem extends Item {
             spawnParticles(level, position, false);
             playSound(level, position, SoundEvents.CHICKEN_EGG);
             EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-            catcher.hurtAndBreak(1, player, slot);
+            catcher.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(slot));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -139,7 +139,7 @@ public class ChickenCatcherItem extends Item {
             EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
                     ? EquipmentSlot.MAINHAND
                     : EquipmentSlot.OFFHAND;
-            catcher.hurtAndBreak(1, player, slot);
+            catcher.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(slot));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

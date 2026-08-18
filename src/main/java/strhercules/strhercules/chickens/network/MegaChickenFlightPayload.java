@@ -1,45 +1,43 @@
 package strhercules.chickens.network;
 
-import strhercules.chickens.ChickensMod;
 import strhercules.chickens.entity.MegaChicken;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.minecraftforge.network.NetworkEvent;
 
-public record MegaChickenFlightPayload(boolean jumping, boolean diving, boolean airbraking)
-        implements CustomPacketPayload {
-    public static final Type<MegaChickenFlightPayload> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "mega_chicken_flight"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, MegaChickenFlightPayload> STREAM_CODEC =
-            StreamCodec.composite(ByteBufCodecs.BOOL, MegaChickenFlightPayload::jumping,
-                    ByteBufCodecs.BOOL, MegaChickenFlightPayload::diving,
-                    ByteBufCodecs.BOOL, MegaChickenFlightPayload::airbraking, MegaChickenFlightPayload::new);
+import java.util.function.Supplier;
 
-    public static void init(IEventBus modBus) {
-        modBus.addListener(MegaChickenFlightPayload::register);
+public record MegaChickenFlightPayload(boolean jumping, boolean diving, boolean airbraking) {
+
+    public static void send(boolean jumping, boolean diving, boolean airbraking) {
+        ChickensNetwork.CHANNEL.sendToServer(new MegaChickenFlightPayload(jumping, diving, airbraking));
     }
 
-    private static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar("1").playToServer(TYPE, STREAM_CODEC, (payload, context) -> {
-            if (context.player() instanceof ServerPlayer player
-                    && player.getVehicle() instanceof MegaChicken chicken
-                    && chicken.getOwnerUUID() != null
-                    && chicken.getOwnerUUID().equals(player.getUUID())
-                    && chicken.hasFlyingEgg()) {
-                chicken.setJumpRequested(payload.jumping());
-                chicken.setDiveRequested(payload.diving() && !chicken.onGround());
-                chicken.setAirbrakeRequested(payload.airbraking() && !chicken.onGround());
-            }
-        });
+    public void encode(FriendlyByteBuf buffer) {
+        buffer.writeBoolean(jumping);
+        buffer.writeBoolean(diving);
+        buffer.writeBoolean(airbraking);
     }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public static MegaChickenFlightPayload decode(FriendlyByteBuf buffer) {
+        return new MegaChickenFlightPayload(buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean());
+    }
+
+    public void handle(Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        ctx.enqueueWork(() -> apply(ctx.getSender()));
+        ctx.setPacketHandled(true);
+    }
+
+    private void apply(ServerPlayer player) {
+        if (player != null
+                && player.getVehicle() instanceof MegaChicken chicken
+                && chicken.getOwnerUUID() != null
+                && chicken.getOwnerUUID().equals(player.getUUID())
+                && chicken.hasFlyingEgg()) {
+            chicken.setJumpRequested(jumping);
+            chicken.setDiveRequested(diving && !chicken.onGround());
+            chicken.setAirbrakeRequested(airbraking && !chicken.onGround());
+        }
     }
 }

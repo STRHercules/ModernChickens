@@ -11,9 +11,9 @@ import net.minecraft.util.Mth;
  * legacy Hatchery rooster texture maps correctly onto the geometry.
  */
 public class RoosterRenderer extends MobRenderer<Rooster, RoosterModel> {
-    private static final ResourceLocation ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation ROOSTER_TEXTURE = new ResourceLocation("chickens",
             "textures/entity/rooster.png");
-    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation ROBOT_ROOSTER_TEXTURE = new ResourceLocation("chickens",
             "textures/entity/robot_rooster.png");
 
     public RoosterRenderer(EntityRendererProvider.Context context) {

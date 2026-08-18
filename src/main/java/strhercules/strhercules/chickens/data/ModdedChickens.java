@@ -72,7 +72,7 @@ final class ModdedChickens {
     }
 
     private static ResourceLocation texture(String path) {
-        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
+        return new ResourceLocation(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
     }
 
     private static Map<String, ChickensRegistryItem> buildRegistryIndex() {
@@ -954,7 +954,7 @@ final class ModdedChickens {
     }
 
     private static Optional<ItemStack> stackFromTag(int count, String tagName) {
-        ResourceLocation id = ResourceLocation.parse(tagName);
+        ResourceLocation id = new ResourceLocation(tagName);
         TagKey<Item> tag = TagKey.create(Registries.ITEM, id);
         Optional<ItemStack> fromHolderSet = BuiltInRegistries.ITEM.getTag(tag)
                 .flatMap(set -> set.stream().findFirst())
@@ -988,7 +988,7 @@ final class ModdedChickens {
     }
 
     private static Optional<ItemStack> stackFromItem(int count, String itemId) {
-        ResourceLocation id = ResourceLocation.parse(itemId);
+        ResourceLocation id = new ResourceLocation(itemId);
         return BuiltInRegistries.ITEM.getOptional(id)
                 .map(item -> new ItemStack(item, count));
     }
@@ -1082,10 +1082,10 @@ final class ModdedChickens {
             return Optional.empty();
         }
         for (ChickensRegistryItem chicken : chickens) {
-            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), stack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createLayItem(), stack)) {
                 return Optional.of(chicken);
             }
-            if (ItemStack.isSameItemSameComponents(chicken.createDropItem(), stack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createDropItem(), stack)) {
                 return Optional.of(chicken);
             }
         }

@@ -19,16 +19,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.BlockItem;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
 
 public final class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB,
             ChickensMod.MOD_ID);
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = TABS.register("main",
+    public static final RegistryObject<CreativeModeTab> MAIN = TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.chickens.main"))
                     .icon(() -> new ItemStack(ModRegistry.CATCHER.get()))
@@ -70,7 +69,7 @@ public final class ModCreativeTabs {
                         }
 
                         // Gallineros (todas las variantes de madera)
-                        for (DeferredItem<BlockItem> item : ModRegistry.getHenhouseItems()) {
+                        for (RegistryObject<BlockItem> item : ModRegistry.getHenhouseItems()) {
                             output.accept(item.get());
                         }
 

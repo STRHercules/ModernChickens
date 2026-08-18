@@ -1,5 +1,6 @@
 package strhercules.chickens.integration.wthit;
 
+import strhercules.chickens.registry.ModTags;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import strhercules.chickens.integration.wthit.overlay.HudOverlayHelper;
 import mcp.mobius.waila.api.IDataProvider;
@@ -9,7 +10,7 @@ import mcp.mobius.waila.api.IServerAccessor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 /**
  * Reports the henhouse hay buffer so WTHIT can display the current fuel and any
@@ -30,11 +31,11 @@ final class HenhouseProvider implements IDataProvider<HenhouseBlockEntity> {
         if (hayCount > 0) {
             helper.addText(Component.translatable("tooltip.chickens.henhouse.hay", hayCount));
         }
-        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
+        writer.add(HudOverlayHelper.class, result -> result.add(helper));
     }
 
     private static boolean isHayFuel(ItemStack stack) {
         return !stack.isEmpty()
-                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(Tags.Items.STORAGE_BLOCKS_WHEAT));
+                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(ModTags.STORAGE_BLOCKS_WHEAT));
     }
 }

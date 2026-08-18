@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +42,7 @@ abstract class AvianMachineBlockEntityRenderer<T extends BlockEntity> implements
     private static final int CONTENT_ALPHA = 210;
     private static final int INTERIOR_COLOR = 0xFFFFFFFF;
     private static final ResourceLocation INTERIOR_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("chickens", "block/machines/fluid_pump_interior");
+            new ResourceLocation("chickens", "block/machines/fluid_pump_interior");
 
     protected AvianMachineBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -250,12 +250,13 @@ abstract class AvianMachineBlockEntityRenderer<T extends BlockEntity> implements
     private static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int color, int packedLight,
             int packedOverlay, float normalX, float normalY, float normalZ,
             float x, float y, float z, float u, float v) {
-        consumer.addVertex(pose, x, y, z)
-                .setColor(color)
-                .setUv(u, v)
-                .setOverlay(packedOverlay)
-                .setLight(packedLight)
-                .setNormal(pose, normalX, normalY, normalZ);
+        consumer.vertex(pose.pose(), x, y, z)
+                .color(color)
+                .uv(u, v)
+                .overlayCoords(packedOverlay)
+                .uv2(packedLight)
+                .normal(pose.normal(), normalX, normalY, normalZ)
+                .endVertex();
     }
 
     protected record TankContents(ResourceLocation texture, int tint, int amount, int capacity) {

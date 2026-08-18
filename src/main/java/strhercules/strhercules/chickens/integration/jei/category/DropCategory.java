@@ -21,8 +21,8 @@ import net.minecraft.resources.ResourceLocation;
  * as the original mod to preserve the nostalgic UI.
  */
 public class DropCategory implements IRecipeCategory<ChickensJeiRecipeTypes.DropRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/drops.png");
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/drops_icon.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/drops.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/drops_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;

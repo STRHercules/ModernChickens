@@ -5,7 +5,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.ModelEvent;
 
 /**
  * Utility that replaces the baked chicken item model with a version that
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
  */
 public final class ChickenItemModels {
     private static final ModelResourceLocation CHICKEN_MODEL = new ModelResourceLocation(
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chicken"), "inventory");
+            new ResourceLocation(ChickensMod.MOD_ID, "chicken"), "inventory");
 
     private ChickenItemModels() {
     }
@@ -23,7 +23,7 @@ public final class ChickenItemModels {
     /**
      * Installs the {@link CustomChickenItemOverrides} wrapper when the base
      * chicken model finishes baking. If the vanilla model is missing we skip
-     * the injection so the game keeps using whatever fallback NeoForge
+     * the injection so the game keeps using whatever fallback Forge
      * provides.
      */
     public static void injectOverrides(ModelEvent.ModifyBakingResult event) {

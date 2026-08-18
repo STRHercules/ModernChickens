@@ -21,8 +21,8 @@ import net.minecraft.resources.ResourceLocation;
  * are converted into dirt within the block entity.
  */
 public class HenhousingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.HenhouseRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/henhouse.png");
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/henhousing_icon.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/henhouse.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/henhousing_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;

@@ -2,7 +2,7 @@ package strhercules.chickens.data;
 
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.SpawnType;
-import net.neoforged.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

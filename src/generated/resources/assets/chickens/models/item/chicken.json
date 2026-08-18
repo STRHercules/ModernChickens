@@ -446,12 +446,6 @@
       }
     },
     {
-      "model": "chickens:item/chicken/superpoopchicken",
-      "predicate": {
-        "custom_model_data": 615
-      }
-    },
-    {
       "model": "chickens:item/chicken/chickennosto",
       "predicate": {
         "custom_model_data": 624

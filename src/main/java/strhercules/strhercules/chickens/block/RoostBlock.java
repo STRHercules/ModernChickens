@@ -1,6 +1,7 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.RoostBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
@@ -38,7 +39,6 @@ import javax.annotation.Nullable;
  * manual automation.
  */
 public class RoostBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<RoostBlock> CODEC = simpleCodec(RoostBlock::new);
 
     public RoostBlock() {
         this(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 5.0F).sound(SoundType.WOOD));
@@ -49,10 +49,6 @@ public class RoostBlock extends HorizontalDirectionalBlock implements EntityBloc
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    @Override
-    public MapCodec<RoostBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -77,7 +73,7 @@ public class RoostBlock extends HorizontalDirectionalBlock implements EntityBloc
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof RoostBlockEntity roost)) {
             return InteractionResult.PASS;
@@ -89,7 +85,7 @@ public class RoostBlock extends HorizontalDirectionalBlock implements EntityBloc
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(roost, pos);
+            NetworkHooks.openScreen(serverPlayer, roost, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

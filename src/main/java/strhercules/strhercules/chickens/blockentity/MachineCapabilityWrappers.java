@@ -2,9 +2,9 @@ package strhercules.chickens.blockentity;
 
 import strhercules.chickens.integration.mekanism.MekanismChemicalHelper;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -99,15 +99,17 @@ public final class MachineCapabilityWrappers {
     /** Adds side-aware input/output policy to Mekanism's reflective chemical handler. */
     @Nullable
     public static Object chemical(@Nullable Object delegate, MachineSideConfig config,
-            @Nullable Direction side) {
+            @Nullable Direction side, @Nullable Class<?> handlerType) {
         if (delegate == null) {
             return null;
         }
         if (side == null) {
             return delegate;
         }
+        if (handlerType == null) {
+            return delegate;
+        }
         try {
-            Class<?> handlerType = Class.forName("mekanism.api.chemical.IChemicalHandler");
             return Proxy.newProxyInstance(handlerType.getClassLoader(), new Class<?>[] { handlerType },
                     (proxy, method, args) -> {
                         String name = method.getName();
@@ -142,7 +144,7 @@ public final class MachineCapabilityWrappers {
                             throw exception.getCause();
                         }
                     });
-        } catch (ReflectiveOperationException | LinkageError exception) {
+        } catch (LinkageError exception) {
             // The caller only reaches this path when a compatible handler was
             // already created. Keep that handler usable if a future Mekanism
             // API changes its interface name or class loader.

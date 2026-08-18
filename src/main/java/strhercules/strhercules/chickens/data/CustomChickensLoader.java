@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,7 +157,7 @@ public final class CustomChickensLoader {
         ResourceLocation texture = parseResource(definition.texture(), "texture", name);
         if (texture == null) {
             if (Boolean.TRUE.equals(definition.generatedTexture())) {
-                ResourceLocation fallback = ResourceLocation.fromNamespaceAndPath(
+                ResourceLocation fallback = new ResourceLocation(
                         ChickensMod.MOD_ID, "textures/entity/whitechicken.png");
                 LOGGER.warn(
                         "Custom chicken '{}' will use generated texture base {} because the configured texture '{}' was invalid",

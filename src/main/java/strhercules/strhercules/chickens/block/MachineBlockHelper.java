@@ -1,7 +1,6 @@
 package strhercules.chickens.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -46,7 +45,7 @@ final class MachineBlockHelper {
         if (blockEntity instanceof Nameable nameable) {
             var customName = nameable.getCustomName();
             if (customName != null) {
-                drop.set(DataComponents.CUSTOM_NAME, customName);
+                drop.setHoverName(customName);
             }
         }
         Block.popResource(level, pos, drop);

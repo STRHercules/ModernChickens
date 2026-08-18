@@ -2,8 +2,8 @@ package strhercules.chickens;
 
 import strhercules.chickens.config.ChickensConfigHolder;
 import net.minecraft.world.entity.animal.Chicken;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingEvent;
 
 /**
  * Disables vanilla egg laying so the Roost gameplay loop mirrors the legacy
@@ -18,10 +18,10 @@ public final class RoostEggPreventer {
      * Registers the living tick listener once the mod finishes bootstrapping.
      */
     public static void init() {
-        NeoForge.EVENT_BUS.addListener(RoostEggPreventer::onEntityTick);
+        MinecraftForge.EVENT_BUS.addListener(RoostEggPreventer::onEntityTick);
     }
 
-    private static void onEntityTick(EntityTickEvent.Pre event) {
+    private static void onEntityTick(LivingEvent.LivingTickEvent event) {
         if (!(event.getEntity() instanceof Chicken chicken)) {
             return;
         }

@@ -46,11 +46,11 @@ public final class DefaultChickens {
         chickens.add(smartChicken);
 
         ChickensRegistryItem vanillaChicken = new ChickensRegistryItem(
-                33, "VanillaChicken", ResourceLocation.fromNamespaceAndPath(
+                33, "VanillaChicken", new ResourceLocation(
                         ChickensMod.MOD_ID, "textures/entity/vanilla.png"),
                 new ItemStack(Items.EGG),
                 0xffffff, 0xffaa00).setSpawnType(SpawnType.NONE)
-                .setItemTexture(ResourceLocation.fromNamespaceAndPath(
+                .setItemTexture(new ResourceLocation(
                         ChickensMod.MOD_ID, "textures/item/chicken/vanilla.png"));
         // vanillaChicken.setLayItem(new ItemStack(Items.EGG));
         // vanillaChicken.setDropItem(new ItemStack(Items.EGG));
@@ -429,12 +429,12 @@ public final class DefaultChickens {
     // Map legacy entity identifiers onto bespoke texture assets supplied with the modern pack.
     private static final Map<String, ResourceLocation> ENTITY_TEXTURE_OVERRIDES = Map.of(
             "redstonefluxchicken",
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/redstone_crystal_chicken.png"));
+            new ResourceLocation(ChickensMod.MOD_ID, "textures/entity/redstone_crystal_chicken.png"));
 
     // Mirror the entity override onto the item sprite so inventory icons match the in-world model.
     private static final Map<String, ResourceLocation> ITEM_TEXTURE_OVERRIDES = Map.of(
             "redstonefluxchicken",
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/chicken/redstonecrystalchicken.png"));
+            new ResourceLocation(ChickensMod.MOD_ID, "textures/item/chicken/redstonecrystalchicken.png"));
 
     private static ResourceLocation texture(String name) {
         String path = name.toLowerCase(Locale.ROOT);
@@ -442,7 +442,7 @@ public final class DefaultChickens {
         if (override != null) {
             return override;
         }
-        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
+        return new ResourceLocation(ChickensMod.MOD_ID, "textures/entity/" + path + ".png");
     }
 
     private static void applyItemTextureOverride(ChickensRegistryItem chicken) {

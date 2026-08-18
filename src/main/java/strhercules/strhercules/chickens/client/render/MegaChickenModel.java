@@ -20,7 +20,7 @@ import java.util.List;
 public final class MegaChickenModel extends AgeableListModel<MegaChicken> {
     private static final CubeDeformation PLANAR_ELEMENT = new CubeDeformation(0.01F);
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "mega_chicken"), "main");
+            new ResourceLocation(ChickensMod.MOD_ID, "mega_chicken"), "main");
 
     private final ModelPart head;
     private final ModelPart beak;

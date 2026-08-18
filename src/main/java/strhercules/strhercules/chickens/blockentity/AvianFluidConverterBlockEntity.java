@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.LiquidEggRegistry;
 import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.block.AvianFluidConverterBlock;
@@ -15,11 +21,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -36,11 +40,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 
@@ -151,7 +154,7 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
             if (toDrain.isEmpty()) {
                 return;
             }
-            var target = level.getCapability(Capabilities.FluidHandler.BLOCK, worldPosition.relative(direction),
+            var target = NeighbourCaps.fluid(level, worldPosition.relative(direction),
                     direction.getOpposite());
             if (target == null) {
                 continue;
@@ -319,23 +322,22 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        saveAdditional(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -346,28 +348,27 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
-        CompoundTag tankTag = tank.writeToNBT(provider, new CompoundTag());
+        ContainerHelper.saveAllItems(tag, items);
+        CompoundTag tankTag = tank.writeToNBT(new CompoundTag());
         tankTag.putInt("Capacity", tank.getCapacity());
         tag.put("Tank", tankTag);
         tag.putInt("TransferRate", transferRate);
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
-                    .result().ifPresent(component -> tag.put("CustomName", component));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         if (tag.contains("Tank", Tag.TAG_COMPOUND)) {
             CompoundTag tankTag = tag.getCompound("Tank");
-            tank.readFromNBT(provider, tankTag);
+            tank.readFromNBT(tankTag);
             if (tankTag.contains("Capacity")) {
                 int storedCapacity = Math.max(FluidType.BUCKET_VOLUME, tankTag.getInt("Capacity"));
                 tank.setCapacity(storedCapacity);
@@ -376,10 +377,8 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
             tank.setFluid(FluidStack.EMPTY);
         }
         transferRate = Math.max(0, tag.getInt("TransferRate"));
-        if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
-            ComponentSerialization.CODEC
-                    .parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.getCompound("CustomName"))
-                    .result().ifPresent(component -> customName = component);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             customName = null;
         }
@@ -435,5 +434,29 @@ public class AvianFluidConverterBlockEntity extends BlockEntity implements World
 
     private static boolean isLiquidEgg(ItemStack stack) {
         return stack.getItem() instanceof LiquidEggItem;
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IFluidHandler> chickensFluidCaps = new SidedCaps<>(this::getFluidTank);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.FLUID_HANDLER) {
+                return chickensFluidCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensFluidCaps.invalidate();
     }
 }

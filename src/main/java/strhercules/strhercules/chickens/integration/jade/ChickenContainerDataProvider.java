@@ -20,7 +20,7 @@ import java.util.List;
 enum ChickenContainerDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chicken_container");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "chicken_container");
     private static final String ETA_KEY = "ChickensEta";
     private static final String TOTAL_KEY = "ChickensTotal";
     private static final String STEP_KEY = "ChickensStep";

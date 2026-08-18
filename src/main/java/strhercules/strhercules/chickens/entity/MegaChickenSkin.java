@@ -40,7 +40,7 @@ public enum MegaChickenSkin {
     }
 
     public ResourceLocation texture() {
-        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+        return new ResourceLocation(ChickensMod.MOD_ID,
                 "textures/entity/megachicken/" + id + "_chicken.png");
     }
 

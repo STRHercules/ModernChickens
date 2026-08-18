@@ -54,28 +54,27 @@ import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.common.MinecraftForge;
 
 /**
  * Client-only hooks for renderer and colour registration. Static event
  * subscribers keep server environments free from accidental client class loads.
  */
-@EventBusSubscriber(modid = ChickensMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = ChickensMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ChickensClient {
     private static final KeyMapping MEGA_CHICKEN_DIVE = new KeyMapping(
             "key.chickens.mega_chicken_dive", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT,
@@ -119,10 +118,11 @@ public final class ChickensClient {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        NeoForge.EVENT_BUS.addListener(ChickensClient::onClientTick);
-        ModLoadingContext.get().getActiveContainer().registerExtensionPoint(IConfigScreenFactory.class,
-                (container, parent) -> new ChickensConfigScreen(parent));
+        MinecraftForge.EVENT_BUS.addListener(ChickensClient::onClientTick);
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ChickensConfigScreen(parent)));
         event.enqueueWork(() -> {
+            registerMenuScreens();
             ItemBlockRenderTypes.setRenderLayer(ModRegistry.BREEDER.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(ModRegistry.LAVA_CHICKEN_FIRE.get(), RenderType.cutout());
         });
@@ -134,7 +134,10 @@ public final class ChickensClient {
         event.register(MEGA_CHICKEN_AIRBRAKE);
     }
 
-    private static void onClientTick(ClientTickEvent.Post event) {
+    private static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.getConnection() == null) {
             lastJumpDown = false;
@@ -160,7 +163,7 @@ public final class ChickensClient {
             chicken.setAirbrakeRequested(airbraking);
         }
         if (jumping != lastJumpDown || diving != lastDiveDown || airbraking != lastAirbrakeDown) {
-            PacketDistributor.sendToServer(new MegaChickenFlightPayload(jumping, diving, airbraking));
+            MegaChickenFlightPayload.send(jumping, diving, airbraking);
             lastJumpDown = jumping;
             lastDiveDown = diving;
             lastAirbrakeDown = airbraking;
@@ -189,23 +192,22 @@ public final class ChickensClient {
         });
     }
 
-    @SubscribeEvent
-    public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+    private static void registerMenuScreens() {
         // Bind the container to its screen so the henhouse GUI renders correctly on the client.
-        event.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
-        event.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
-        event.register(ModMenuTypes.MECHANICAL_ROOST.get(), MechanicalRoostScreen::new);
-        event.register(ModMenuTypes.NEST.get(), NestScreen::new);
-        event.register(ModMenuTypes.MECHANICAL_NEST.get(), MechanicalNestScreen::new);
-        event.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
-        event.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
-        event.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
-        event.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
-        event.register(ModMenuTypes.AVIAN_FLUID_CONVERTER.get(), AvianFluidConverterScreen::new);
-        event.register(ModMenuTypes.AVIAN_CHEMICAL_CONVERTER.get(), AvianChemicalConverterScreen::new);
-        event.register(ModMenuTypes.AVIAN_DOUSING_MACHINE.get(), AvianDousingMachineScreen::new);
-        event.register(ModMenuTypes.INCUBATOR.get(), IncubatorScreen::new);
-        event.register(ModMenuTypes.MEGA_CHICKEN.get(), MegaChickenScreen::new);
+        MenuScreens.register(ModMenuTypes.HENHOUSE.get(), HenhouseScreen::new);
+        MenuScreens.register(ModMenuTypes.ROOST.get(), RoostScreen::new);
+        MenuScreens.register(ModMenuTypes.MECHANICAL_ROOST.get(), MechanicalRoostScreen::new);
+        MenuScreens.register(ModMenuTypes.NEST.get(), NestScreen::new);
+        MenuScreens.register(ModMenuTypes.MECHANICAL_NEST.get(), MechanicalNestScreen::new);
+        MenuScreens.register(ModMenuTypes.ROOSTER.get(), RoosterScreen::new);
+        MenuScreens.register(ModMenuTypes.BREEDER.get(), BreederScreen::new);
+        MenuScreens.register(ModMenuTypes.COLLECTOR.get(), CollectorScreen::new);
+        MenuScreens.register(ModMenuTypes.AVIAN_FLUX_CONVERTER.get(), AvianFluxConverterScreen::new);
+        MenuScreens.register(ModMenuTypes.AVIAN_FLUID_CONVERTER.get(), AvianFluidConverterScreen::new);
+        MenuScreens.register(ModMenuTypes.AVIAN_CHEMICAL_CONVERTER.get(), AvianChemicalConverterScreen::new);
+        MenuScreens.register(ModMenuTypes.AVIAN_DOUSING_MACHINE.get(), AvianDousingMachineScreen::new);
+        MenuScreens.register(ModMenuTypes.INCUBATOR.get(), IncubatorScreen::new);
+        MenuScreens.register(ModMenuTypes.MEGA_CHICKEN.get(), MegaChickenScreen::new);
     }
 
     @SubscribeEvent

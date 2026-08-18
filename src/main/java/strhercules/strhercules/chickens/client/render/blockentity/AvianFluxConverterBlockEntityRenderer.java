@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 public final class AvianFluxConverterBlockEntityRenderer
         extends AvianMachineBlockEntityRenderer<AvianFluxConverterBlockEntity> {
     private static final ResourceLocation ENERGY_TEXTURE =
-            ResourceLocation.withDefaultNamespace("block/white_concrete");
+            new ResourceLocation("minecraft", "block/white_concrete");
     private static final int ENERGY_TINT = 0xFF3C3C;
 
     public AvianFluxConverterBlockEntityRenderer(BlockEntityRendererProvider.Context context) {

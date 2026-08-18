@@ -1,5 +1,12 @@
 package strhercules.chickens.blockentity;
 
+import strhercules.chickens.registry.ModTags;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.menu.HenhouseMenu;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -7,8 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
@@ -29,8 +34,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.common.Tags;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraft.world.level.block.Block;
 
 /**
@@ -206,7 +211,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
 
     private static boolean isHayFuel(ItemStack stack) {
         return !stack.isEmpty()
-                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(Tags.Items.STORAGE_BLOCKS_WHEAT));
+                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(ModTags.STORAGE_BLOCKS_WHEAT));
     }
 
     private ItemStack pushIntoInventory(ItemStack stack) {
@@ -348,7 +353,7 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
         if (slotStack.isEmpty()) {
             return Math.min(getMaxStackSize(), input.getCount());
         }
-        if (!ItemStack.isSameItemSameComponents(slotStack, input)) {
+        if (!ItemStack.isSameItemSameTags(slotStack, input)) {
             return 0;
         }
         int limit = Math.min(getMaxStackSize(), slotStack.getMaxStackSize());
@@ -393,31 +398,27 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putInt("Energy", energy);
         tag.putInt("HayEnergy", hayEnergy);
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
-                    .result()
-                    .ifPresent(serialized -> tag.put("CustomName", serialized));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         energy = Mth.clamp(tag.getInt("Energy"), 0, ENERGY_CAPACITY);
         hayEnergy = Mth.clamp(tag.getInt("HayEnergy"), 0, energy);
         customName = null;
         if (tag.contains("CustomName")) {
-            ComponentSerialization.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.get("CustomName"))
-                    .result()
-                    .ifPresent(component -> customName = component);
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         }
     }
 
@@ -559,5 +560,29 @@ public class HenhouseBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     public MachineSideConfig sideConfig() {
         return sideConfig;
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
     }
 }

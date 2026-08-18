@@ -5,13 +5,11 @@ import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.registry.ModEntityTypes;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -21,7 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -29,19 +27,24 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 /** Portable storage for a Mega Chicken, including its complete entity NBT. */
-@EventBusSubscriber(modid = ChickensMod.MOD_ID)
+@Mod.EventBusSubscriber(modid = ChickensMod.MOD_ID)
 public class MegaChickenItem extends Item {
     private static final String ENTITY_TYPE_TAG = "id";
     private static final String REVIVAL_TAG = "RequiresActivation";
     private static final String ACTIVATED_TAG = "Activated";
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return isActivated(stack) || super.isFoil(stack);
+    }
 
     public MegaChickenItem(Properties properties) {
         super(properties.stacksTo(1));
@@ -56,31 +59,25 @@ public class MegaChickenItem extends Item {
     public static ItemStack createFromDeath(MegaChicken chicken, Item storedItem) {
         chicken.removeAllEffects();
         ItemStack stack = createFromEntity(chicken, storedItem);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+        ItemData.update(stack, tag -> {
             tag.putBoolean(REVIVAL_TAG, true);
             tag.putBoolean(ACTIVATED_TAG, false);
         });
-        stack.set(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
         return stack;
     }
 
     public static boolean requiresActivation(ItemStack stack) {
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
-                .copyTag().getBoolean(REVIVAL_TAG);
+        return ItemData.read(stack)
+                .getBoolean(REVIVAL_TAG);
     }
 
     public static boolean isActivated(ItemStack stack) {
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
-                .copyTag().getBoolean(ACTIVATED_TAG);
+        return ItemData.read(stack)
+                .getBoolean(ACTIVATED_TAG);
     }
 
     public static void setActivated(ItemStack stack, boolean activated) {
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.putBoolean(ACTIVATED_TAG, activated));
-        if (activated) {
-            stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
-        } else {
-            stack.remove(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
-        }
+        ItemData.update(stack, tag -> tag.putBoolean(ACTIVATED_TAG, activated));
     }
 
     private static void storeEntityData(ItemStack stack, MegaChicken chicken) {
@@ -94,18 +91,18 @@ public class MegaChickenItem extends Item {
         entityData.remove("DeathTime");
         entityData.remove("HurtTime");
         entityData.remove("HurtByTimestamp");
-        CustomData.set(DataComponents.ENTITY_DATA, stack, entityData);
+        ItemData.writeEntity(stack, entityData);
     }
 
     private static boolean hasEntityData(ItemStack stack) {
-        CustomData data = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-        return !data.isEmpty() && data.copyTag().contains(ENTITY_TYPE_TAG);
+        CompoundTag data = ItemData.readEntity(stack);
+        return !data.isEmpty() && data.contains(ENTITY_TYPE_TAG);
     }
 
     @Nullable
     private static ResourceLocation readEntityType(ItemStack stack) {
-        CustomData data = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-        return data.isEmpty() ? null : ResourceLocation.tryParse(data.copyTag().getString(ENTITY_TYPE_TAG));
+        CompoundTag data = ItemData.readEntity(stack);
+        return data.isEmpty() ? null : ResourceLocation.tryParse(data.getString(ENTITY_TYPE_TAG));
     }
 
     @Override
@@ -180,7 +177,7 @@ public class MegaChickenItem extends Item {
             return null;
         }
 
-        CompoundTag entityData = stack.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag entityData = ItemData.readEntity(stack);
         chicken.load(entityData);
         double safeY = Math.max(position.y(), level.getMinBuildHeight() + 0.01D);
         chicken.moveTo(position.x(), safeY, position.z(), level.random.nextFloat() * 360.0F, 0.0F);
@@ -228,7 +225,7 @@ public class MegaChickenItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         if (!hasEntityData(stack)) {
             tooltip.add(Component.translatable("item.chickens.mega_chicken.empty"));
         } else if (requiresActivation(stack) && !isActivated(stack)) {
@@ -248,7 +245,6 @@ public class MegaChickenItem extends Item {
             return;
         }
 
-        stack.set(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
         item.setInvulnerable(true);
         item.setNoGravity(true);
         item.setDeltaMovement(Vec3.ZERO);

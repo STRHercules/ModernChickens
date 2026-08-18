@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
  * drawing the ported texture and heart progress bar from the original mod.
  */
 public class BreederScreen extends SideConfigurableScreen<BreederMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/breeder.png");
     private static final int PROGRESS_X = 84;
     private static final int PROGRESS_Y = 22;
@@ -48,7 +48,7 @@ public class BreederScreen extends SideConfigurableScreen<BreederMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);

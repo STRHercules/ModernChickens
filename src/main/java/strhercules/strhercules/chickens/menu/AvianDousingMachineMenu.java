@@ -12,7 +12,7 @@ import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.Objects;
 
@@ -58,7 +58,7 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu implements Si
     private int clientLiquidCost;
     private InfusionMode clientMode = InfusionMode.NONE;
 
-    public AvianDousingMachineMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public AvianDousingMachineMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
@@ -263,7 +263,7 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu implements Si
                 value -> clientItemReagentId = (clientItemReagentId & 0x0000FFFF) | ((value & 0xFFFF) << 16)));
     }
 
-    private static AvianDousingMachineBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static AvianDousingMachineBlockEntity resolveBlockEntity(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(inventory, "playerInventory");
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();
@@ -394,7 +394,7 @@ public class AvianDousingMachineMenu extends AbstractContainerMenu implements Si
         }
         var item = BuiltInRegistries.ITEM.byId(clientItemReagentId);
         return item == null ? ItemStack.EMPTY
-                : new ItemStack(item, Math.min(clientItemReagentCount, item.getDefaultMaxStackSize()));
+                : new ItemStack(item, Math.min(clientItemReagentCount, item.getMaxStackSize()));
     }
 
     public int getItemReagentCount() {

@@ -1,12 +1,12 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.AvianFluxConverterBlockEntity;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,8 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -37,7 +36,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import java.util.List;
 
@@ -49,7 +48,6 @@ import javax.annotation.Nullable;
  * menu, dropping its inventory, and respecting comparator output updates.
  */
 public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<AvianFluxConverterBlock> CODEC = simpleCodec(AvianFluxConverterBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -69,10 +67,6 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<AvianFluxConverterBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -97,13 +91,13 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof AvianFluxConverterBlockEntity converter)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(converter, pos);
+            NetworkHooks.openScreen(serverPlayer, converter, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -157,10 +151,10 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
             if (!level.isClientSide && !player.isCreative()) {
                 ItemStack drop = new ItemStack(this);
                 if (blockEntity instanceof AvianFluxConverterBlockEntity converter) {
-                    converter.saveToItem(drop, level.registryAccess());
+                    converter.saveToItem(drop);
                     var customName = converter.getCustomName();
                     if (customName != null) {
-                        drop.set(DataComponents.CUSTOM_NAME, customName);
+                        drop.setHoverName(customName);
                     }
                 }
                 if (!drop.isEmpty()) {
@@ -171,7 +165,7 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         // Surface the baseline description so players can recall the machine's purpose without
         // visiting the manual or patch notes.
         tooltip.add(Component.translatable("tooltip.chickens.avian_flux_converter"));
@@ -179,9 +173,9 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
         int capacity = Math.max(1, ChickensConfigHolder.get().getAvianFluxCapacity());
         int energy = 0;
 
-        CustomData blockEntityData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        CompoundTag blockEntityData = ItemData.readBlockEntity(stack);
         if (!blockEntityData.isEmpty()) {
-            CompoundTag tag = blockEntityData.copyTag();
+            CompoundTag tag = blockEntityData;
             if (tag.contains("Capacity")) {
                 capacity = Math.max(1, tag.getInt("Capacity"));
             }
@@ -197,7 +191,7 @@ public class AvianFluxConverterBlock extends HorizontalDirectionalBlock implemen
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (stack.has(DataComponents.CUSTOM_NAME)) {
+        if (stack.hasCustomHoverName()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof AvianFluxConverterBlockEntity converter) {
                 converter.setCustomName(stack.getHoverName());

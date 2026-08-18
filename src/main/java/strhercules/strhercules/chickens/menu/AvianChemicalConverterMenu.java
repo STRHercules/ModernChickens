@@ -8,7 +8,7 @@ import strhercules.chickens.item.ChemicalEggItem;
 import strhercules.chickens.item.GasEggItem;
 import strhercules.chickens.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +39,7 @@ public class AvianChemicalConverterMenu extends AbstractContainerMenu implements
     private int clientEntryId = -1;
     private boolean clientGaseous;
 
-    public AvianChemicalConverterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public AvianChemicalConverterMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
@@ -132,7 +132,7 @@ public class AvianChemicalConverterMenu extends AbstractContainerMenu implements
         });
     }
 
-    private static AvianChemicalConverterBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static AvianChemicalConverterBlockEntity resolveBlockEntity(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(inventory, "playerInventory");
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();

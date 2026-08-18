@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,7 +178,7 @@ public final class ChickensConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
         if (mouseY >= CONTENT_TOP && mouseY < height - CONTENT_BOTTOM && !filteredEntries.isEmpty()) {
             int maxFirst = Math.max(0, filteredEntries.size() - valueBoxes.size());
             int step = scrollY > 0 ? -3 : scrollY < 0 ? 3 : 0;
@@ -186,7 +186,7 @@ public final class ChickensConfigScreen extends Screen {
             bindRows();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return super.mouseScrolled(mouseX, mouseY, scrollY);
     }
 
     @Override
@@ -285,7 +285,7 @@ public final class ChickensConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(graphics, mouseX, mouseY, partialTicks);
+        renderBackground(graphics);
         for (int slot = 0; slot < valueBoxes.size(); slot++) {
             int entryIndex = boundEntries[slot];
             if (entryIndex < 0 || entryIndex >= filteredEntries.size()) {

@@ -1,6 +1,6 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.MechanicalNestBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -26,13 +26,12 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
 /** RF-powered transparent rooster nest. */
 public final class MechanicalNestBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<MechanicalNestBlock> CODEC = simpleCodec(MechanicalNestBlock::new);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public MechanicalNestBlock() {
@@ -49,10 +48,6 @@ public final class MechanicalNestBlock extends HorizontalDirectionalBlock implem
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
-    @Override
-    public MapCodec<MechanicalNestBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -75,7 +70,7 @@ public final class MechanicalNestBlock extends HorizontalDirectionalBlock implem
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof MechanicalNestBlockEntity nest)) {
@@ -88,7 +83,7 @@ public final class MechanicalNestBlock extends HorizontalDirectionalBlock implem
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(nest, pos);
+            NetworkHooks.openScreen(serverPlayer, nest, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

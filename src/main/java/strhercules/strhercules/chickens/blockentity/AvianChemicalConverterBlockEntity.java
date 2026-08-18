@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChemicalEggRegistry;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.GasEggRegistry;
@@ -18,11 +24,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -44,6 +48,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -61,7 +66,7 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
     private final MachineSideConfig sideConfig = new MachineSideConfig();
-    private final Map<Direction, Object> capabilityCache = new EnumMap<>(Direction.class);
+    private final Map<Class<?>, Map<Direction, Object>> capabilityCache = new HashMap<>();
 
     private int chemicalAmount;
     private int tankCapacity = DEFAULT_TANK_CAPACITY;
@@ -267,15 +272,19 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     }
 
     @Nullable
-    public Object getChemicalHandler(Direction direction) {
-        if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
+    public Object getChemicalHandler(@Nullable Direction direction, @Nullable Class<?> handlerInterface) {
+        if (!MekanismChemicalHelper.isChemicalCapabilityAvailable() || handlerInterface == null) {
             return null;
         }
         if (direction == null) {
-            return MachineCapabilityWrappers.chemical(AvianChemicalHandlerFactory.create(this, null), sideConfig, null);
+            return MachineCapabilityWrappers.chemical(
+                    AvianChemicalHandlerFactory.create(this, handlerInterface), sideConfig, null, handlerInterface);
         }
-        return capabilityCache.computeIfAbsent(direction, side ->
-                MachineCapabilityWrappers.chemical(AvianChemicalHandlerFactory.create(this, side), sideConfig, side));
+        return capabilityCache
+                .computeIfAbsent(handlerInterface, key -> new EnumMap<>(Direction.class))
+                .computeIfAbsent(direction, side -> MachineCapabilityWrappers.chemical(
+                        AvianChemicalHandlerFactory.create(this, handlerInterface), sideConfig, side,
+                        handlerInterface));
     }
 
     @Override
@@ -399,23 +408,22 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        saveAdditional(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -426,10 +434,10 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
+        ContainerHelper.saveAllItems(tag, items);
         CompoundTag tankTag = new CompoundTag();
         tankTag.putInt("Amount", chemicalAmount);
         tankTag.putInt("Capacity", tankCapacity);
@@ -441,16 +449,15 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
         tag.put("ChemicalTank", tankTag);
         tag.putInt("TransferRate", transferRate);
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
-                    .result().ifPresent(component -> tag.put("CustomName", component));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         if (tag.contains("ChemicalTank", Tag.TAG_COMPOUND)) {
             CompoundTag tankTag = tag.getCompound("ChemicalTank");
             chemicalAmount = Math.max(0, tankTag.getInt("Amount"));
@@ -470,10 +477,8 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             storedGaseous = false;
         }
         transferRate = Math.max(0, tag.getInt("TransferRate"));
-        if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
-            ComponentSerialization.CODEC
-                    .parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.getCompound("CustomName"))
-                    .result().ifPresent(component -> customName = component);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             customName = null;
         }
@@ -556,22 +561,14 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
         }
 
         @Nullable
-        static Object create(AvianChemicalConverterBlockEntity converter, Direction side) {
+        static Object create(AvianChemicalConverterBlockEntity converter, Class<?> handlerInterface) {
             if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
                 return null;
             }
             return Proxy.newProxyInstance(
                     MekanismChemicalHelper.class.getClassLoader(),
-                    new Class<?>[] { getHandlerInterface() },
+                    new Class<?>[] { handlerInterface },
                     new Handler(converter));
-        }
-
-        private static Class<?> getHandlerInterface() {
-            try {
-                return Class.forName("mekanism.api.chemical.IChemicalHandler");
-            } catch (ClassNotFoundException ex) {
-                throw new IllegalStateException("IChemicalHandler not present", ex);
-            }
         }
 
         private static final class Handler implements InvocationHandler {
@@ -585,13 +582,13 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             public Object invoke(Object proxy, Method method, Object[] args) {
                 String name = method.getName();
                 return switch (name) {
-                    case "getChemicalTanks" -> 1;
+                    case "getTanks", "getChemicalTanks" -> 1;
                     case "getChemicalInTank" -> converter.getStackCopy();
                     case "setChemicalInTank" -> {
                         converter.setFromStack(args != null && args.length > 1 ? args[1] : null);
                         yield null;
                     }
-                    case "getChemicalTankCapacity" -> (long) converter.getTankCapacity();
+                    case "getTankCapacity", "getChemicalTankCapacity" -> (long) converter.getTankCapacity();
                     case "isValid" -> converter.isTemplateValid(args != null && args.length > 1 ? args[1] : null);
                     case "insertChemical" -> handleInsert(args);
                     case "extractChemical" -> handleExtract(args);
@@ -737,5 +734,37 @@ public class AvianChemicalConverterBlockEntity extends BlockEntity implements Wo
             return MekanismChemicalHelper.emptyStack();
         }
         return extractAmount(requested, action);
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (strhercules.chickens.integration.mekanism.MekanismChemicalHelper.isChemicalCapability(capability)) {
+                // While a chemical is stored, only its own family may answer, or Mekanism
+                // lists the same tank once per chemical family.
+                var storedCapability = strhercules.chickens.integration.mekanism.MekanismChemicalHelper
+                        .capabilityForChemical(getChemicalId());
+                if (getChemicalAmount() > 0 && storedCapability != null && storedCapability != capability) {
+                    return LazyOptional.empty();
+                }
+                Object handler = getChemicalHandler(side,
+                        strhercules.chickens.integration.mekanism.MekanismChemicalHelper.handlerInterfaceFor(capability));
+                return handler == null ? LazyOptional.empty()
+                        : LazyOptional.of(() -> handler).cast();
+            }
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
     }
 }

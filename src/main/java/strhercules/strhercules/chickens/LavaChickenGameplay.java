@@ -14,10 +14,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.TickEvent;
 
 import java.util.Collection;
 
@@ -26,9 +26,9 @@ public final class LavaChickenGameplay {
     }
 
     public static void init() {
-        NeoForge.EVENT_BUS.addListener(LavaChickenGameplay::onLivingDrops);
-        NeoForge.EVENT_BUS.addListener(LavaChickenGameplay::onPlayerTick);
-        NeoForge.EVENT_BUS.addListener(LavaChickenGameplay::onIncomingDamage);
+        MinecraftForge.EVENT_BUS.addListener(LavaChickenGameplay::onLivingDrops);
+        MinecraftForge.EVENT_BUS.addListener(LavaChickenGameplay::onPlayerTick);
+        MinecraftForge.EVENT_BUS.addListener(LavaChickenGameplay::onIncomingDamage);
     }
 
     public static void dropForModernChicken(ChickensChicken chicken, DamageSource source) {
@@ -47,9 +47,12 @@ public final class LavaChickenGameplay {
         addDrop(event.getDrops(), entity);
     }
 
-    private static void onPlayerTick(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
-        if (!player.hasEffect(ModEffects.BURNING)) {
+    private static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        Player player = event.player;
+        if (!player.hasEffect(ModEffects.BURNING.get())) {
             return;
         }
 
@@ -83,8 +86,8 @@ public final class LavaChickenGameplay {
         }
     }
 
-    private static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player) || !player.hasEffect(ModEffects.BURNING)) {
+    private static void onIncomingDamage(LivingAttackEvent event) {
+        if (!(event.getEntity() instanceof Player player) || !player.hasEffect(ModEffects.BURNING.get())) {
             return;
         }
         DamageSource source = event.getSource();

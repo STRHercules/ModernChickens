@@ -1,5 +1,7 @@
 package strhercules.chickens.item;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.level.Level;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -32,7 +34,7 @@ public final class UpgradeItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.chickens." + kind.id + ".tooltip")
                 .withStyle(ChatFormatting.GRAY));
     }

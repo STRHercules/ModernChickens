@@ -11,17 +11,17 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Vanilla horse-style GUI for the mega chicken's saddle, chests, and cargo. */
 public final class MegaChickenScreen extends AbstractContainerScreen<MegaChickenMenu> {
-    private static final ResourceLocation FULL_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation FULL_CHEST_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/megachicken.png");
-    private static final ResourceLocation ONE_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation ONE_CHEST_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/megachicken_onechest.png");
-    private static final ResourceLocation NO_CHEST_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation NO_CHEST_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/megachicken_nochest.png");
-    private static final ResourceLocation SADDLE_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation SADDLE_OUTLINE_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/saddle_outline.png");
-    private static final ResourceLocation CHEST_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation CHEST_OUTLINE_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/chest_outline.png");
-    private static final ResourceLocation FLYING_EGG_OUTLINE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation FLYING_EGG_OUTLINE_TEXTURE = new ResourceLocation(
             "chickens", "textures/gui/flyingegg_outline.png");
 
     private final MegaChicken chicken;
@@ -68,8 +68,8 @@ public final class MegaChickenScreen extends AbstractContainerScreen<MegaChicken
             graphics.blit(CHEST_OUTLINE_TEXTURE, x + 65, y + 40, 16, 16,
                     0.0F, 0.0F, 32, 32, 32, 32);
         }
-        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics,
-                x + 8, y + 7, x + 60, y + 59, 17, 0.25F, this.xMouse, this.yMouse, this.chicken);
+        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x + 34, y + 59, 17,
+                (float) (x + 34) - this.xMouse, (float) (y + 9) - this.yMouse, this.chicken);
     }
 
     @Override

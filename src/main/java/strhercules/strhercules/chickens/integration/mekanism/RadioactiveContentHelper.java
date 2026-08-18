@@ -21,7 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public final class RadioactiveContentHelper {
         }
         refreshRadioactiveOutputs();
         for (ItemStack output : RADIOACTIVE_OUTPUTS) {
-            if (ItemStack.isSameItemSameComponents(output, stack)) {
+            if (ItemStack.isSameItemSameTags(output, stack)) {
                 return true;
             }
         }

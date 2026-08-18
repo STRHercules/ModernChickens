@@ -1,6 +1,13 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChemicalEggRegistry;
+import strhercules.chickens.GasEggRegistry;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
@@ -25,14 +32,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
@@ -44,20 +49,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -124,7 +127,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     };
     private final MachineEnergyStorage energyStorage = new MachineEnergyStorage();
 
-    private final Map<Direction, Object> chemicalHandlers = new EnumMap<>(Direction.class);
+    private final Map<Class<?>, Map<Direction, Object>> chemicalHandlers = new HashMap<>();
 
     private int capacity = ENERGY_CAPACITY;
     private int maxReceive = ENERGY_MAX_RECEIVE;
@@ -330,7 +333,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         ItemStack result = plan.result();
         if (result.isEmpty() || !isDousableChicken(input) || !canOutput(output, result)
                 || (plan.recipe() != null && (level == null
-                        || !plan.recipe().matches(new SingleRecipeInput(input), level)))
+                        || !plan.recipe().matches(new net.minecraft.world.SimpleContainer(input), level)))
                 || !hasResourcesFor(plan)) {
             return;
         }
@@ -422,7 +425,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (output.isEmpty()) {
             return true;
         }
-        return ItemStack.isSameItemSameComponents(output, template)
+        return ItemStack.isSameItemSameTags(output, template)
                 && output.getCount() + template.getCount() <= output.getMaxStackSize();
     }
 
@@ -472,8 +475,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (!sideConfig.allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
                 continue;
             }
-            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
-                    worldPosition.relative(direction), direction.getOpposite());
+            IEnergyStorage neighbor = NeighbourCaps.energy(level, worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
                 continue;
             }
@@ -507,8 +509,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             if (!sideConfig.allows(direction, MachineSideConfig.Channel.FLUIDS, true)) {
                 continue;
             }
-            IFluidHandler neighbor = level.getCapability(Capabilities.FluidHandler.BLOCK,
-                    worldPosition.relative(direction), direction.getOpposite());
+            IFluidHandler neighbor = NeighbourCaps.fluid(level, worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
                 continue;
             }
@@ -891,23 +892,22 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        saveAdditional(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -918,23 +918,23 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
-        saveUpgrades(tag, provider);
+        ContainerHelper.saveAllItems(tag, items);
+        saveUpgrades(tag);
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("Progress", progress);
         tag.putString("Mode", mode.name());
         tag.putString("SpecialInfusion", specialInfusion.name());
         tag.putInt("SpecialAmount", specialAmount);
         if (!itemReagent.isEmpty() && itemReagentCount > 0) {
-            tag.put("ItemReagent", itemReagent.save(provider));
+            tag.put("ItemReagent", itemReagent.save(new CompoundTag()));
             tag.putInt("ItemReagentCount", itemReagentCount);
         }
 
         CompoundTag liquid = new CompoundTag();
-        liquidTank.writeToNBT(provider, liquid);
+        liquidTank.writeToNBT(liquid);
         tag.put("Liquid", liquid);
 
         tag.putInt("ChemicalAmount", chemicalAmount);
@@ -944,18 +944,16 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         tag.putInt("ChemicalEntry", chemicalEntryId);
 
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
-                    .result()
-                    .ifPresent(component -> tag.put("CustomName", component));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
-        loadUpgrades(tag, provider);
+        ContainerHelper.loadAllItems(tag, items);
+        loadUpgrades(tag);
         syncUpgradeLimits();
         energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, capacity));
         progress = Mth.clamp(tag.getInt("Progress"), 0, MAX_PROGRESS);
@@ -963,7 +961,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         specialInfusion = parseSpecial(tag.getString("SpecialInfusion"));
         specialAmount = Mth.clamp(tag.getInt("SpecialAmount"), 0, SPECIAL_LIQUID_CAPACITY);
         itemReagent = tag.contains("ItemReagent", Tag.TAG_COMPOUND)
-                ? ItemStack.parse(provider, tag.getCompound("ItemReagent")).orElse(ItemStack.EMPTY)
+                ? ItemStack.of(tag.getCompound("ItemReagent"))
                 : ItemStack.EMPTY;
         itemReagentCount = Math.max(0, tag.getInt("ItemReagentCount"));
         if (itemReagent.isEmpty() || itemReagentCount <= 0) {
@@ -972,7 +970,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
 
         if (tag.contains("Liquid", Tag.TAG_COMPOUND)) {
-            liquidTank.readFromNBT(provider, tag.getCompound("Liquid"));
+            liquidTank.readFromNBT(tag.getCompound("Liquid"));
         } else {
             liquidTank.setFluid(FluidStack.EMPTY);
         }
@@ -985,11 +983,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         chemicalEntryId = tag.contains("ChemicalEntry", Tag.TAG_INT) ? tag.getInt("ChemicalEntry") : -1;
 
-        if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
-            ComponentSerialization.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE),
-                    tag.getCompound("CustomName"))
-                    .result()
-                    .ifPresent(component -> customName = component);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             customName = null;
         }
@@ -1006,15 +1001,19 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
     }
 
-    public Object getChemicalHandler(@Nullable Direction direction) {
-        if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
+    public Object getChemicalHandler(@Nullable Direction direction, @Nullable Class<?> handlerInterface) {
+        if (!MekanismChemicalHelper.isChemicalCapabilityAvailable() || handlerInterface == null) {
             return null;
         }
         if (direction == null) {
-            return MachineCapabilityWrappers.chemical(DousingChemicalHandlerFactory.create(this), sideConfig, null);
+            return MachineCapabilityWrappers.chemical(
+                    DousingChemicalHandlerFactory.create(this, handlerInterface), sideConfig, null, handlerInterface);
         }
-        return chemicalHandlers.computeIfAbsent(direction, side -> MachineCapabilityWrappers.chemical(
-                DousingChemicalHandlerFactory.create(this), sideConfig, side));
+        return chemicalHandlers
+                .computeIfAbsent(handlerInterface, key -> new EnumMap<>(Direction.class))
+                .computeIfAbsent(direction, side -> MachineCapabilityWrappers.chemical(
+                        DousingChemicalHandlerFactory.create(this, handlerInterface), sideConfig, side,
+                        handlerInterface));
     }
 
     private void invalidateChemicalHandlers() {
@@ -1028,21 +1027,21 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         energyStorage.setLimits(capacity, maxReceive);
     }
 
-    private void saveUpgrades(CompoundTag tag, HolderLookup.Provider provider) {
+    private void saveUpgrades(CompoundTag tag) {
         net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
         for (int slot = 0; slot < upgradeItems.size(); slot++) {
             ItemStack stack = upgradeItems.get(slot);
             if (stack.isEmpty()) {
                 continue;
             }
-            CompoundTag entry = (CompoundTag) stack.save(provider);
+            CompoundTag entry = (CompoundTag) stack.save(new CompoundTag());
             entry.putByte("Slot", (byte) slot);
             list.add(entry);
         }
         tag.put("Upgrades", list);
     }
 
-    private void loadUpgrades(CompoundTag tag, HolderLookup.Provider provider) {
+    private void loadUpgrades(CompoundTag tag) {
         for (int slot = 0; slot < upgradeItems.size(); slot++) {
             upgradeItems.set(slot, ItemStack.EMPTY);
         }
@@ -1058,7 +1057,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             }
             CompoundTag stackTag = entry.copy();
             stackTag.remove("Slot");
-            ItemStack stack = ItemStack.parse(provider, stackTag).orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.of(stackTag);
             if (!stack.isEmpty() && canPlaceUpgrade(slot, stack)) {
                 stack.setCount(Math.min(stack.getCount(), getUpgradeMaxStackSize(slot)));
                 upgradeItems.set(slot, stack);
@@ -1077,12 +1076,12 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             chemicalEntryId = -1;
             return;
         }
+        // Gases live in their own registry, so fall back to it before giving up.
         ChemicalEggRegistryItem entry = ChemicalEggRegistry.findByChemical(chemicalId);
-        if (entry != null) {
-            chemicalEntryId = entry.getId();
-        } else {
-            chemicalEntryId = -1;
+        if (entry == null) {
+            entry = GasEggRegistry.findByChemical(chemicalId);
         }
+        chemicalEntryId = entry == null ? -1 : entry.getId();
     }
 
     private Object getStackCopy() {
@@ -1278,13 +1277,13 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
     private static ChickensRegistryItem findChickenByLayItem(ItemStack layStack) {
         Collection<ChickensRegistryItem> enabled = ChickensRegistry.getItems();
         for (ChickensRegistryItem chicken : enabled) {
-            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), layStack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createLayItem(), layStack)) {
                 return chicken;
             }
         }
         Collection<ChickensRegistryItem> disabled = ChickensRegistry.getDisabledItems();
         for (ChickensRegistryItem chicken : disabled) {
-            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), layStack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createLayItem(), layStack)) {
                 return chicken;
             }
         }
@@ -1332,8 +1331,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (level == null || input.isEmpty()) {
             return null;
         }
-        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            DousingRecipe recipe = holder.value();
+        for (DousingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             if (recipe.reagentType() != reagentType || !recipe.matchesInput(input)) {
                 continue;
             }
@@ -1353,8 +1351,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (level == null || input.isEmpty()) {
             return null;
         }
-        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            DousingRecipe recipe = holder.value();
+        for (DousingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
                     && recipe.matchesInput(input)
                     && hasItemReagent(recipe)) {
@@ -1374,8 +1371,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return null;
         }
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            DousingRecipe recipe = holder.value();
+        for (DousingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
             if (recipe.reagentType() == DousingRecipe.ReagentType.ITEM
                     && recipe.matchesInput(input)
                     && recipe.reagentId().equals(itemId)) {
@@ -1389,8 +1385,8 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         if (level == null || stack.isEmpty()) {
             return false;
         }
-        for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            if (holder.value().matchesInput(stack)) {
+        for (DousingRecipe recipe : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
+            if (recipe.matchesInput(stack)) {
                 return true;
             }
         }
@@ -1404,7 +1400,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         if (isSpecialInfusionItem(required)) {
             if (!itemReagent.isEmpty()
-                    && ItemStack.isSameItemSameComponents(itemReagent, required)
+                    && ItemStack.isSameItemSameTags(itemReagent, required)
                     && itemReagentCount >= recipe.reagentAmount()) {
                 return true;
             }
@@ -1413,7 +1409,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             return specialInfusion == requiredInfusion && specialAmount >= requiredAmount;
         }
         return !itemReagent.isEmpty()
-                && ItemStack.isSameItemSameComponents(itemReagent, required)
+                && ItemStack.isSameItemSameTags(itemReagent, required)
                 && itemReagentCount >= recipe.reagentAmount();
     }
 
@@ -1424,7 +1420,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
         if (isSpecialInfusionItem(required)) {
             if (!itemReagent.isEmpty()
-                    && ItemStack.isSameItemSameComponents(itemReagent, required)
+                    && ItemStack.isSameItemSameTags(itemReagent, required)
                     && itemReagentCount >= recipe.reagentAmount()) {
                 itemReagentCount = Math.max(0, itemReagentCount - recipe.reagentAmount());
                 if (itemReagentCount == 0) {
@@ -1519,7 +1515,7 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
 
     private boolean canStoreItemReagent(ItemStack stack) {
         return !stack.isEmpty() && specialInfusion == SpecialInfusion.NONE
-                && (itemReagent.isEmpty() || ItemStack.isSameItemSameComponents(itemReagent, stack))
+                && (itemReagent.isEmpty() || ItemStack.isSameItemSameTags(itemReagent, stack))
                 && itemReagentCount < Integer.MAX_VALUE;
     }
 
@@ -1584,22 +1580,14 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
         }
 
         @Nullable
-        static Object create(AvianDousingMachineBlockEntity machine) {
+        static Object create(AvianDousingMachineBlockEntity machine, Class<?> handlerInterface) {
             if (!MekanismChemicalHelper.isChemicalCapabilityAvailable()) {
                 return null;
             }
             return java.lang.reflect.Proxy.newProxyInstance(
                     MekanismChemicalHelper.class.getClassLoader(),
-                    new Class<?>[] { getHandlerInterface() },
+                    new Class<?>[] { handlerInterface },
                     new Handler(machine));
-        }
-
-        private static Class<?> getHandlerInterface() {
-            try {
-                return Class.forName("mekanism.api.chemical.IChemicalHandler");
-            } catch (ClassNotFoundException ex) {
-                throw new IllegalStateException("IChemicalHandler not present", ex);
-            }
         }
 
         private static final class Handler implements java.lang.reflect.InvocationHandler {
@@ -1613,13 +1601,13 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) {
                 String name = method.getName();
                 return switch (name) {
-                    case "getChemicalTanks" -> 1;
+                    case "getTanks", "getChemicalTanks" -> 1;
                     case "getChemicalInTank" -> machine.getStackCopy();
                     case "setChemicalInTank" -> {
                         machine.setFromStack(args != null && args.length > 1 ? args[1] : null);
                         yield null;
                     }
-                    case "getChemicalTankCapacity" -> (long) machine.getChemicalCapacity();
+                    case "getTankCapacity", "getChemicalTankCapacity" -> (long) machine.getChemicalCapacity();
                     case "isValid" -> machine.isTemplateValid(args != null && args.length > 1 ? args[1] : null);
                     case "insertChemical" -> handleInsert(args);
                     case "extractChemical" -> handleExtract(args);
@@ -1716,5 +1704,47 @@ public class AvianDousingMachineBlockEntity extends BlockEntity implements World
             markEnergyDirty();
             return true;
         }
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+    private final SidedCaps<IFluidHandler> chickensFluidCaps = new SidedCaps<>(this::getFluidTank);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (strhercules.chickens.integration.mekanism.MekanismChemicalHelper.isChemicalCapability(capability)) {
+                // While a chemical is stored, only its own family may answer, or Mekanism
+                // lists the same tank once per chemical family.
+                var storedCapability = strhercules.chickens.integration.mekanism.MekanismChemicalHelper
+                        .capabilityForChemical(getChemicalId());
+                if (getChemicalAmount() > 0 && storedCapability != null && storedCapability != capability) {
+                    return LazyOptional.empty();
+                }
+                Object handler = getChemicalHandler(side,
+                        strhercules.chickens.integration.mekanism.MekanismChemicalHelper.handlerInterfaceFor(capability));
+                return handler == null ? LazyOptional.empty()
+                        : LazyOptional.of(() -> handler).cast();
+            }
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.FLUID_HANDLER) {
+                return chickensFluidCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
+        chickensFluidCaps.invalidate();
     }
 }

@@ -1,5 +1,7 @@
 package strhercules.chickens.entity;
 
+import strhercules.chickens.ChickenFood;
+import net.minecraft.world.entity.animal.Chicken;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.item.ChickenItemHelper;
@@ -44,7 +46,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -55,7 +56,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 import strhercules.chickens.menu.MegaChickenMenu;
 
 import javax.annotation.Nullable;
@@ -126,25 +127,25 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
-        builder.define(DATA_RIGHT_CHEST, false);
-        builder.define(DATA_LEFT_CHEST, false);
-        builder.define(DATA_FLYING_EGG, false);
-        builder.define(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
-        builder.define(DATA_TAMING_SEEDS_REQUIRED, 0);
-        builder.define(DATA_TAMING_SEEDS_GIVEN, 0);
-        builder.define(DATA_SCALE_ADJUSTMENT, 0.0F);
-        builder.define(DATA_SKIN_ID, "");
-        builder.define(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
-        builder.define(DATA_FLIGHT_ACTIVE, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_RIGHT_CHEST, false);
+        this.entityData.define(DATA_LEFT_CHEST, false);
+        this.entityData.define(DATA_FLYING_EGG, false);
+        this.entityData.define(DATA_APPEARANCE_TYPE, DEFAULT_APPEARANCE_TYPE);
+        this.entityData.define(DATA_TAMING_SEEDS_REQUIRED, 0);
+        this.entityData.define(DATA_TAMING_SEEDS_GIVEN, 0);
+        this.entityData.define(DATA_SCALE_ADJUSTMENT, 0.0F);
+        this.entityData.define(DATA_SKIN_ID, "");
+        this.entityData.define(DATA_ROBOT_SKIN, ROBOT_SKIN_NONE);
+        this.entityData.define(DATA_FLIGHT_ACTIVE, false);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.4D));
-        this.goalSelector.addGoal(2, new TemptGoal(this, 1.0D, stack -> stack.is(ItemTags.CHICKEN_FOOD), false));
+        this.goalSelector.addGoal(2, new TemptGoal(this, 1.0D, ChickenFood.INGREDIENT, false));
         this.goalSelector.addGoal(3, new FollowParentGoal(this, 1.1D));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -153,7 +154,7 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(ItemTags.CHICKEN_FOOD);
+        return ChickenFood.test(stack);
     }
 
     @Override
@@ -192,7 +193,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             }
             if (!this.level().isClientSide) {
                 this.setSkinId(crate.skin().id());
-                held.consume(1, player);
+                if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
                 this.spawnAppearanceParticles();
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -202,7 +205,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             if (!this.level().isClientSide) {
                 this.setRobotSkin(ChickenItemHelper.isRobotRooster(held)
                         ? ROBOT_SKIN_ROOSTER : ROBOT_SKIN_CHICKEN);
-                held.consume(1, player);
+                if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
                 this.spawnAppearanceParticles();
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -212,7 +217,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
             if (!this.level().isClientSide) {
                 this.setSkinId("");
                 this.setAppearanceType(appearance.getId());
-                held.consume(1, player);
+                if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
                 this.spawnAppearanceParticles();
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -222,7 +229,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
                     : !this.hasLeftChest() ? LEFT_CHEST_SLOT : -1;
             if (slot >= 0) {
                 this.chestEquipment.setItem(slot, new ItemStack(Items.CHEST));
-                held.consume(1, player);
+                if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
                 this.playChestEquipsSound();
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
@@ -309,7 +318,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         }
         if (!this.level().isClientSide) {
             this.setScaleAdjustment(updated);
-            held.consume(1, player);
+            if (!player.getAbilities().instabuild) {
+                    held.shrink(1);
+                }
             player.displayClientMessage(Component.translatable("message.chickens.mega_chicken.scale",
                     String.format(java.util.Locale.ROOT, "%.1f", updated)), true);
         }
@@ -319,23 +330,19 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     public void setScaleAdjustment(float adjustment) {
         float clamped = Mth.clamp(adjustment, -MAX_SCALE_ADJUSTMENT, MAX_SCALE_ADJUSTMENT);
         this.entityData.set(DATA_SCALE_ADJUSTMENT, clamped);
-        applyScaleAttribute();
         this.refreshDimensions();
     }
 
-    private void applyScaleAttribute() {
-        var scale = this.getAttribute(Attributes.SCALE);
-        if (scale != null) {
-            scale.setBaseValue(scaleMultiplier(this.entityData.get(DATA_SCALE_ADJUSTMENT)));
-        }
+    @Override
+    public float getScale() {
+        return scaleMultiplier(this.entityData.get(DATA_SCALE_ADJUSTMENT));
     }
 
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
         if (accessor == DATA_SCALE_ADJUSTMENT && this.level().isClientSide) {
-            applyScaleAttribute();
-            this.refreshDimensions();
+                this.refreshDimensions();
         }
     }
 
@@ -394,6 +401,10 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         }
     }
 
+    public SimpleContainer getInventory() {
+        return this.inventory;
+    }
+
     public SimpleContainer getChestEquipment() {
         return this.chestEquipment;
     }
@@ -438,14 +449,14 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         ItemStack right = this.chestEquipment.getItem(RIGHT_CHEST_SLOT);
         ItemStack left = this.chestEquipment.getItem(LEFT_CHEST_SLOT);
         if (!right.isEmpty()) {
-            compound.put(TAG_RIGHT_CHEST, right.save(this.registryAccess()));
+            compound.put(TAG_RIGHT_CHEST, right.save(new CompoundTag()));
         }
         if (!left.isEmpty()) {
-            compound.put(TAG_LEFT_CHEST, left.save(this.registryAccess()));
+            compound.put(TAG_LEFT_CHEST, left.save(new CompoundTag()));
         }
         ItemStack flyingEgg = this.chestEquipment.getItem(FLYING_EGG_SLOT);
         if (!flyingEgg.isEmpty()) {
-            compound.put(TAG_FLYING_EGG, flyingEgg.save(this.registryAccess()));
+            compound.put(TAG_FLYING_EGG, flyingEgg.save(new CompoundTag()));
         }
         compound.putInt(TAG_TAMING_SEEDS_REQUIRED, this.getTamingSeedsRequired());
         compound.putInt(TAG_TAMING_SEEDS_GIVEN, this.entityData.get(DATA_TAMING_SEEDS_GIVEN));
@@ -470,24 +481,21 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
         this.chestEquipment.clearContent();
         boolean loadedChest = false;
         if (compound.contains(TAG_RIGHT_CHEST, Tag.TAG_COMPOUND)) {
-            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_RIGHT_CHEST))
-                    .orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.of(compound.getCompound(TAG_RIGHT_CHEST));
             if (stack.is(Items.CHEST)) {
                 this.chestEquipment.setItem(RIGHT_CHEST_SLOT, new ItemStack(Items.CHEST));
                 loadedChest = true;
             }
         }
         if (compound.contains(TAG_LEFT_CHEST, Tag.TAG_COMPOUND)) {
-            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_LEFT_CHEST))
-                    .orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.of(compound.getCompound(TAG_LEFT_CHEST));
             if (stack.is(Items.CHEST)) {
                 this.chestEquipment.setItem(LEFT_CHEST_SLOT, new ItemStack(Items.CHEST));
                 loadedChest = true;
             }
         }
         if (compound.contains(TAG_FLYING_EGG, Tag.TAG_COMPOUND)) {
-            ItemStack stack = ItemStack.parse(this.registryAccess(), compound.getCompound(TAG_FLYING_EGG))
-                    .orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.of(compound.getCompound(TAG_FLYING_EGG));
             if (stack.is(ModRegistry.FLYING_EGG.get())) {
                 this.chestEquipment.setItem(FLYING_EGG_SLOT, stack.copyWithCount(1));
             }
@@ -518,7 +526,7 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     }
 
     private void dropEquipmentStack(ItemStack stack) {
-        if (!stack.isEmpty() && !EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+        if (!stack.isEmpty() && !EnchantmentHelper.hasVanishingCurse(stack)) {
             this.spawnAtLocation(stack);
         }
     }
@@ -527,7 +535,7 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     public void openCustomInventoryScreen(Player player) {
         if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(player))
                 && this.isOwnedByPlayer(player)) {
-            player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
+            net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) player, this, buffer -> buffer.writeVarInt(this.getId()));
         }
     }
 
@@ -675,9 +683,9 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     }
 
     @Override
-    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+    public double getPassengersRidingOffset() {
         // The 2.8-block collision height is taller than the model's saddle.
-        return super.getPassengerAttachmentPoint(passenger, dimensions, scale).add(0.0D, -0.75D, 0.0D);
+        return super.getPassengersRidingOffset() - 0.75D;
     }
 
     @Override
@@ -706,8 +714,8 @@ public class MegaChicken extends AbstractChestedHorse implements MenuProvider {
     }
 
     @Override
-    protected void dropAllDeathLoot(ServerLevel level, DamageSource source) {
-        level.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(level, this.getX(), this.getY() + 0.2D,
+    protected void dropAllDeathLoot(DamageSource source) {
+        this.level().addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(this.level(), this.getX(), this.getY() + 0.2D,
                 this.getZ(), MegaChickenItem.createFromDeath(this, ModRegistry.MEGA_CHICKEN_ITEM.get())));
     }
 

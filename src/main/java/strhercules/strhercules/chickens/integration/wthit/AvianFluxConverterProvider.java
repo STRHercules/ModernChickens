@@ -21,6 +21,6 @@ final class AvianFluxConverterProvider implements IDataProvider<AvianFluxConvert
         }
         HudOverlayHelper helper = new HudOverlayHelper();
         helper.addEnergy(blockEntity.getEnergyStored(), blockEntity.getEnergyCapacity());
-        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
+        writer.add(HudOverlayHelper.class, result -> result.add(helper));
     }
 }

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Central manager that owns all runtime spawn tuning for Modern Chickens. NeoForge 1.21 lets us keep
+ * Central manager that owns all runtime spawn tuning for Modern Chickens. Forge 1.21 lets us keep
  * {@link MobSpawnSettings.SpawnerData}, spawn charges, and weighted chicken pools cached so biome modifiers,
  * custom world population, and the entity itself can draw from the same modern data source.
  */
@@ -180,7 +180,7 @@ public final class ChickensSpawnManager {
                             double energyBudget,
                             WeightedRandomList<WeightedEntry.Wrapper<ChickensRegistryItem>> chickens) {
         public Optional<ChickensRegistryItem> pick(RandomSource random) {
-            return chickens.getRandom(random).map(WeightedEntry.Wrapper::data);
+            return chickens.getRandom(random).map(WeightedEntry.Wrapper::getData);
         }
 
         public MobCategory category() {

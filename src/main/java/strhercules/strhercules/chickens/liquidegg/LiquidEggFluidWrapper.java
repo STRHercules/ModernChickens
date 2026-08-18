@@ -5,15 +5,15 @@ import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 
 import javax.annotation.Nullable;
 
 /**
  * Legacy-style fluid handler that exposes liquid eggs as one-time buckets.
- * Automation can drain the contained fluid through NeoForge's deprecated fluid
+ * Automation can drain the contained fluid through Forge's deprecated fluid
  * capability layer, mirroring how the original mod integrated with pipes and
  * tanks.
  */

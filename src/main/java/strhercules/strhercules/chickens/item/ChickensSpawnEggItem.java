@@ -1,12 +1,13 @@
 package strhercules.chickens.item;
 
+import net.minecraft.nbt.CompoundTag;
+import javax.annotation.Nullable;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.entity.ChickensChicken;
 import strhercules.chickens.registry.ModEntityTypes;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -20,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,9 +33,9 @@ import java.util.List;
 /**
  * Custom spawn egg that colours itself based on the chicken descriptor stored in NBT.
  */
-public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem {
+public class ChickensSpawnEggItem extends net.minecraftforge.common.ForgeSpawnEggItem {
     public ChickensSpawnEggItem(Properties properties) {
-        super(ModEntityTypes.CHICKENS_CHICKEN.get(), 0xffffff, 0xffffff, properties);
+        super(ModEntityTypes.CHICKENS_CHICKEN, 0xffffff, 0xffffff, properties);
     }
 
     public static ItemStack createFor(ChickensRegistryItem chicken) {
@@ -55,7 +56,7 @@ public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem 
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
             tooltip.add(Component.translatable("item.chickens.spawn_egg.tooltip", chicken.getTier())
@@ -87,11 +88,11 @@ public class ChickensSpawnEggItem extends net.minecraft.world.item.SpawnEggItem 
         entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                 level.random.nextFloat() * 360.0F, 0.0F);
         entity.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos),
-                MobSpawnType.SPAWN_EGG, null);
+                MobSpawnType.SPAWN_EGG, null, null);
 
-        CustomData data = stack.get(DataComponents.ENTITY_DATA);
-        if (data != null) {
-            entity.load(data.copyTag());
+        CompoundTag data = ItemData.readEntity(stack);
+        if (!data.isEmpty()) {
+            entity.load(data);
         }
 
         // Assign the chicken type *after* finalizeSpawn so the random wild spawn

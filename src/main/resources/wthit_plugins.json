@@ -1,5 +1,0 @@
-{
-  "chickens:wthit": {
-    "initializer": "strhercules.chickens.integration.wthit.ChickensWthitPlugin"
-  }
-}

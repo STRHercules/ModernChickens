@@ -1,5 +1,13 @@
 package strhercules.chickens.blockentity;
 
+import javax.annotation.Nullable;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChickensRegistry;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.config.ChickensConfigHolder;
@@ -203,7 +211,7 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
             playAddSound();
             return true;
         }
-        if (!ItemStack.isSameItemSameComponents(current, newStack)) {
+        if (!ItemStack.isSameItemSameTags(current, newStack)) {
             return false;
         }
         int space = maxChickens - current.getCount();
@@ -284,5 +292,24 @@ public class RoostBlockEntity extends AbstractChickenContainerBlockEntity {
             }
         }
         super.appendTooltip(tooltip, data);
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
     }
 }

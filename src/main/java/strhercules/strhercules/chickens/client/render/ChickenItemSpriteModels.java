@@ -44,7 +44,7 @@ import java.util.function.Function;
  */
 public final class ChickenItemSpriteModels {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensCustomItemSprites");
-    private static final ResourceLocation DEFAULT_ITEM_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation DEFAULT_ITEM_TEXTURE = new ResourceLocation(
             ChickensMod.MOD_ID, "textures/item/chicken/whitechicken.png");
     private static final ModelState IDENTITY = new ModelState() {
         @Override
@@ -57,7 +57,7 @@ public final class ChickenItemSpriteModels {
             return false;
         }
     };
-    private static final ResourceLocation GENERATED_PARENT = ResourceLocation.withDefaultNamespace("item/generated");
+    private static final ResourceLocation GENERATED_PARENT = new ResourceLocation("minecraft", "item/generated");
 
     private static final Map<Integer, BakedModel> CACHE = new HashMap<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();
@@ -134,7 +134,7 @@ public final class ChickenItemSpriteModels {
             return null;
         }
 
-        ResourceLocation dynamicId = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+        ResourceLocation dynamicId = new ResourceLocation(ChickensMod.MOD_ID,
                 "dynamic/item/chicken_" + chicken.getId());
         ModelResourceLocation bakeLocation = new ModelResourceLocation(dynamicId, "inventory");
         ModelBaker baker = instantiateBaker(bakery, bakeLocation, sprites);
@@ -148,7 +148,7 @@ public final class ChickenItemSpriteModels {
             }
             return null;
         }
-        BakedModel baked = model.bake(baker, model, sprites, IDENTITY, false);
+        BakedModel baked = model.bake(baker, model, sprites, IDENTITY, bakeLocation, false);
         if (disableTint) {
             chicken.setTintItem(false);
         }
@@ -182,7 +182,7 @@ public final class ChickenItemSpriteModels {
             return chicken.getItemTexture();
         }
         String name = chicken.getEntityName().toLowerCase(Locale.ROOT);
-        return ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/chicken/" + name + ".png");
+        return new ResourceLocation(ChickensMod.MOD_ID, "textures/item/chicken/" + name + ".png");
     }
 
     static ResourceLocation toSpriteLocation(ResourceLocation texture) {
@@ -193,7 +193,7 @@ public final class ChickenItemSpriteModels {
         if (path.endsWith(".png")) {
             path = path.substring(0, path.length() - ".png".length());
         }
-        return ResourceLocation.fromNamespaceAndPath(texture.getNamespace(), path);
+        return new ResourceLocation(texture.getNamespace(), path);
     }
 
     private static Material materialFor(ResourceLocation spriteLocation) {
@@ -231,12 +231,13 @@ public final class ChickenItemSpriteModels {
         try {
             if (bakerConstructor == null) {
                 Class<?> impl = Class.forName("net.minecraft.client.resources.model.ModelBakery$ModelBakerImpl");
-                Constructor<?> ctor = impl.getDeclaredConstructor(ModelBakery.class, ModelBakery.TextureGetter.class,
-                        ModelResourceLocation.class);
+                Constructor<?> ctor = impl.getDeclaredConstructor(ModelBakery.class, java.util.function.BiFunction.class,
+                        ResourceLocation.class);
                 ctor.setAccessible(true);
                 bakerConstructor = ctor;
             }
-            ModelBakery.TextureGetter getter = (location, material) -> sprites.apply(material);
+            java.util.function.BiFunction<ResourceLocation, Material, TextureAtlasSprite> getter =
+                    (location, material) -> sprites.apply(material);
             return (ModelBaker) bakerConstructor.newInstance(bakery, getter, modelId);
         } catch (ReflectiveOperationException exception) {
             if (!loggedBakerFailure) {

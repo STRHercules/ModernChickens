@@ -4,12 +4,10 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -210,18 +208,14 @@ final class HudData {
     }
 
     private static void writeComponent(CompoundTag tag, String key, Component value) {
-        ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, value)
-                .result()
-                .ifPresent(serialized -> tag.put(key, serialized));
+        tag.putString(key, Component.Serializer.toJson(value));
     }
 
     private static Component readComponent(CompoundTag tag, String key) {
         if (!tag.contains(key)) {
             return null;
         }
-        return ComponentSerialization.CODEC.parse(NbtOps.INSTANCE, tag.get(key))
-                .result()
-                .orElse(null);
+        return Component.Serializer.fromJson(tag.getString(key));
     }
 
     private static EntryType parseType(String raw) {

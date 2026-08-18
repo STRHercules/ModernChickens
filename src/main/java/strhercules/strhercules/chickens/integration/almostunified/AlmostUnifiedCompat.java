@@ -33,7 +33,7 @@ public final class AlmostUnifiedCompat {
     static {
         boolean found = false;
         try {
-            Class.forName("com.almostreliable.unified.AlmostUnifiedCommon");
+            Class.forName("com.almostreliable.unified.AlmostUnified");
             found = true;
             LOGGER.info("AlmostUnified detected – chicken drops will respect AU mod priorities.");
         } catch (ClassNotFoundException ignored) {
@@ -50,14 +50,14 @@ public final class AlmostUnifiedCompat {
      * Resolution order:
      * <ol>
      *   <li>AlmostUnified runtime {@code getTagTargetItem} (if AU is loaded)</li>
-     *   <li>First holder in the tag (vanilla / NeoForge tag lookup)</li>
+     *   <li>First holder in the tag (vanilla / Forge tag lookup)</li>
      * </ol>
      *
      * @param tagName e.g. {@code "c:ingots/copper"} or {@code "c:silicon"}
      * @return the resolved stack, or {@link Optional#empty()} if the tag has no entries
      */
     public static Optional<ItemStack> resolvePreferred(String tagName) {
-        ResourceLocation id = ResourceLocation.parse(tagName);
+        ResourceLocation id = new ResourceLocation(tagName);
         TagKey<Item> tag = TagKey.create(Registries.ITEM, id);
 
         if (AVAILABLE) {
@@ -74,16 +74,14 @@ public final class AlmostUnifiedCompat {
 
     private static Optional<ItemStack> resolveViaAU(TagKey<Item> tag) {
         try {
-            var runtime = com.almostreliable.unified.AlmostUnifiedCommon.getRuntime();
-            if (runtime == null) {
+            var lookup = com.almostreliable.unified.api.AlmostUnifiedLookup.INSTANCE;
+            if (!lookup.isLoaded()) {
                 return Optional.empty();
             }
-            var lookup = runtime.getUnificationLookup();
-            var entry = lookup.getTagTargetItem(tag);
-            if (entry == null) {
+            Item item = lookup.getPreferredItemForTag(tag);
+            if (item == null) {
                 return Optional.empty();
             }
-            Item item = entry.value();
             return Optional.of(new ItemStack(item));
         } catch (Exception e) {
             LOGGER.warn("AlmostUnified lookup failed for tag '{}', falling back to tag resolution: {}", tag.location(), e.getMessage());

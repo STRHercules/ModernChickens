@@ -22,8 +22,8 @@ import net.minecraft.resources.ResourceLocation;
  * players can judge how likely a specific offspring is.
  */
 public class BreedingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.BreedingRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/breeding.png");
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/breeding_icon.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/breeding.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/breeding_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;

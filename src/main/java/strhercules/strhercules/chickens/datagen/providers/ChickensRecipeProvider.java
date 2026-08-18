@@ -1,12 +1,11 @@
 package strhercules.chickens.datagen.providers;
 
-import strhercules.chickens.recipe.DousingRecipe;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
@@ -14,46 +13,26 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.CustomModelData;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.world.item.crafting.Recipe;
-import net.neoforged.neoforge.common.conditions.ICondition;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import strhercules.chickens.registry.ModRecipeTypes;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class ChickensRecipeProvider extends RecipeProvider {
 
     private static final String MODID = "chickens";
 
     public ChickensRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries);
+        super(output);
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput rawOutput) {
-        RecipeOutput output = new RecipeOutput() {
-            @Override
-            public void accept(ResourceLocation id, Recipe<?> recipe, AdvancementHolder advancement) {
-                rawOutput.accept(id, recipe, null);
-            }
-
-            @Override
-            public net.minecraft.advancements.Advancement.Builder advancement() {
-                return rawOutput.advancement();
-            }
-
-            @Override
-            public void accept(ResourceLocation id, Recipe<?> recipe, AdvancementHolder advancement, ICondition... conditions) {
-                rawOutput.accept(id, recipe, null, conditions);
-            }
-        };
+    protected void buildRecipes(Consumer<FinishedRecipe> output) {
 
         coloredEgg(output, "white_chicken", Items.WHITE_DYE, 0);
         coloredEgg(output, "yellow_chicken", Items.YELLOW_DYE, 4);
@@ -269,7 +248,7 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 "minecraft:nether_star", 10);
     }
 
-    private static void henhouse(RecipeOutput output, String recipeName, Item planks) {
+    private static void henhouse(Consumer<FinishedRecipe> output, String recipeName, Item planks) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, item("chickens:henhouse"))
                 .pattern("WWW")
                 .pattern("WHW")
@@ -281,43 +260,60 @@ public class ChickensRecipeProvider extends RecipeProvider {
                 .save(output, id(recipeName));
     }
 
-    private static void dousingRecipe(RecipeOutput output, String recipeName, String inputChicken,
+    private static void dousingRecipe(Consumer<FinishedRecipe> output, String recipeName, String inputChicken,
             String resultChicken, String reagentId, int amount) {
-        output.accept(id(recipeName), new DousingRecipe(
-                inputChicken,
-                resultChicken,
-                new DousingRecipe.Reagent(DousingRecipe.ReagentType.ITEM, ResourceLocation.parse(reagentId), amount),
-                10_000), null);
+        JsonObject reagent = new JsonObject();
+        reagent.addProperty("type", "item");
+        reagent.addProperty("id", reagentId);
+        reagent.addProperty("amount", amount);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("input", inputChicken);
+        json.addProperty("result", resultChicken);
+        json.add("reagent", reagent);
+        json.addProperty("energy", 10_000);
+
+        output.accept(new RawFinishedRecipe(id(recipeName), json,
+                ModRecipeTypes.AVIAN_DOUSING_SERIALIZER.get()));
     }
 
-    private static void coloredEgg(RecipeOutput output, String recipeName, Item dye, int chickenType) {
-        ItemStack result = new ItemStack(item("chickens:colored_egg"));
-
+    private static void coloredEgg(Consumer<FinishedRecipe> output, String recipeName, Item dye, int chickenType) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("ChickenType", chickenType);
-        result.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-        result.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(chickenType));
+        tag.putInt("CustomModelData", chickenType);
 
-        ShapelessRecipe recipe = new ShapelessRecipe(
-                "",
-                CraftingBookCategory.MISC,
-                result,
-                NonNullList.of(Ingredient.EMPTY, Ingredient.of(Items.EGG), Ingredient.of(dye))
-        );
+        JsonObject result = new JsonObject();
+        result.addProperty("item", BuiltInRegistries.ITEM.getKey(item("chickens:colored_egg")).toString());
+        result.addProperty("count", 1);
+        result.addProperty("nbt", tag.toString());
 
-        output.accept(id(recipeName), recipe, null);
+        JsonArray ingredients = new JsonArray();
+        ingredients.add(ingredient(Items.EGG));
+        ingredients.add(ingredient(dye));
+
+        JsonObject json = new JsonObject();
+        json.add("ingredients", ingredients);
+        json.add("result", result);
+
+        output.accept(new RawFinishedRecipe(id(recipeName), json, RecipeSerializer.SHAPELESS_RECIPE));
+    }
+
+    private static JsonObject ingredient(Item item) {
+        JsonObject json = new JsonObject();
+        json.addProperty("item", BuiltInRegistries.ITEM.getKey(item).toString());
+        return json;
     }
 
     private static Item item(String id) {
-        ResourceLocation location = ResourceLocation.parse(id);
+        ResourceLocation location = new ResourceLocation(id);
         Item result = BuiltInRegistries.ITEM.get(location);
-        if (result == Items.AIR && !location.equals(ResourceLocation.withDefaultNamespace("air"))) {
+        if (result == Items.AIR && !location.equals(new ResourceLocation("minecraft", "air"))) {
             throw new IllegalStateException("Item not registered at datagen time: " + id);
         }
         return result;
     }
 
     private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+        return new ResourceLocation(MODID, path);
     }
 }

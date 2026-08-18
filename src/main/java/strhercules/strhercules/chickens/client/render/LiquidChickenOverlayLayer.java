@@ -32,8 +32,8 @@ import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -93,11 +93,6 @@ public final class LiquidChickenOverlayLayer extends RenderLayer<Chicken, Chicke
         int green = (tint >> 8) & 0xFF;
         int blue = tint & 0xFF;
         float alpha = 0.8F;
-        int packedColor = FastColor.ARGB32.color(
-                Math.round(alpha * 255.0F),
-                red,
-                green,
-                blue);
 
         // Keep the overlay model in sync with the parent renderer so limb poses and animations line up.
         ChickenModel<Chicken> parentModel = this.getParentModel();
@@ -106,7 +101,8 @@ public final class LiquidChickenOverlayLayer extends RenderLayer<Chicken, Chicke
         overlayModel.setupAnim(chicken, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
         var vertexConsumer = sprite.wrap(buffer.getBuffer(RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS)));
-        overlayModel.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, packedColor);
+        overlayModel.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY,
+                red / 255.0F, green / 255.0F, blue / 255.0F, alpha);
     }
 
     private static LiquidEggRegistryItem resolveLiquid(ChickensRegistryItem description) {

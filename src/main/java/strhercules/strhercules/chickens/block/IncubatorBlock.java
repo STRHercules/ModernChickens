@@ -1,12 +1,12 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.IncubatorBlockEntity;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -38,9 +38,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.tags.ItemTags;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -52,7 +51,6 @@ import java.util.List;
  * offering comparator support for automation chains.
  */
 public class IncubatorBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<IncubatorBlock> CODEC = simpleCodec(IncubatorBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -73,10 +71,6 @@ public class IncubatorBlock extends HorizontalDirectionalBlock implements Entity
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<IncubatorBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -101,13 +95,13 @@ public class IncubatorBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof IncubatorBlockEntity incubator)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(incubator, pos);
+            NetworkHooks.openScreen(serverPlayer, incubator, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -159,10 +153,10 @@ public class IncubatorBlock extends HorizontalDirectionalBlock implements Entity
             if (!level.isClientSide && !player.isCreative()) {
                 ItemStack drop = new ItemStack(this);
                 if (blockEntity instanceof IncubatorBlockEntity incubator) {
-                    incubator.saveToItem(drop, level.registryAccess());
+                    incubator.saveToItem(drop);
                     var customName = incubator.getCustomName();
                     if (customName != null) {
-                        drop.set(DataComponents.CUSTOM_NAME, customName);
+                        drop.setHoverName(customName);
                     }
                 }
                 if (!drop.isEmpty()) {
@@ -179,7 +173,7 @@ public class IncubatorBlock extends HorizontalDirectionalBlock implements Entity
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (stack.has(DataComponents.CUSTOM_NAME)) {
+        if (stack.hasCustomHoverName()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof IncubatorBlockEntity incubator) {
                 incubator.setCustomName(stack.getHoverName());
@@ -188,14 +182,14 @@ public class IncubatorBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.chickens.incubator"));
         int capacity = Math.max(1, ChickensConfigHolder.get().getIncubatorEnergyCapacity());
         int energy = 0;
         int cost = Math.max(1, ChickensConfigHolder.get().getIncubatorEnergyCost());
-        CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.readBlockEntity(stack);
         if (!data.isEmpty()) {
-            CompoundTag tag = data.copyTag();
+            CompoundTag tag = data;
             if (tag.contains("Energy")) {
                 energy = Math.max(0, tag.getInt("Energy"));
             }

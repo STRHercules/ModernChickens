@@ -19,9 +19,9 @@ import net.minecraft.resources.ResourceLocation;
 
 public class TeachingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.TeachingRecipe> {
     // Reutilizamos la misma textura de fondo que LayingCategory
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/laying.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/laying.png");
     // El icono es el propio item del libro; no necesitamos una textura separada.
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/laying_icon.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/laying_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;

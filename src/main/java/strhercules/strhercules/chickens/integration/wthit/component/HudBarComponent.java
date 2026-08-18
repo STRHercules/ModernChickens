@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import mcp.mobius.waila.api.ITooltipComponent;
-import net.minecraft.client.DeltaTracker;
 
 /**
  * Small custom bar renderer that mirrors Mekanism's HUD elements. The bar renders a textured fill,
@@ -45,7 +44,7 @@ public final class HudBarComponent implements ITooltipComponent {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int x, int y, DeltaTracker delta) {
+    public void render(GuiGraphics graphics, int x, int y, float delta) {
         // Border
         graphics.fill(x, y, x + WIDTH, y + HEIGHT, BORDER_COLOR);
         // Background

@@ -4,7 +4,7 @@ import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.CollectorBlockEntity;
 import strhercules.chickens.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -26,7 +26,7 @@ public class CollectorMenu extends AbstractContainerMenu implements SideConfigMe
     private final int machineSlotCount;
     private int lastCapacityLevel = -1;
 
-    public CollectorMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public CollectorMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
@@ -67,7 +67,7 @@ public class CollectorMenu extends AbstractContainerMenu implements SideConfigMe
         updateStorageLayout();
     }
 
-    private static CollectorBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static CollectorBlockEntity resolveBlockEntity(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(inventory, "playerInventory");
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();

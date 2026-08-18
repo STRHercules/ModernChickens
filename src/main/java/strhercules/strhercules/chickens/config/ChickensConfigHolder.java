@@ -2,7 +2,7 @@ package strhercules.chickens.config;
 
 /**
  * Thread-safe container for the currently active configuration snapshot.
- * NeoForge loads configuration data on the mod loading thread, so a simple
+ * Forge loads configuration data on the mod loading thread, so a simple
  * volatile reference is more than enough to safely publish values to any
  * gameplay systems that might query them later on.
  */

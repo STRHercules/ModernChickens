@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.block.MechanicalNestBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChickenItemHelper;
@@ -30,9 +36,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
@@ -128,8 +133,7 @@ public final class MechanicalNestBlockEntity extends BlockEntity
                     || energy >= capacity) {
                 continue;
             }
-            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
-                    worldPosition.relative(direction), direction.getOpposite());
+            IEnergyStorage neighbor = NeighbourCaps.energy(level, worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
                 continue;
             }
@@ -467,25 +471,25 @@ public final class MechanicalNestBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
-        ContainerHelper.saveAllItems(tag, items, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putInt("InventoryVersion", INVENTORY_VERSION);
         tag.putInt("Energy", energy);
         sideConfig.save(tag);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         if (tag.getInt("InventoryVersion") >= INVENTORY_VERSION) {
-            ContainerHelper.loadAllItems(tag, items, provider);
+            ContainerHelper.loadAllItems(tag, items);
         } else {
             // Version 1 stored Range Upgrades in slot 2 and RF Upgrades in
             // slot 3. Preserve the rooster, speed, and RF contents while
             // dropping the no-longer-supported range slot.
             NonNullList<ItemStack> legacyItems = NonNullList.withSize(4, ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(tag, legacyItems, provider);
+            ContainerHelper.loadAllItems(tag, legacyItems);
             items.set(ROOSTER_SLOT, legacyItems.get(ROOSTER_SLOT));
             items.set(SPEED_UPGRADE_SLOT, legacyItems.get(SPEED_UPGRADE_SLOT));
             items.set(RF_UPGRADE_SLOT, legacyItems.get(3));
@@ -498,15 +502,15 @@ public final class MechanicalNestBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        saveAdditional(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Nullable
@@ -516,11 +520,10 @@ public final class MechanicalNestBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -529,5 +532,29 @@ public final class MechanicalNestBlockEntity extends BlockEntity
             BlockState state = getBlockState();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
         }
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
     }
 }

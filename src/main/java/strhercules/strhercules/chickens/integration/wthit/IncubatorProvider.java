@@ -25,6 +25,6 @@ final class IncubatorProvider implements IDataProvider<IncubatorBlockEntity> {
         int percent = Math.max(0, incubator.getProgress()) * 100 / maxProgress;
         helper.addText(Component.translatable("tooltip.chickens.incubator.progress", percent));
         helper.addText(Component.translatable("tooltip.chickens.incubator.cost", incubator.getEnergyCost()));
-        writer.add(HudOverlayHelper.TYPE, result -> result.add(helper));
+        writer.add(HudOverlayHelper.class, result -> result.add(helper));
     }
 }

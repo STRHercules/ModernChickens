@@ -22,7 +22,7 @@ import java.util.Optional;
 
 public final class DynamicChickenTextures {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensDynamicTextures");
-    private static final ResourceLocation BASE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation BASE_TEXTURE = new ResourceLocation(
             "minecraft", "textures/entity/chicken.png");
     private static final Map<Integer, ResourceLocation> CACHE = new HashMap<>();
     private static NativeImage baseImageCache;
@@ -71,7 +71,7 @@ public final class DynamicChickenTextures {
         }
 
         DynamicTexture texture = new DynamicTexture(image);
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
+        ResourceLocation id = new ResourceLocation(
                 ChickensMod.MOD_ID, "dynamic/chicken_" + chicken.getId());
         Minecraft.getInstance().getTextureManager().register(id, texture);
         return id;

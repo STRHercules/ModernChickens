@@ -21,8 +21,8 @@ import net.minecraft.resources.ResourceLocation;
  * dyed eggs summon which chicken breeds.
  */
 public class ThrowingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.ThrowingRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/throws.png");
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/throws_icon.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/throws.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/throws_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;
