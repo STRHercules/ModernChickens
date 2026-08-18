@@ -1,0 +1,11 @@
+{
+  "type": "chickens:avian_dousing",
+  "energy": 10000,
+  "input": "obsidianChicken",
+  "reagent": {
+    "type": "item",
+    "amount": 10,
+    "id": "minecraft:dragon_breath"
+  },
+  "result": "dragonChicken"
+}

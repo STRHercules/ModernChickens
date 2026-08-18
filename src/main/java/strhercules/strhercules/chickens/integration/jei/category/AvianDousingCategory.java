@@ -9,7 +9,7 @@ import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
+import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
@@ -59,7 +59,7 @@ public final class AvianDousingCategory implements IRecipeCategory<ChickensJeiRe
         if (chemical != null) {
             reagentSlot.addIngredient(chemical.type(), chemical.stack());
         } else if (recipe.fluid() != null && !recipe.fluid().isEmpty()) {
-            reagentSlot.addIngredient(NeoForgeTypes.FLUID_STACK, recipe.fluid());
+            reagentSlot.addIngredient(ForgeTypes.FLUID_STACK, recipe.fluid());
         } else {
             reagentSlot.addItemStack(recipe.reagent());
         }

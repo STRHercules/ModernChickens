@@ -1,12 +1,12 @@
 package strhercules.chickens.item;
 
+import net.minecraft.world.level.Level;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.config.ChickensConfigHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.network.chat.Component;
 
@@ -33,7 +33,7 @@ abstract class AbstractChemicalEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         ChemicalEggRegistryItem entry = resolve(stack);
         if (entry == null) {
             return;

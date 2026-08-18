@@ -1,6 +1,6 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.CollectorBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
  * upgrades.
  */
 public class CollectorBlock extends Block implements EntityBlock {
-    public static final MapCodec<CollectorBlock> CODEC = simpleCodec(CollectorBlock::new);
 
     public CollectorBlock() {
         this(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F, 6.0F).sound(SoundType.WOOD));
@@ -43,10 +42,6 @@ public class CollectorBlock extends Block implements EntityBlock {
         super(properties);
     }
 
-    @Override
-    public MapCodec<CollectorBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -71,13 +66,13 @@ public class CollectorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof CollectorBlockEntity collector)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(collector, pos);
+            NetworkHooks.openScreen(serverPlayer, collector, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

@@ -1,6 +1,7 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.NestBlockEntity;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +40,6 @@ import javax.annotation.Nullable;
  * inputs. The actual aura effect is computed by {@link NestBlockEntity}.
  */
 public class NestBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<NestBlock> CODEC = simpleCodec(NestBlock::new);
 
     public NestBlock() {
         this(BlockBehaviour.Properties.of()
@@ -54,10 +54,6 @@ public class NestBlock extends HorizontalDirectionalBlock implements EntityBlock
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    @Override
-    public MapCodec<NestBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -83,7 +79,7 @@ public class NestBlock extends HorizontalDirectionalBlock implements EntityBlock
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof NestBlockEntity nest)) {
@@ -98,7 +94,7 @@ public class NestBlock extends HorizontalDirectionalBlock implements EntityBlock
         }
         // Regular right-click opens the dedicated Nest GUI.
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(nest, pos);
+            NetworkHooks.openScreen(serverPlayer, nest, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

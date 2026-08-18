@@ -17,7 +17,7 @@ import snownee.jade.api.config.IPluginConfig;
 enum ChickensChickenProvider implements IEntityComponentProvider {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chickens_chicken");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "chickens_chicken");
 
     @Override
     public void appendTooltip(ITooltip tooltip, EntityAccessor accessor, IPluginConfig config) {

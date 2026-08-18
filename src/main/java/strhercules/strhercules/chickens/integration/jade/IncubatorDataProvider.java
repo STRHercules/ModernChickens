@@ -14,7 +14,7 @@ import snownee.jade.api.IServerDataProvider;
 enum IncubatorDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "incubator");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "incubator");
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {

@@ -18,8 +18,8 @@ public final class LavaChickenItem extends Item {
 
     private static final FoodProperties FOOD = new FoodProperties.Builder()
             .nutrition(4)
-            .saturationModifier(1.2F)
-            .alwaysEdible()
+            .saturationMod(1.2F)
+            .alwaysEat()
             .build();
 
     public LavaChickenItem(Properties properties) {
@@ -43,7 +43,7 @@ public final class LavaChickenItem extends Item {
             if (!level.isClientSide) {
                 player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, EFFECT_DURATION_TICKS, 2));
                 player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, EFFECT_DURATION_TICKS, 3));
-                player.addEffect(new MobEffectInstance(ModEffects.BURNING, EFFECT_DURATION_TICKS, 0));
+                player.addEffect(new MobEffectInstance(ModEffects.BURNING.get(), EFFECT_DURATION_TICKS, 0));
             }
         }
         return result;

@@ -9,10 +9,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
 
 /**
  * Hosts entity type registrations for the modernised Chickens mod. Keeping
@@ -22,30 +22,30 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class ModEntityTypes {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, ChickensMod.MOD_ID);
 
-    public static final DeferredHolder<EntityType<?>, EntityType<ChickensChicken>> CHICKENS_CHICKEN = ENTITY_TYPES.register("chicken",
+    public static final RegistryObject<EntityType<ChickensChicken>> CHICKENS_CHICKEN = ENTITY_TYPES.register("chicken",
             () -> EntityType.Builder.<ChickensChicken>of(ChickensChicken::new, MobCategory.CREATURE)
                     .sized(0.4F, 0.7F)
                     .clientTrackingRange(10)
-                    .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chicken").toString()));
+                    .build(new ResourceLocation(ChickensMod.MOD_ID, "chicken").toString()));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<Rooster>> ROOSTER = ENTITY_TYPES.register("rooster",
+    public static final RegistryObject<EntityType<Rooster>> ROOSTER = ENTITY_TYPES.register("rooster",
             () -> EntityType.Builder.<Rooster>of(Rooster::new, MobCategory.CREATURE)
                     .sized(0.4F, 0.7F)
                     .clientTrackingRange(10)
-                    .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "rooster").toString()));
+                    .build(new ResourceLocation(ChickensMod.MOD_ID, "rooster").toString()));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<MegaChicken>> MEGA_CHICKEN = ENTITY_TYPES.register("mega_chicken",
+    public static final RegistryObject<EntityType<MegaChicken>> MEGA_CHICKEN = ENTITY_TYPES.register("mega_chicken",
             () -> EntityType.Builder.<MegaChicken>of(MegaChicken::new, MobCategory.CREATURE)
                     .sized(1.2F, 2.8F)
                     .clientTrackingRange(10)
-                    .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "mega_chicken").toString()));
+                    .build(new ResourceLocation(ChickensMod.MOD_ID, "mega_chicken").toString()));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<ColoredEgg>> COLORED_EGG = ENTITY_TYPES.register("colored_egg",
+    public static final RegistryObject<EntityType<ColoredEgg>> COLORED_EGG = ENTITY_TYPES.register("colored_egg",
             () -> EntityType.Builder.<ColoredEgg>of(ColoredEgg::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
                     .clientTrackingRange(4)
                     .updateInterval(10)
-                    .build(ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "colored_egg").toString()));
+                    .build(new ResourceLocation(ChickensMod.MOD_ID, "colored_egg").toString()));
 
     private ModEntityTypes() {
     }

@@ -16,21 +16,20 @@ public final class BurningEffect extends MobEffect {
         super(MobEffectCategory.BENEFICIAL, 0xFF5A00);
         addAttributeModifier(
                 Attributes.MOVEMENT_SPEED,
-                ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "burning_speed"),
+                "9f6a1cb8-6a0e-4a1b-9a0e-3f0b7a2c5d11",
                 0.2D,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
     @Override
-    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+    public boolean isDurationEffectTick(int duration, int amplifier) {
         return true;
     }
 
     @Override
-    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
         if (!entity.level().isClientSide && entity instanceof Player player) {
             player.heal(player.getMaxHealth() / (float) HEALING_TICKS);
         }
-        return true;
     }
 }

@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Client screen for the four-row RF-powered roost. */
 public class MechanicalRoostScreen extends SideConfigurableScreen<MechanicalRoostMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/mechanical_roost.png");
     private static final int[] ROW_Y = { 20, 40, 60, 80 };
     private static final int PROGRESS_X = 48;
@@ -48,7 +48,7 @@ public class MechanicalRoostScreen extends SideConfigurableScreen<MechanicalRoos
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderEnergyTooltip(graphics, mouseX, mouseY);

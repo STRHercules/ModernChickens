@@ -20,8 +20,7 @@ public class ChickensLootTableProvider extends LootTableProvider {
                                 ChickensBlockLootSubProvider::new,
                                 LootContextParamSets.BLOCK
                         )
-                ),
-                registries
+                )
         );
     }
 }

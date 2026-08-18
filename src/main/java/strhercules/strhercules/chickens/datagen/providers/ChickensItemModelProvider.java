@@ -2,9 +2,9 @@ package strhercules.chickens.datagen.providers;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.ItemModelBuilder;
+import net.minecraftforge.client.model.generators.ItemModelProvider;
+import net.minecraftforge.common.data.ExistingFileHelper;
 
 import strhercules.chickens.ChickensMod;
 
@@ -47,7 +47,7 @@ public class ChickensItemModelProvider extends ItemModelProvider {
         generatedItem("storagecapacity", "storagecapacity");
         generatedItem("rangeupgrade", "rangeupgrade");
         generatedItem("rfupgrade", "rfupgrade");
-        generatedItem("configurator", "placementwand");
+        generatedItem("configurator", "configurator");
         generatedItem("gas_egg", "gas_egg");
         generatedItem("chemical_egg", "chemical_egg");
         generatedItem("mega_chicken", "mega_chicken");

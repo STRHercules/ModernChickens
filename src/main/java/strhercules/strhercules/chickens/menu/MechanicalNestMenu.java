@@ -4,7 +4,7 @@ import strhercules.chickens.blockentity.MechanicalNestBlockEntity;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.registry.ModMenuTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -25,7 +25,7 @@ public final class MechanicalNestMenu extends AbstractContainerMenu implements S
     private int clientCapacity;
     private int clientCost;
 
-    public MechanicalNestMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    public MechanicalNestMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, resolve(inventory, buffer));
     }
 
@@ -80,7 +80,7 @@ public final class MechanicalNestMenu extends AbstractContainerMenu implements S
         });
     }
 
-    private static MechanicalNestBlockEntity resolve(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static MechanicalNestBlockEntity resolve(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();
         BlockEntity entity = inventory.player.level().getBlockEntity(pos);

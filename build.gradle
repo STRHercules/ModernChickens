@@ -1,9 +1,8 @@
 plugins {
-    id 'java-library'
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.143'
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
 }
 
 version = "${minecraft_version}-${mod_version}-${tag_lanzador}"
@@ -12,66 +11,65 @@ base {
     archivesName = "${mod_name}"
 }
 
-// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Minecraft 1.20.1 ships Java 17 to end users, so the mod targets Java 17.
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+
+    copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            // Remap the refmaps of deobfuscated dependency mods so their mixins
+            // resolve against the named mappings used in the dev environment.
+            property 'mixin.env.remapRefMap', 'true'
+            property "mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg"
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+        }
+
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', mod_id
+        }
+
+        data {
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            args '--mod', mod_id, '--all',
+                    '--output', file('src/generated/resources/'),
+                    '--existing', file('src/main/resources/')
+        }
+    }
+}
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
-neoForge {
-    // Specify the version of NeoForge to use.
-    version = project.neoforge_version
-
-    // Default run configurations.
-    runs {
-        client {
-            client()
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        server {
-            server()
-            programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            data()
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-        }
-
-        // applies to all the run configs above
-        configureEach {
-            // Recommended logging data for a userdev environment
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-
-            // Recommended logging level for the console
-            logLevel = org.slf4j.event.Level.DEBUG
-        }
-    }
-
-    mods {
-        // define mod <-> source bindings
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
-        }
-    }
-}
-
-
 repositories {
     mavenCentral()
     mavenLocal()
-    maven { url = 'https://maven.neoforged.net/releases' }
     maven { url = 'https://maven.blamejared.com' }
     maven {
         url = 'https://maven2.bai.lol'
@@ -105,46 +103,55 @@ repositories {
             includeGroup "dev.latvian.apps"
         }
     }
+    // Architectury (KubeJS runtime dependency)
     maven {
-        url = "https://jitpack.io"
+        url = "https://maven.architectury.dev/"
         content {
-            includeGroup "com.github.rtyley"
+            includeGroup "dev.architectury"
         }
     }
 }
 
+// Some dev-only mods (KubeJS in particular) keep non-daemon threads alive, which
+// stops the data generator JVM from exiting. They are only needed to exercise the
+// integrations in the client, so leave them off the classpath during data generation.
+def dataGenRun = gradle.startParameter.taskNames.any { it.toLowerCase().contains("rundata") }
 
 dependencies {
-    // JEI
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // WTHIT API
-    compileOnly "mcp.mobius.waila:wthit-api:neo-${project.wthit_version}"
+    // JEI
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+
+    // WTHIT
+    compileOnly fg.deobf("mcp.mobius.waila:wthit-api:forge-${wthit_version}")
+    if (!dataGenRun) {
+        runtimeOnly fg.deobf("mcp.mobius.waila:wthit:forge-${wthit_version}")
+        runtimeOnly fg.deobf("maven.modrinth:badpackets:${badpackets_version}")
+    }
 
     // Jade
-    compileOnly "maven.modrinth:jade:${project.jade_version}"
-    implementation "maven.modrinth:jade:${project.jade_version}"
+    compileOnly fg.deobf("maven.modrinth:jade:${jade_version}")
+    runtimeOnly fg.deobf("maven.modrinth:jade:${jade_version}")
+
+    // KubeJS (the plugin itself is discovered through kubejs.plugins.txt at runtime)
+    compileOnly fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
+    compileOnly fg.deobf("dev.latvian.mods:rhino:${rhino_version}")
+    if (!dataGenRun) {
+        runtimeOnly fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
+        runtimeOnly fg.deobf("dev.latvian.mods:rhino-forge:${rhino_version}")
+        runtimeOnly fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
+    }
 
     // AlmostUnified
-    implementation "com.almostreliable.mods:almostunified-neoforge:${au_version}"
+    compileOnly fg.deobf("com.almostreliable.mods:almostunified-forge:${au_version}")
+    runtimeOnly fg.deobf("com.almostreliable.mods:almostunified-forge:${au_version}")
 
-    // ultimate foods
-    implementation "curse.maven:ultimate-foods-1455067:${ultimatefoods_version}"
-
-    // KubeJS 
-    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
-    compileOnly "dev.latvian.mods:rhino:${rhino_version}"
-     implementation "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
-     implementation "dev.latvian.mods:rhino:${rhino_version}"
-
-  // ------ [   DATAGEN DEPENDENCY MODS ] ------ //
-
-    // Mekanism
-    implementation("mekanism:Mekanism:${minecraft_version}-${mekanism_version}")
-    runtimeOnly("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators")
-    compileOnly("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators")
+    // Mekanism is reached purely through reflection, so no compile-time artifact is
+    // required; it is only present at runtime so data generation can resolve its items.
+    runtimeOnly fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}")
 }
 
 test {
@@ -154,7 +161,9 @@ test {
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
         minecraft_version: minecraft_version,
-        neoforge_version: neoforge_version,
+        minecraft_version_range: minecraft_version_range,
+        forge_version: forge_version,
+        forge_version_range: forge_version_range,
         loader_version_range: loader_version_range,
         mod_id: mod_id,
         mod_named: mod_named,
@@ -166,10 +175,25 @@ tasks.withType(ProcessResources).configureEach {
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/neoforge.mods.toml']) {
+    filesMatching(['META-INF/mods.toml']) {
         expand replaceProperties
     }
 }
+
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'     : mod_id,
+            'Specification-Vendor'    : mod_authors,
+            'Specification-Version'   : '1',
+            'Implementation-Title'    : project.name,
+            'Implementation-Version'  : project.jar.archiveVersion,
+            'Implementation-Vendor'   : mod_authors
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
 
 publishing {
     publications {
@@ -194,5 +218,12 @@ idea {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-    options.getRelease().set(21)
+    options.getRelease().set(17)
+    options.compilerArgs << '-Xmaxerrs' << '20000'
+}
+
+// Mixin refmaps of deobfuscated dependency mods are written in SRG names; the
+// remapping file above must exist before any run configuration starts.
+tasks.matching { it.name.startsWith('run') }.configureEach {
+    dependsOn 'createSrgToMcp'
 }

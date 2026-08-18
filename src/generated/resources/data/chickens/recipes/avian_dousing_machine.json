@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "chickens:collector"
+    },
+    "F": {
+      "item": "chickens:avian_fluid_converter"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "FBF",
+    "RCR",
+    "IGI"
+  ],
+  "result": {
+    "item": "chickens:avian_dousing_machine"
+  },
+  "show_notification": true
+}

@@ -23,9 +23,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.minecraftforge.fluids.FluidType;
+import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -421,7 +421,7 @@ public final class ChickensDataLoader {
         );
 
         private static ResourceLocation id(String namespace, String path) {
-            return ResourceLocation.fromNamespaceAndPath(namespace, path);
+            return new ResourceLocation(namespace, path);
         }
     }
 

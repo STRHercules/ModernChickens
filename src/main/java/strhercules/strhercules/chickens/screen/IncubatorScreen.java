@@ -15,7 +15,7 @@ import java.util.List;
  * while overlaying a progress arrow and RF bar synced from the container data.
  */
 public class IncubatorScreen extends SideConfigurableScreen<IncubatorMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/incubator.png");
     private static final int PROGRESS_X = 68;
     private static final int PROGRESS_Y = 35;
@@ -54,7 +54,7 @@ public class IncubatorScreen extends SideConfigurableScreen<IncubatorMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderEnergyTooltip(graphics, mouseX, mouseY);

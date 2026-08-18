@@ -37,7 +37,7 @@ import java.util.Set;
  */
 final class DynamicFluidChickens {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensDynamicFluid");
-    private static final ResourceLocation PLACEHOLDER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation PLACEHOLDER_TEXTURE = new ResourceLocation(
             ChickensMod.MOD_ID, "textures/entity/unknownchicken.png");
     private static final int ID_BASE = 3_000_000;
     private static final int ID_SPAN = 1_000_000;

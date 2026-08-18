@@ -1,17 +1,17 @@
 package strhercules.chickens.item;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.level.Level;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.Item.TooltipContext;
+import strhercules.chickens.item.ItemData;
 
 import java.util.List;
 
@@ -82,7 +82,7 @@ public class FluxEggItem extends Item {
     public static void setEnergy(ItemStack stack, int stored, int capacity) {
         int safeCapacity = Math.max(getMinimumCapacity(), capacity);
         int clampedEnergy = Mth.clamp(stored, 0, safeCapacity);
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+        ItemData.update(stack, tag -> {
             tag.putInt(TAG_CAPACITY, safeCapacity);
             tag.putInt(TAG_ENERGY, clampedEnergy);
         });
@@ -97,18 +97,18 @@ public class FluxEggItem extends Item {
     }
 
     public static int getStoredEnergy(ItemStack stack) {
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.read(stack);
         if (data.contains(TAG_ENERGY)) {
-            CompoundTag tag = data.copyTag();
+            CompoundTag tag = data;
             return Mth.clamp(tag.getInt(TAG_ENERGY), 0, getCapacity(stack));
         }
         return getMinimumCapacity();
     }
 
     public static int getCapacity(ItemStack stack) {
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.read(stack);
         if (data.contains(TAG_CAPACITY)) {
-            CompoundTag tag = data.copyTag();
+            CompoundTag tag = data;
             int capacity = tag.getInt(TAG_CAPACITY);
             return Math.max(getMinimumCapacity(), capacity);
         }
@@ -116,7 +116,7 @@ public class FluxEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         int stored = getStoredEnergy(stack);
         int capacity = getCapacity(stack);
         tooltip.add(Component.translatable("item.chickens.flux_egg.tooltip", stored, capacity).withStyle(ChatFormatting.GRAY));

@@ -1,5 +1,7 @@
 package strhercules.chickens.item;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.level.Level;
 import strhercules.chickens.entity.ChickensChicken;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -11,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class AnalyzerItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.chickens.analyzer.tooltip1").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("item.chickens.analyzer.tooltip2").withStyle(ChatFormatting.GRAY));
     }
@@ -56,7 +57,7 @@ public class AnalyzerItem extends Item {
         }
 
         EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-        stack.hurtAndBreak(1, player, slot);
+        stack.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(slot));
         return InteractionResult.SUCCESS;
     }
 }

@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
  * mod while interacting with the modern container.
  */
 public class HenhouseScreen extends SideConfigurableScreen<HenhouseMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
         "textures/gui/henhouse.png");
 
     public HenhouseScreen(HenhouseMenu menu, Inventory playerInventory, Component title) {
@@ -48,7 +48,7 @@ public class HenhouseScreen extends SideConfigurableScreen<HenhouseMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);

@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.block.MechanicalRoostBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
@@ -24,9 +30,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -187,7 +192,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
             ItemStack existing = getItem(slot);
             if (existing.isEmpty()) {
                 remaining -= Math.min(getMaxStackSizeForSlot(slot, output), remaining);
-            } else if (ItemStack.isSameItemSameComponents(existing, output)) {
+            } else if (ItemStack.isSameItemSameTags(existing, output)) {
                 remaining -= Math.min(Math.max(getMaxStackSizeForSlot(slot, existing) - existing.getCount(), 0),
                         remaining);
             }
@@ -205,7 +210,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
                 int amount = Math.min(maxStackSize, remaining.getCount());
                 setItem(slot, remaining.copyWithCount(amount));
                 remaining.shrink(amount);
-            } else if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+            } else if (ItemStack.isSameItemSameTags(existing, remaining)) {
                 int amount = Math.min(Math.max(getMaxStackSizeForSlot(slot, existing) - existing.getCount(), 0),
                         remaining.getCount());
                 existing.grow(amount);
@@ -508,7 +513,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
         ItemStack previous = index >= 0 && index < CHICKEN_SLOT_COUNT ? getItem(index).copy() : ItemStack.EMPTY;
         super.setItem(index, stack);
         if (index >= 0 && index < CHICKEN_SLOT_COUNT
-                && !ItemStack.isSameItemSameComponents(previous, getItem(index))) {
+                && !ItemStack.isSameItemSameTags(previous, getItem(index))) {
             rowChickenData[index] = null;
             clearRowTimer(index);
         }
@@ -633,8 +638,7 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
             if (!sideConfig().allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
                 continue;
             }
-            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
-                    worldPosition.relative(direction), direction.getOpposite());
+            IEnergyStorage neighbor = NeighbourCaps.energy(level, worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
                 continue;
             }
@@ -685,8 +689,8 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tag.putInt("Energy", getEnergyStored());
         tag.putIntArray("RowTimeUntilNextDrop", rowTimeUntilNextDrop);
         tag.putIntArray("RowTimeElapsed", rowTimeElapsed);
@@ -695,8 +699,8 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         syncWithConfig();
         energyStorage.setEnergy(Mth.clamp(tag.getInt("Energy"), 0, capacity));
         loadRowValues(tag.getIntArray("RowTimeUntilNextDrop"), rowTimeUntilNextDrop, Integer.MAX_VALUE);
@@ -756,5 +760,29 @@ public class MechanicalRoostBlockEntity extends AbstractChickenContainerBlockEnt
             setChanged();
             return true;
         }
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
     }
 }

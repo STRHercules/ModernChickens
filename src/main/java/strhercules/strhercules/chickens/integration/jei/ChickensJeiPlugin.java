@@ -57,7 +57,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ import java.util.stream.Stream;
 
 @JeiPlugin
 public class ChickensJeiPlugin implements IModPlugin {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "jei_plugin");
+    private static final ResourceLocation UID = new ResourceLocation(ChickensMod.MOD_ID, "jei_plugin");
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -341,7 +341,7 @@ public class ChickensJeiPlugin implements IModPlugin {
 
         List<ChickensJeiRecipeTypes.AvianDousingRecipe> list = new ArrayList<>();
         for (var holder : level.getRecipeManager().getAllRecipesFor(ModRecipeTypes.AVIAN_DOUSING.get())) {
-            ChickensJeiRecipeTypes.AvianDousingRecipe entry = createCustomDousingRecipe(holder.value(), chickenItem);
+            ChickensJeiRecipeTypes.AvianDousingRecipe entry = createCustomDousingRecipe(holder, chickenItem);
             if (entry != null) {
                 list.add(entry);
             }

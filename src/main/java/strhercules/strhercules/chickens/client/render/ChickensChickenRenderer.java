@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class ChickensChickenRenderer extends ChickenRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensChickenRenderer");
-    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation ROBOT_CHICKEN_TEXTURE = new ResourceLocation(
             "chickens", "textures/entity/robot_chicken.png");
     private static final Set<ResourceLocation> VERIFIED_TEXTURES = new HashSet<>();
     private static final Set<ResourceLocation> LOGGED_MISSING_TEXTURES = new HashSet<>();

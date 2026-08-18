@@ -85,7 +85,7 @@ public abstract class SideConfigurableScreen<M extends AbstractContainerMenu & S
         };
 
         private static ResourceLocation texture(String name) {
-            return ResourceLocation.fromNamespaceAndPath("chickens", "textures/gui/io/" + name + ".png");
+            return new ResourceLocation("chickens", "textures/gui/io/" + name + ".png");
         }
 
         private static void render(GuiGraphics graphics, Font font, int leftPos, int topPos, int imageWidth,

@@ -7,12 +7,12 @@ import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.registry.ModRegistry;
 import strhercules.chickens.spawn.SpawnPlanDataLoader;
 import strhercules.chickens.integration.mekanism.MekanismRadiationCompat;
-import strhercules.chickens.network.MegaChickenFlightPayload;
-import strhercules.chickens.network.SideConfigPayload;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import strhercules.chickens.network.ChickensNetwork;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.common.MinecraftForge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,10 +21,10 @@ public final class ChickensMod {
     public static final String MOD_ID = "chickens";
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public ChickensMod(IEventBus modBus) {
+    public ChickensMod() {
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModRegistry.init(modBus);
-        MegaChickenFlightPayload.init(modBus);
-        SideConfigPayload.init(modBus);
+        ChickensNetwork.init();
         modBus.addListener(this::onCommonSetup);
         ChickenTeachHandler.init();
         ChickensCommands.init();
@@ -32,9 +32,9 @@ public final class ChickensMod {
         LavaChickenGameplay.init();
         MegaChickenLoot.init();
         MekanismRadiationCompat.init();
-        NeoForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
-        NeoForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);
-        NeoForge.EVENT_BUS.addListener(MegaChicken::preventRiderFallDamage);
+        MinecraftForge.EVENT_BUS.addListener(ChickensDataLoader::onTagsUpdated);
+        MinecraftForge.EVENT_BUS.addListener(SpawnPlanDataLoader::onAddReloadListeners);
+        MinecraftForge.EVENT_BUS.addListener(MegaChicken::preventRiderFallDamage);
         LOGGER.info("Modern Chickens mod initialised. Legacy content will be registered during later setup stages.");
     }
 

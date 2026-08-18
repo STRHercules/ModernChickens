@@ -23,8 +23,8 @@ import net.minecraft.resources.ResourceLocation;
  * presentation.
  */
 public class LayingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.LayingRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/laying.png");
-    private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/gui/laying_icon.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/laying.png");
+    private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID, "textures/gui/laying_icon.png");
 
     private final IDrawable background;
     private final IDrawable icon;

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "chickens:breeder"
+    },
+    "F": {
+      "item": "chickens:flux_egg"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "IFI",
+    "GBG",
+    "IRI"
+  ],
+  "result": {
+    "item": "chickens:incubator"
+  },
+  "show_notification": true
+}

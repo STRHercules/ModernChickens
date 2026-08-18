@@ -1,7 +1,7 @@
 package strhercules.chickens.data;
 
 import strhercules.chickens.ChickensRegistryItem;
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

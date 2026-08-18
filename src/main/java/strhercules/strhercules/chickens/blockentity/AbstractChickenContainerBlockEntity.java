@@ -582,7 +582,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
             setChanged();
             return stack;
         }
-        if (!ItemStack.isSameItemSameComponents(existing, stack)) {
+        if (!ItemStack.isSameItemSameTags(existing, stack)) {
             return stack;
         }
         int canMove = Math.min(maxStackSize - existing.getCount(), stack.getCount());
@@ -829,13 +829,13 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        saveItems(tag, registries);
-        saveUpgrades(tag, registries);
+        saveItems(tag);
+        saveUpgrades(tag);
         if (!pendingOutput.isEmpty()) {
-            tag.put("PendingOutput", saveVirtualStack(pendingOutput, registries));
+            tag.put("PendingOutput", saveVirtualStack(pendingOutput));
         }
         tag.putInt("TimeUntilNextDrop", timeUntilNextDrop);
         tag.putInt("TimeElapsed", timeElapsed);
@@ -843,15 +843,15 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, registries);
-        loadUpgrades(tag, registries);
+        ContainerHelper.loadAllItems(tag, items);
+        loadUpgrades(tag);
         loadVirtualItemCounts(tag);
         clampLoadedItems();
         pendingOutput = tag.contains("PendingOutput", net.minecraft.nbt.Tag.TAG_COMPOUND)
-                ? loadVirtualStack(tag.getCompound("PendingOutput"), registries)
+                ? loadVirtualStack(tag.getCompound("PendingOutput"))
                 : ItemStack.EMPTY;
         timeUntilNextDrop = tag.getInt("TimeUntilNextDrop");
         timeElapsed = tag.getInt("TimeElapsed");
@@ -861,8 +861,8 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Nullable
@@ -874,16 +874,15 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
-        loadAdditional(tag, registries);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            net.minecraft.core.HolderLookup.Provider registries) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, registries);
+            load(tag);
         }
     }
 
@@ -922,7 +921,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
         return stack.isEmpty() ? 0 : serializedStackSize(stack);
     }
 
-    private void saveItems(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+    private void saveItems(CompoundTag tag) {
         NonNullList<ItemStack> serialized = NonNullList.withSize(items.size(), ItemStack.EMPTY);
         ListTag virtualCounts = new ListTag();
         for (int index = 0; index < items.size(); index++) {
@@ -940,7 +939,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
                 virtualCounts.add(entry);
             }
         }
-        ContainerHelper.saveAllItems(tag, serialized, registries);
+        ContainerHelper.saveAllItems(tag, serialized);
         tag.put("VirtualItemCounts", virtualCounts);
     }
 
@@ -975,22 +974,20 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
         }
     }
 
-    protected static CompoundTag saveVirtualStack(ItemStack stack,
-            net.minecraft.core.HolderLookup.Provider registries) {
+    protected static CompoundTag saveVirtualStack(ItemStack stack) {
         int count = stack.getCount();
         CompoundTag tag = (CompoundTag) stack.copyWithCount(Math.min(count, serializedStackSize(stack)))
-                .save(registries);
+                .save(new CompoundTag());
         if (count > serializedStackSize(stack)) {
             tag.putInt("VirtualCount", count);
         }
         return tag;
     }
 
-    protected static ItemStack loadVirtualStack(CompoundTag tag,
-            net.minecraft.core.HolderLookup.Provider registries) {
+    protected static ItemStack loadVirtualStack(CompoundTag tag) {
         CompoundTag stackTag = tag.copy();
         stackTag.remove("VirtualCount");
-        ItemStack stack = ItemStack.parse(registries, stackTag).orElse(ItemStack.EMPTY);
+        ItemStack stack = ItemStack.of(stackTag);
         if (!stack.isEmpty() && tag.contains("VirtualCount", Tag.TAG_INT)) {
             stack.setCount(tag.getInt("VirtualCount"));
         }
@@ -1009,21 +1006,21 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
         }
     }
 
-    private void saveUpgrades(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+    private void saveUpgrades(CompoundTag tag) {
         ListTag list = new ListTag();
         for (int index = 0; index < upgradeItems.size(); index++) {
             ItemStack stack = upgradeItems.get(index);
             if (stack.isEmpty()) {
                 continue;
             }
-            CompoundTag entry = (CompoundTag) stack.save(registries);
+            CompoundTag entry = (CompoundTag) stack.save(new CompoundTag());
             entry.putByte("Slot", (byte) index);
             list.add(entry);
         }
         tag.put("Upgrades", list);
     }
 
-    private void loadUpgrades(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+    private void loadUpgrades(CompoundTag tag) {
         if (!tag.contains("Upgrades", Tag.TAG_LIST)) {
             // Some block-entity packets are partial. Keep the client menu's
             // already-synchronised upgrade stacks when no upgrade payload was
@@ -1047,7 +1044,7 @@ public abstract class AbstractChickenContainerBlockEntity extends BlockEntity
             }
             CompoundTag stackTag = entry.copy();
             stackTag.remove("Slot");
-            ItemStack stack = ItemStack.parse(registries, stackTag).orElse(ItemStack.EMPTY);
+            ItemStack stack = ItemStack.of(stackTag);
             if (!stack.isEmpty() && canPlaceUpgrade(slot, stack)) {
                 stack.setCount(Math.min(stack.getCount(), getUpgradeMaxStackSize(slot)));
                 loaded.set(slot, stack);

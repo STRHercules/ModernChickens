@@ -26,11 +26,11 @@ public class ChickensItemTagProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(TagKey.create(Registries.ITEM, ResourceLocation.parse("chickens:chemical_egg")))
+        tag(TagKey.create(Registries.ITEM, new ResourceLocation("chickens:chemical_egg")))
                 .add(item("chickens:chemical_egg"));
     }
 
     private static Item item(String id) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
+        return BuiltInRegistries.ITEM.get(new ResourceLocation(id));
     }
 }

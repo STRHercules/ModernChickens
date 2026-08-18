@@ -1,5 +1,12 @@
 package strhercules.chickens.item;
 
+import strhercules.chickens.liquidegg.LiquidEggFluidWrapper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import strhercules.chickens.LiquidEggRegistry;
 import strhercules.chickens.LiquidEggRegistryItem;
 import strhercules.chickens.config.ChickensConfigHolder;
@@ -18,7 +25,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ClipContext;
@@ -28,9 +34,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.fluids.FluidActionResult;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.FluidActionResult;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 
 import java.util.List;
 import java.util.Set;
@@ -63,7 +69,7 @@ public class LiquidEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         LiquidEggRegistryItem liquid = resolve(stack);
         if (liquid != null) {
             Component fluidName = liquid.getDisplayName();
@@ -113,7 +119,7 @@ public class LiquidEggItem extends Item {
                                    @Nullable Player player,
                                    ItemStack container,
                                    InteractionHand hand) {
-        // Attempt to delegate placement to NeoForge's fluid helpers so fluids
+        // Attempt to delegate placement to Forge's fluid helpers so fluids
         // without dedicated blocks still work (e.g., experience, modded fuels).
         FluidStack fluid = liquid.createFluidStack();
         if (!fluid.isEmpty()) {
@@ -191,5 +197,18 @@ public class LiquidEggItem extends Item {
     @Nullable
     private LiquidEggRegistryItem resolve(ItemStack stack) {
         return LiquidEggRegistry.findById(ChickenItemHelper.getChickenType(stack));
+    }
+
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
+        return new ICapabilityProvider() {
+            private final LazyOptional<IFluidHandlerItem> handler =
+                    LazyOptional.of(() -> new LiquidEggFluidWrapper(stack));
+
+            @Override
+            public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+                return capability == ForgeCapabilities.FLUID_HANDLER_ITEM ? handler.cast() : LazyOptional.empty();
+            }
+        };
     }
 }

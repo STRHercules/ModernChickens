@@ -1,13 +1,13 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.blockentity.AvianFluidConverterBlockEntity;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,8 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -39,9 +38,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
@@ -54,7 +53,6 @@ import java.util.List;
  * same: single slot, comparator support, and a lit state while liquids move.
  */
 public class AvianFluidConverterBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<AvianFluidConverterBlock> CODEC = simpleCodec(AvianFluidConverterBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -74,10 +72,6 @@ public class AvianFluidConverterBlock extends HorizontalDirectionalBlock impleme
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<AvianFluidConverterBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -99,13 +93,13 @@ public class AvianFluidConverterBlock extends HorizontalDirectionalBlock impleme
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof AvianFluidConverterBlockEntity converter)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(converter, pos);
+            NetworkHooks.openScreen(serverPlayer, converter, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -157,10 +151,10 @@ public class AvianFluidConverterBlock extends HorizontalDirectionalBlock impleme
             if (!level.isClientSide && !player.isCreative()) {
                 ItemStack drop = new ItemStack(this);
                 if (blockEntity instanceof AvianFluidConverterBlockEntity converter) {
-                    converter.saveToItem(drop, level.registryAccess());
+                    converter.saveToItem(drop);
                     var customName = converter.getCustomName();
                     if (customName != null) {
-                        drop.set(DataComponents.CUSTOM_NAME, customName);
+                        drop.setHoverName(customName);
                     }
                 }
                 if (!drop.isEmpty()) {
@@ -173,16 +167,16 @@ public class AvianFluidConverterBlock extends HorizontalDirectionalBlock impleme
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (stack.has(DataComponents.CUSTOM_NAME)) {
+        if (stack.hasCustomHoverName()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof AvianFluidConverterBlockEntity converter) {
-                converter.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
+                converter.setCustomName(stack.getHoverName());
             }
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.chickens.avian_fluid_converter"));
 
         var config = ChickensConfigHolder.get();
@@ -190,9 +184,9 @@ public class AvianFluidConverterBlock extends HorizontalDirectionalBlock impleme
         int amount = 0;
         Component fluidName = Component.translatable("tooltip.chickens.avian_fluid_converter.empty");
 
-        CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.readBlockEntity(stack);
         if (!data.isEmpty()) {
-            CompoundTag tag = data.copyTag();
+            CompoundTag tag = data;
             if (tag.contains("Tank", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                 CompoundTag tankTag = tag.getCompound("Tank");
                 amount = tankTag.contains("Amount") ? tankTag.getInt("Amount") : amount;

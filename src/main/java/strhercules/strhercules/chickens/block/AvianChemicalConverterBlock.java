@@ -1,6 +1,7 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.InteractionHand;
 import strhercules.chickens.ChemicalEggRegistry;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.GasEggRegistry;
@@ -9,7 +10,6 @@ import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -23,8 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -42,7 +41,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -53,7 +52,6 @@ import java.util.List;
  * support.
  */
 public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<AvianChemicalConverterBlock> CODEC = simpleCodec(AvianChemicalConverterBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -73,10 +71,6 @@ public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock impl
                 .setValue(LIT, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<AvianChemicalConverterBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -98,13 +92,13 @@ public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock impl
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof AvianChemicalConverterBlockEntity converter)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(converter, pos);
+            NetworkHooks.openScreen(serverPlayer, converter, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -156,10 +150,10 @@ public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock impl
             if (!level.isClientSide && !player.isCreative()) {
                 ItemStack drop = new ItemStack(this);
                 if (blockEntity instanceof AvianChemicalConverterBlockEntity converter) {
-                    converter.saveToItem(drop, level.registryAccess());
+                    converter.saveToItem(drop);
                     var customName = converter.getCustomName();
                     if (customName != null) {
-                        drop.set(DataComponents.CUSTOM_NAME, customName);
+                        drop.setHoverName(customName);
                     }
                 }
                 if (!drop.isEmpty()) {
@@ -172,16 +166,16 @@ public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock impl
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (stack.has(DataComponents.CUSTOM_NAME)) {
+        if (stack.hasCustomHoverName()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof AvianChemicalConverterBlockEntity converter) {
-                converter.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
+                converter.setCustomName(stack.getHoverName());
             }
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.chickens.avian_chemical_converter"));
 
         var config = ChickensConfigHolder.get();
@@ -189,9 +183,9 @@ public class AvianChemicalConverterBlock extends HorizontalDirectionalBlock impl
         int amount = 0;
         Component chemicalName = Component.translatable("tooltip.chickens.avian_chemical_converter.empty");
 
-        CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.readBlockEntity(stack);
         if (!data.isEmpty()) {
-            CompoundTag tag = data.copyTag();
+            CompoundTag tag = data;
             if (tag.contains("ChemicalTank", Tag.TAG_COMPOUND)) {
                 CompoundTag tankTag = tag.getCompound("ChemicalTank");
                 amount = tankTag.contains("Amount") ? tankTag.getInt("Amount") : amount;

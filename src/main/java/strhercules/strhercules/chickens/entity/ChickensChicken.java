@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Modern NeoForge implementation of the chickens entity. The original mod
+ * Modern Forge implementation of the chickens entity. The original mod
  * extended the vanilla chicken directly and added breeding/stat logic on top.
  * This class mirrors that behaviour but adapts it to the contemporary
  * SynchedEntityData API, component based text and loot utilities.
@@ -94,19 +94,19 @@ public class ChickensChicken extends Chicken {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    protected void defineSynchedData() {
         // Mirror the legacy entity data parameters so that analyser GUIs and
         // renderers can access chicken stats just like the 1.10 release.
-        super.defineSynchedData(builder);
-        builder.define(DATA_TYPE, 0);
-        builder.define(DATA_ANALYSED, Boolean.FALSE);
-        builder.define(DATA_GROWTH, 1);
-        builder.define(DATA_GAIN, 1);
-        builder.define(DATA_STRENGTH, 1);
-        builder.define(DATA_LAY_PROGRESS, 0);
-        builder.define(DATA_ROBOT_CHICKEN, false);
-        builder.define(DATA_ROBOT_UPGRADES_GIVEN, 0);
-        builder.define(DATA_ROBOT_UPGRADES_REQUIRED, 0);
+        super.defineSynchedData();
+        this.entityData.define(DATA_TYPE, 0);
+        this.entityData.define(DATA_ANALYSED, Boolean.FALSE);
+        this.entityData.define(DATA_GROWTH, 1);
+        this.entityData.define(DATA_GAIN, 1);
+        this.entityData.define(DATA_STRENGTH, 1);
+        this.entityData.define(DATA_LAY_PROGRESS, 0);
+        this.entityData.define(DATA_ROBOT_CHICKEN, false);
+        this.entityData.define(DATA_ROBOT_UPGRADES_GIVEN, 0);
+        this.entityData.define(DATA_ROBOT_UPGRADES_REQUIRED, 0);
     }
 
     public boolean getStatsAnalyzed() {
@@ -508,7 +508,7 @@ public class ChickensChicken extends Chicken {
                 this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, 1.0F);
                 // Gastar durabilidad del Catcher normal (el Creative es unbreakable)
                 if (isNormalCatcher && !player.getAbilities().instabuild) {
-                    held.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+                    held.hurtAndBreak(1, player, holder -> holder.broadcastBreakEvent(net.minecraft.world.entity.EquipmentSlot.MAINHAND));
                 }
                 this.discard();
                 return InteractionResult.CONSUME;
@@ -548,7 +548,7 @@ public class ChickensChicken extends Chicken {
     }
 
     @Override
-    protected void dropCustomDeathLoot(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+    protected void dropCustomDeathLoot(net.minecraft.world.damagesource.DamageSource source, int looting, boolean recentlyHit) {
         ChickensRegistryItem description = this.getChickenDescription();
         if (description != null) {
             ItemStack drop = description.createDropItem();
@@ -557,7 +557,7 @@ public class ChickensChicken extends Chicken {
                         .scaleOutput(drop);
             }
             imprintFluxEggCharge(drop);
-            drop.grow(this.random.nextInt(1 + this.getLooting(level, source)));
+            drop.grow(this.random.nextInt(1 + looting));
             this.spawnAtLocation(drop, 0.0F);
         }
         if (this.isOnFire()) {
@@ -566,18 +566,9 @@ public class ChickensChicken extends Chicken {
             this.spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.CHICKEN), 0.0F);
         }
         LavaChickenGameplay.dropForModernChicken(this, source);
-        super.dropCustomDeathLoot(level, source, recentlyHit);
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
     }
 
-    private int getLooting(ServerLevel level, net.minecraft.world.damagesource.DamageSource source) {
-        if (source.getEntity() instanceof Player player) {
-            return level.registryAccess().registry(Registries.ENCHANTMENT)
-                    .flatMap(registry -> registry.getHolder(Enchantments.LOOTING))
-                    .map(player.getMainHandItem()::getEnchantmentLevel)
-                    .orElse(0);
-        }
-        return 0;
-    }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
@@ -613,9 +604,9 @@ public class ChickensChicken extends Chicken {
     }
 
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevel level, DifficultyInstance difficulty, MobSpawnType spawnType,
-            @Nullable SpawnGroupData spawnData) {
-        spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+    public SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType,
+            @Nullable SpawnGroupData spawnData, @Nullable net.minecraft.nbt.CompoundTag dataTag) {
+        spawnData = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
         if (spawnData instanceof GroupData groupData) {
             this.setChickenType(groupData.type);
         } else {
@@ -637,7 +628,7 @@ public class ChickensChicken extends Chicken {
         if (!level.isClientSide() && (spawnType == MobSpawnType.NATURAL || spawnType == MobSpawnType.CHUNK_GENERATION)) {
             ChickensRegistryItem descriptor = ChickensRegistry.getByType(this.getChickenType());
             if (descriptor != null) {
-                ChickensSpawnDebug.broadcastSpawn(level, this.blockPosition(), descriptor);
+                ChickensSpawnDebug.broadcastSpawn(level.getLevel(), this.blockPosition(), descriptor);
             }
         }
         return spawnData;

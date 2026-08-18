@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class RobotChickenUpgradeCategory
         implements IRecipeCategory<ChickensJeiRecipeTypes.RobotChickenUpgradeRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
             ChickensMod.MOD_ID, "textures/gui/laying.png");
     private final IDrawable background;
     private final IDrawable icon;

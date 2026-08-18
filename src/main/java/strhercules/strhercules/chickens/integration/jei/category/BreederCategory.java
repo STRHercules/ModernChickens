@@ -25,7 +25,7 @@ import net.minecraft.resources.ResourceLocation;
  * resulting offspring appears in the centre slot.
  */
 public class BreederCategory implements IRecipeCategory<ChickensJeiRecipeTypes.BreederRecipe> {
-    private static final ResourceLocation JEI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation JEI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/jei.png");
     private static final int BG_WIDTH = 150;
     private static final int BG_HEIGHT = 72;

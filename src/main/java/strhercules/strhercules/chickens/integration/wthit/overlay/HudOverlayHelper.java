@@ -2,13 +2,10 @@ package strhercules.chickens.integration.wthit.overlay;
 
 import strhercules.chickens.ChickensMod;
 import mcp.mobius.waila.api.IData;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,29 +15,16 @@ import java.util.List;
  * elements, and the client transforms them into tooltip components.
  */
 public final class HudOverlayHelper implements IData {
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "hud_overlay");
-    public static final IData.Type<HudOverlayHelper> TYPE = () -> ID;
+    public static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "hud_overlay");
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, HudOverlayHelper> STREAM_CODEC = new StreamCodec<>() {
-        @Override
-        public HudOverlayHelper decode(RegistryFriendlyByteBuf buf) {
-            int size = buf.readVarInt();
-            List<Entry> entries = new ArrayList<>(size);
-            for (int i = 0; i < size; i++) {
-                EntryType type = buf.readEnum(EntryType.class);
-                entries.add(readEntry(buf, type));
-            }
-            return new HudOverlayHelper(entries);
+    public static final IData.Serializer<HudOverlayHelper> SERIALIZER = buf -> {
+        int size = buf.readVarInt();
+        List<Entry> entries = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            EntryType type = buf.readEnum(EntryType.class);
+            entries.add(readEntry(buf, type));
         }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buf, HudOverlayHelper helper) {
-            buf.writeVarInt(helper.entries.size());
-            for (Entry entry : helper.entries) {
-                buf.writeEnum(entry.type());
-                writeEntry(buf, entry);
-            }
-        }
+        return new HudOverlayHelper(entries);
     };
 
     private final List<Entry> entries;
@@ -78,25 +62,29 @@ public final class HudOverlayHelper implements IData {
     }
 
     @Override
-    public Type<? extends IData> type() {
-        return TYPE;
+    public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(entries.size());
+        for (Entry entry : entries) {
+            buf.writeEnum(entry.type());
+            writeEntry(buf, entry);
+        }
     }
 
-    private static Entry readEntry(RegistryFriendlyByteBuf buf, EntryType type) {
+    private static Entry readEntry(FriendlyByteBuf buf, EntryType type) {
         return switch (type) {
-            case TEXT -> new TextEntry(ComponentSerialization.TRUSTED_STREAM_CODEC.decode(buf));
-            case FLUID -> new FluidEntry(FluidStack.OPTIONAL_STREAM_CODEC.decode(buf), buf.readVarInt());
+            case TEXT -> new TextEntry(buf.readComponent());
+            case FLUID -> new FluidEntry(FluidStack.readFromPacket(buf), buf.readVarInt());
             case CHEMICAL -> new ChemicalEntry(buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
             case ENERGY -> new EnergyEntry(buf.readVarLong(), buf.readVarLong());
         };
     }
 
-    private static void writeEntry(RegistryFriendlyByteBuf buf, Entry entry) {
+    private static void writeEntry(FriendlyByteBuf buf, Entry entry) {
         switch (entry.type()) {
-            case TEXT -> ComponentSerialization.TRUSTED_STREAM_CODEC.encode(buf, ((TextEntry) entry).text());
+            case TEXT -> buf.writeComponent(((TextEntry) entry).text());
             case FLUID -> {
                 FluidEntry fluid = (FluidEntry) entry;
-                FluidStack.OPTIONAL_STREAM_CODEC.encode(buf, fluid.stack());
+                fluid.stack().writeToPacket(buf);
                 buf.writeVarInt(fluid.capacity());
             }
             case CHEMICAL -> {

@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.block.AvianFluxConverterBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.config.ChickensConfigValues;
@@ -12,11 +18,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -32,9 +36,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
@@ -200,7 +203,7 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
                 continue;
             }
             BlockPos targetPos = worldPosition.relative(direction);
-            IEnergyStorage target = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos,
+            IEnergyStorage target = NeighbourCaps.energy(level, targetPos,
                     direction.getOpposite());
             if (target == null) {
                 continue;
@@ -375,23 +378,22 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, provider);
+        saveAdditional(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -402,32 +404,30 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putInt("Energy", energy);
         tag.putInt("Capacity", capacity);
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE),
-                    customName).result().ifPresent(component -> tag.put("CustomName", component));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         if (tag.contains("Capacity")) {
             capacity = Math.max(1, tag.getInt("Capacity"));
         } else {
             capacity = DEFAULT_CAPACITY;
         }
         energy = Mth.clamp(tag.getInt("Energy"), 0, capacity);
-        if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
-            ComponentSerialization.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE),
-                    tag.getCompound("CustomName")).result().ifPresent(component -> customName = component);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             customName = null;
         }
@@ -483,5 +483,29 @@ public class AvianFluxConverterBlockEntity extends BlockEntity implements Worldl
         }
         level.setBlock(worldPosition, state.setValue(AvianFluxConverterBlock.LIT, active),
                 Block.UPDATE_CLIENTS);
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
     }
 }

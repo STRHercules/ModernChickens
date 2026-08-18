@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.block.IncubatorBlock;
 import strhercules.chickens.config.ChickensConfigHolder;
@@ -14,10 +20,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -30,16 +34,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
 /**
  * Block entity backing the Incubator machine. Tracks a two-slot inventory, a
  * small RF buffer, and incubation progress so automation mods can interact
- * with the machine using vanilla container and NeoForge energy capabilities.
+ * with the machine using vanilla container and Forge energy capabilities.
  */
 public class IncubatorBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider, SideConfigurable {
     public static final int SLOT_COUNT = 2;
@@ -159,7 +162,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
         ItemStack result = ModRegistry.CHICKEN_ITEM.get().createFor(chicken);
         if (output.isEmpty()) {
             items.set(OUTPUT_SLOT, result.copy());
-        } else if (ItemStack.isSameItemSameComponents(output, result)
+        } else if (ItemStack.isSameItemSameTags(output, result)
                 && output.getCount() < output.getMaxStackSize()) {
             output.grow(1);
         } else {
@@ -186,7 +189,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
         if (output.isEmpty()) {
             return true;
         }
-        if (!ItemStack.isSameItemSameComponents(output, expected)) {
+        if (!ItemStack.isSameItemSameTags(output, expected)) {
             return false;
         }
         return output.getCount() < output.getMaxStackSize();
@@ -239,8 +242,7 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
             if (!sideConfig.allows(direction, MachineSideConfig.Channel.ENERGY, true)) {
                 continue;
             }
-            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK,
-                    worldPosition.relative(direction), direction.getOpposite());
+            IEnergyStorage neighbor = NeighbourCaps.energy(level, worldPosition.relative(direction), direction.getOpposite());
             if (neighbor == null) {
                 continue;
             }
@@ -419,25 +421,24 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("ReservedEnergy", energyReserved);
         tag.putInt("Progress", progress);
         tag.putInt("EnergyCost", cachedEnergyCost);
         if (customName != null) {
-            ComponentSerialization.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), customName)
-                    .result().ifPresent(component -> tag.put("CustomName", component));
+            tag.putString("CustomName", Component.Serializer.toJson(customName));
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         int storedEnergy = tag.getInt("Energy");
         int storedReserved = tag.getInt("ReservedEnergy");
         progress = Math.min(tag.getInt("Progress"), MAX_PROGRESS);
@@ -449,9 +450,8 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
         syncWithConfig(false);
         energyStorage.setEnergy(Mth.clamp(storedEnergy, 0, capacity));
         energyReserved = Math.min(storedReserved, capacity);
-        if (tag.contains("CustomName", Tag.TAG_COMPOUND)) {
-            ComponentSerialization.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE),
-                    tag.getCompound("CustomName")).result().ifPresent(name -> customName = name);
+        if (tag.contains("CustomName", Tag.TAG_STRING)) {
+            customName = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             customName = null;
         }
@@ -514,5 +514,29 @@ public class IncubatorBlockEntity extends BlockEntity implements WorldlyContaine
                 this.energy = capacity;
             }
         }
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+    private final SidedCaps<IEnergyStorage> chickensEnergyCaps = new SidedCaps<>(this::getEnergyStorage);
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+            if (capability == ForgeCapabilities.ENERGY) {
+                return chickensEnergyCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
+        chickensEnergyCaps.invalidate();
     }
 }

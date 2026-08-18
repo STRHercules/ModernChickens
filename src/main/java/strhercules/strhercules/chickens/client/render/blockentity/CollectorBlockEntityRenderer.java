@@ -76,7 +76,7 @@ public class CollectorBlockEntityRenderer implements BlockEntityRenderer<Collect
             if (stack.isEmpty()) {
                 continue;
             }
-            boolean duplicate = result.stream().anyMatch(existing -> ItemStack.isSameItemSameComponents(existing, stack));
+            boolean duplicate = result.stream().anyMatch(existing -> ItemStack.isSameItemSameTags(existing, stack));
             if (duplicate) {
                 continue;
             }

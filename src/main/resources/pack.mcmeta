@@ -1,9 +1,6 @@
 {
   "pack": {
-    "pack_format": 48,
-    "supported_formats": [0, 2147483647],
-    "description": "Modern Chickens resources",
-    "default_enabled": true,
-    "visible": true
+    "pack_format": 15,
+    "description": "Modern Chickens resources"
   }
 }

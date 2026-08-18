@@ -1,6 +1,8 @@
 // Modern Chickens - Avian Dousing Machine recipes.
 // Copy to: kubejs/server_scripts/
 //
+// Tested against KubeJS 2001.6.5 on Minecraft 1.20.1 / Forge.
+//
 // The machine turns one chicken into another by consuming a reagent (an item,
 // a fluid or a Mekanism chemical) plus energy. Modern Chickens registers a
 // KubeJS recipe schema for `chickens:avian_dousing`, so the builder syntax is

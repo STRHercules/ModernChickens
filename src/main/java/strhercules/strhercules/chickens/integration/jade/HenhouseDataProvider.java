@@ -1,5 +1,6 @@
 package strhercules.chickens.integration.jade;
 
+import strhercules.chickens.registry.ModTags;
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.blockentity.HenhouseBlockEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -7,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IServerDataProvider;
 
@@ -17,7 +18,7 @@ import snownee.jade.api.IServerDataProvider;
 enum HenhouseDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "henhouse");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "henhouse");
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
@@ -41,6 +42,6 @@ enum HenhouseDataProvider implements IServerDataProvider<BlockAccessor> {
 
     private static boolean isHayFuel(ItemStack stack) {
         return !stack.isEmpty()
-                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(Tags.Items.STORAGE_BLOCKS_WHEAT));
+                && (stack.is(Blocks.HAY_BLOCK.asItem()) || stack.is(ModTags.STORAGE_BLOCKS_WHEAT));
     }
 }

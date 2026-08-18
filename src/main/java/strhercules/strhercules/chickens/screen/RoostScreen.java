@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
  * arrow progress overlay.
  */
 public class RoostScreen extends SideConfigurableScreen<RoostMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/roost.png");
     private static final int PROGRESS_X = 48;
     private static final int PROGRESS_Y = 20;
@@ -47,7 +47,7 @@ public class RoostScreen extends SideConfigurableScreen<RoostMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderProgressTooltip(graphics, mouseX, mouseY);

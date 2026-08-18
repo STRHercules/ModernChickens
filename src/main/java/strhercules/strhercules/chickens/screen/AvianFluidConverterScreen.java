@@ -7,8 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
  * whose grey fill is tinted from the stored fluid.
  */
 public class AvianFluidConverterScreen extends SideConfigurableScreen<AvianFluidConverterMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/fluidchemicalconverter.png");
     private static final int TANK_X = 104;
     private static final int TANK_Y = 15;
@@ -48,7 +48,7 @@ public class AvianFluidConverterScreen extends SideConfigurableScreen<AvianFluid
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderTankTooltip(graphics, mouseX, mouseY);

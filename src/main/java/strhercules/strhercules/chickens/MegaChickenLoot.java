@@ -7,8 +7,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 
 /** Adds the rare supplied-skin crates without replacing vanilla boss loot tables. */
 public final class MegaChickenLoot {
@@ -18,7 +18,7 @@ public final class MegaChickenLoot {
     }
 
     public static void init() {
-        NeoForge.EVENT_BUS.addListener(MegaChickenLoot::onLivingDrops);
+        MinecraftForge.EVENT_BUS.addListener(MegaChickenLoot::onLivingDrops);
     }
 
     private static void onLivingDrops(LivingDropsEvent event) {

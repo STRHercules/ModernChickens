@@ -73,13 +73,13 @@ final class CustomChickenItemOverrides extends ItemOverrides {
         ChickensRegistryItem stub = new ChickensRegistryItem(
                 modelId,
                 name,
-                ResourceLocation.withDefaultNamespace("textures/entity/chicken.png"),
+                new ResourceLocation("minecraft", "textures/entity/chicken.png"),
                 ItemStack.EMPTY,
                 0xFFFFFF,
                 0xFFFFFF);
         ResourceLocation itemTexture = name.equals("Rooster") || name.equals("RobotRooster")
-                ? ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/item/rooster.png")
-                : ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+                ? new ResourceLocation(ChickensMod.MOD_ID, "textures/item/rooster.png")
+                : new ResourceLocation(ChickensMod.MOD_ID,
                         "textures/item/chicken/smartchicken.png");
         stub.setItemTexture(itemTexture);
         BakedModel baked = ChickenItemSpriteModels.bake(stub, bakery);

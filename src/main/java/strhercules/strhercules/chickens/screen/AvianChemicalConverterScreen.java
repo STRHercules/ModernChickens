@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
  * tints the tank based on the stored chemical egg colour.
  */
 public class AvianChemicalConverterScreen extends SideConfigurableScreen<AvianChemicalConverterMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/fluidchemicalconverter.png");
     private static final int TANK_X = 104;
     private static final int TANK_Y = 15;
@@ -48,7 +48,7 @@ public class AvianChemicalConverterScreen extends SideConfigurableScreen<AvianCh
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderTankTooltip(graphics, mouseX, mouseY);

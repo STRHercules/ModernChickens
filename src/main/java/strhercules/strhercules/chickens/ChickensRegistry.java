@@ -1,9 +1,10 @@
 package strhercules.chickens;
 
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -121,10 +122,10 @@ public final class ChickensRegistry {
     }
 
     public static SpawnType getSpawnType(Holder<Biome> biomeHolder) {
-        if (biomeHolder.is(Tags.Biomes.IS_NETHER)) {
+        if (biomeHolder.is(BiomeTags.IS_NETHER)) {
             return SpawnType.HELL;
         }
-        if (biomeHolder.is(Tags.Biomes.IS_END)) {
+        if (biomeHolder.is(BiomeTags.IS_END)) {
             return SpawnType.END;
         }
         if (biomeHolder.is(Tags.Biomes.IS_SNOWY)) {

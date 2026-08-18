@@ -21,13 +21,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
-import net.neoforged.neoforge.event.level.ChunkEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +44,7 @@ import java.util.Set;
 public final class MekanismRadiationCompat {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensMekanismRadiation");
     private static final ResourceLocation RADIATION_PARTICLE_ID =
-            ResourceLocation.fromNamespaceAndPath("mekanism", "radiation");
+            new ResourceLocation("mekanism", "radiation");
 
     private static final int EMISSION_INTERVAL = 20;
     private static final double EGG_MAGNITUDE = 0.00002D;
@@ -60,6 +59,8 @@ public final class MekanismRadiationCompat {
     private static boolean available;
     private static boolean listenerRegistered;
     @Nullable
+    private static final double BASELINE_RADIATION = 0.0000001D;
+
     private static Object radiationManager;
     @Nullable
     private static Method isRadiationEnabledMethod;
@@ -74,7 +75,7 @@ public final class MekanismRadiationCompat {
     @Nullable
     private static Method dumpRadiationMethod;
     @Nullable
-    private static Method getEntityCapabilityMethod;
+    private static java.lang.reflect.Constructor<?> coord4dCtor;
     @Nullable
     private static Method setRadiationEntityMethod;
     @Nullable
@@ -91,13 +92,13 @@ public final class MekanismRadiationCompat {
 
     public static void init() {
         if (!listenerRegistered) {
-            NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, MekanismRadiationCompat::onEntityTick);
-            NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST,
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, MekanismRadiationCompat::onEntityTick);
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST,
                     MekanismRadiationCompat::onEntityInvulnerability);
-            NeoForge.EVENT_BUS.addListener(MekanismRadiationCompat::onPlayerTick);
-            NeoForge.EVENT_BUS.addListener(MekanismRadiationCompat::onLevelTick);
-            NeoForge.EVENT_BUS.addListener(MekanismRadiationCompat::onChunkLoad);
-            NeoForge.EVENT_BUS.addListener(MekanismRadiationCompat::onChunkUnload);
+            MinecraftForge.EVENT_BUS.addListener(MekanismRadiationCompat::onPlayerTick);
+            MinecraftForge.EVENT_BUS.addListener(MekanismRadiationCompat::onLevelTick);
+            MinecraftForge.EVENT_BUS.addListener(MekanismRadiationCompat::onChunkLoad);
+            MinecraftForge.EVENT_BUS.addListener(MekanismRadiationCompat::onChunkUnload);
             listenerRegistered = true;
         }
     }
@@ -114,7 +115,10 @@ public final class MekanismRadiationCompat {
         }
         Object stack = MekanismChemicalHelper.createStack(machine.getChemicalId(), machine.getChemicalAmount());
         if (!MekanismChemicalHelper.isStackEmpty(stack)) {
-            invoke(dumpRadiationMethod, level, pos, stack);
+            Object coord = coord4d(level, pos);
+            if (coord != null) {
+                invoke(dumpRadiationMethod, coord, stack);
+            }
         }
     }
 
@@ -132,23 +136,28 @@ public final class MekanismRadiationCompat {
             Field instance = managerClass.getField("INSTANCE");
             Object manager = instance.get(null);
             Method enabled = managerClass.getMethod("isRadiationEnabled");
-            Method baseline = managerClass.getMethod("baselineRadiation");
-            Method getLevel = managerClass.getMethod("getRadiationLevel", Level.class, BlockPos.class);
-            Method radiateLevel = managerClass.getMethod("radiate", Level.class, BlockPos.class, double.class);
+            Method baseline = null;
+            try {
+                baseline = managerClass.getMethod("baselineRadiation");
+            } catch (NoSuchMethodException ignored) {
+                // 1.20.1 does not expose the baseline through the API.
+            }
+            Class<?> coord4dClass = Class.forName("mekanism.api.Coord4D", false,
+                    MekanismRadiationCompat.class.getClassLoader());
+            java.lang.reflect.Constructor<?> coordCtor =
+                    coord4dClass.getConstructor(net.minecraft.core.Vec3i.class, Level.class);
+            Method getLevel = managerClass.getMethod("getRadiationLevel", coord4dClass);
+            Method radiateLevel = managerClass.getMethod("radiate", coord4dClass, double.class);
             Method radiateEntity = managerClass.getMethod("radiate", net.minecraft.world.entity.LivingEntity.class,
                     double.class);
-            Class<?> chemicalStackClass = Class.forName("mekanism.api.chemical.ChemicalStack", false,
+            Class<?> gasStackClass = Class.forName("mekanism.api.chemical.gas.GasStack", false,
                     MekanismRadiationCompat.class.getClassLoader());
-            Method dumpRadiation = managerClass.getMethod("dumpRadiation", Level.class, BlockPos.class,
-                    chemicalStackClass);
+            Method dumpRadiation = managerClass.getMethod("dumpRadiation", coord4dClass, gasStackClass);
             Method damageTypeKey = managerClass.getMethod("getRadiationDamageTypeKey");
 
-            Class<?> entityCapabilityClass = Class.forName("net.neoforged.neoforge.capabilities.EntityCapability",
-                    false, MekanismRadiationCompat.class.getClassLoader());
             Class<?> capabilitiesClass = Class.forName("mekanism.common.capabilities.Capabilities", false,
                     MekanismRadiationCompat.class.getClassLoader());
             Object radiationCapability = capabilitiesClass.getField("RADIATION_ENTITY").get(null);
-            Method getCapability = Entity.class.getMethod("getCapability", entityCapabilityClass);
             Class<?> radiationEntityClass = Class.forName("mekanism.api.radiation.capability.IRadiationEntity",
                     false, MekanismRadiationCompat.class.getClassLoader());
             Method setRadiation = radiationEntityClass.getMethod("set", double.class);
@@ -162,7 +171,7 @@ public final class MekanismRadiationCompat {
             radiateLevelMethod = radiateLevel;
             radiateEntityMethod = radiateEntity;
             dumpRadiationMethod = dumpRadiation;
-            getEntityCapabilityMethod = getCapability;
+            coord4dCtor = coordCtor;
             setRadiationEntityMethod = setRadiation;
             radiationEntityCapability = radiationCapability;
             available = true;
@@ -205,7 +214,7 @@ public final class MekanismRadiationCompat {
         }
     }
 
-    private static void onEntityTick(EntityTickEvent.Post event) {
+    private static void onEntityTick(LivingEvent.LivingTickEvent event) {
         Entity entity = event.getEntity();
         if (!(entity.level() instanceof ServerLevel level) || !isAvailable() || !isRadiationEnabled()) {
             return;
@@ -229,18 +238,22 @@ public final class MekanismRadiationCompat {
         }
     }
 
-    private static void onEntityInvulnerability(EntityInvulnerabilityCheckEvent event) {
-        if (event.isInvulnerable()
+    private static void onEntityInvulnerability(LivingAttackEvent event) {
+        if (event.isCanceled()
                 || !(event.getEntity() instanceof ChickensChicken chicken)
                 || !RadioactiveContentHelper.isRadioactive(ChickensRegistry.getByType(chicken.getChickenType()))
                 || !isRadiationDamage(event.getSource())) {
             return;
         }
-        event.setInvulnerable(true);
+        event.setCanceled(true);
     }
 
-    private static void onPlayerTick(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
+    private static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        Player player = event.player;
+
         if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
@@ -254,8 +267,11 @@ public final class MekanismRadiationCompat {
         emitInventoryRadiation(player);
     }
 
-    private static void onLevelTick(LevelTickEvent.Post event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
+    private static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        if (!(event.level instanceof ServerLevel level)
                 || Math.floorMod(level.getGameTime(), (long) EMISSION_INTERVAL) != 0
                 || !isAvailable()
                 || !isRadiationEnabled()) {
@@ -335,7 +351,10 @@ public final class MekanismRadiationCompat {
         if (current >= targetMagnitude) {
             return;
         }
-        invoke(radiateLevelMethod, level, pos, targetMagnitude - Math.max(current, baselineRadiation()));
+        Object coord = coord4d(level, pos);
+        if (coord != null) {
+            invoke(radiateLevelMethod, coord, targetMagnitude - Math.max(current, baselineRadiation()));
+        }
     }
 
     private static void emitEntityParticles(ServerLevel level, Entity entity) {
@@ -354,11 +373,13 @@ public final class MekanismRadiationCompat {
     }
 
     private static void clearEntityRadiation(net.minecraft.world.entity.LivingEntity entity) {
-        if (getEntityCapabilityMethod == null || setRadiationEntityMethod == null || radiationEntityCapability == null) {
+        if (setRadiationEntityMethod == null || radiationEntityCapability == null) {
             return;
         }
         try {
-            Object radiationEntity = getEntityCapabilityMethod.invoke(entity, radiationEntityCapability);
+            Object radiationEntity = radiationEntityCapability instanceof net.minecraftforge.common.capabilities.Capability<?> cap
+                    ? entity.getCapability(cap).resolve().orElse(null)
+                    : null;
             if (radiationEntity != null) {
                 setRadiationEntityMethod.invoke(radiationEntity, baselineRadiation());
             }
@@ -389,11 +410,25 @@ public final class MekanismRadiationCompat {
 
     private static double baselineRadiation() {
         Object result = invoke(baselineRadiationMethod);
-        return result instanceof Number number ? number.doubleValue() : 0D;
+        return result instanceof Number number ? number.doubleValue() : BASELINE_RADIATION;
+    }
+
+    @Nullable
+    private static Object coord4d(Level level, BlockPos pos) {
+        if (coord4dCtor == null) {
+            return null;
+        }
+        try {
+            return coord4dCtor.newInstance(pos, level);
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            reportFailure(ex);
+            return null;
+        }
     }
 
     private static double getRadiationLevel(Level level, BlockPos pos) {
-        Object result = invoke(getRadiationLevelMethod, level, pos);
+        Object coord = coord4d(level, pos);
+        Object result = coord == null ? null : invoke(getRadiationLevelMethod, coord);
         return result instanceof Number number ? number.doubleValue() : baselineRadiation();
     }
 

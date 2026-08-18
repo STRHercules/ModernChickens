@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
  * with an animated arrow between the coop's chicken and its drop.
  */
 public class RoostingCategory implements IRecipeCategory<ChickensJeiRecipeTypes.RoostingRecipe> {
-    private static final ResourceLocation JEI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation JEI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/jei.png");
     private static final int BG_WIDTH = 140;
     private static final int BG_HEIGHT = 54;

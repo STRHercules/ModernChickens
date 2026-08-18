@@ -150,7 +150,7 @@ public class ChickenItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         if (ChickenItemHelper.isRobotRooster(stack)) {
             tooltip.add(Component.translatable("item.chickens.robot_rooster.tooltip")
                     .withStyle(ChatFormatting.GRAY));

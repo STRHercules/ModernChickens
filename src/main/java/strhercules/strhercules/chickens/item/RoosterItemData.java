@@ -2,12 +2,11 @@ package strhercules.chickens.item;
 
 import strhercules.chickens.entity.Rooster;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import strhercules.chickens.item.ItemData;
 
 /**
  * Helper for serialising rooster-specific data into an item stack so captured
@@ -28,7 +27,7 @@ public final class RoosterItemData {
     public static void copyFromEntity(ItemStack stack, Rooster rooster) {
         ChickenItemHelper.setRooster(stack, true);
         ChickenItemHelper.setRobotRooster(stack, rooster.isRobotRooster());
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+        ItemData.update(stack, tag -> {
             CompoundTag root = tag.contains(TAG_ROOT) ? tag.getCompound(TAG_ROOT) : new CompoundTag();
             root.putInt(TAG_SEEDS, rooster.getSeeds());
             root.putBoolean(TAG_ROBOT_ROOSTER, rooster.isRobotRooster());
@@ -50,12 +49,12 @@ public final class RoosterItemData {
     }
 
     public static void applyToEntity(ItemStack stack, Rooster rooster) {
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag data = ItemData.read(stack);
         if (!data.contains(TAG_ROOT)) {
             rooster.setRobotRooster(ChickenItemHelper.isRobotRooster(stack));
             return;
         }
-        CompoundTag root = data.copyTag().getCompound(TAG_ROOT);
+        CompoundTag root = data.getCompound(TAG_ROOT);
         rooster.setRobotRooster(root.getBoolean(TAG_ROBOT_ROOSTER) || ChickenItemHelper.isRobotRooster(stack));
         rooster.setVirusTicksRemaining(root.getInt(TAG_VIRUS_TICKS));
         rooster.setSeeds(root.getInt(TAG_SEEDS));
@@ -64,7 +63,7 @@ public final class RoosterItemData {
             // Slot 0 is the rooster's single seed slot; fall back to empty if
             // the item data is missing or malformed.
             if (!items.isEmpty() && items.contains(TAG_ITEM_ID)) {
-                ResourceLocation id = ResourceLocation.parse(items.getString(TAG_ITEM_ID));
+                ResourceLocation id = new ResourceLocation(items.getString(TAG_ITEM_ID));
                 Item item = BuiltInRegistries.ITEM.get(id);
                 if (item != null) {
                     int count = Math.max(1, Math.min(64, items.getInt(TAG_ITEM_COUNT)));

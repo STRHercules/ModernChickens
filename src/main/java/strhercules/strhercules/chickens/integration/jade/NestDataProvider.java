@@ -16,7 +16,7 @@ import java.util.Locale;
 enum NestDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID,
             "nest_data");
 
     @Override

@@ -5,8 +5,8 @@ import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.entity.Rooster;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 /**
  * Registers spawn placement rules for the custom chicken entity while reusing the
@@ -19,24 +19,23 @@ public final class ModSpawns {
     }
 
     public static void init(IEventBus modBus) {
-        modBus.addListener(ModSpawns::onRegisterSpawnPlacements);
+        modBus.addListener(ModSpawns::onCommonSetup);
     }
 
-    private static void onRegisterSpawnPlacements(RegisterSpawnPlacementsEvent event) {
-        event.register(ModEntityTypes.CHICKENS_CHICKEN.get(),
-                SpawnPlacements.getPlacementType(EntityType.CHICKEN),
-                SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
-                ChickensChicken::checkSpawnRules,
-                RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(ModEntityTypes.ROOSTER.get(),
-                SpawnPlacements.getPlacementType(EntityType.CHICKEN),
-                SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
-                Rooster::checkSpawnRules,
-                RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(ModEntityTypes.MEGA_CHICKEN.get(),
-                SpawnPlacements.getPlacementType(EntityType.CHICKEN),
-                SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
-                MegaChicken::checkSpawnRules,
-                RegisterSpawnPlacementsEvent.Operation.REPLACE);
+    private static void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            SpawnPlacements.register(ModEntityTypes.CHICKENS_CHICKEN.get(),
+                    SpawnPlacements.getPlacementType(EntityType.CHICKEN),
+                    SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
+                    ChickensChicken::checkSpawnRules);
+            SpawnPlacements.register(ModEntityTypes.ROOSTER.get(),
+                    SpawnPlacements.getPlacementType(EntityType.CHICKEN),
+                    SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
+                    Rooster::checkSpawnRules);
+            SpawnPlacements.register(ModEntityTypes.MEGA_CHICKEN.get(),
+                    SpawnPlacements.getPlacementType(EntityType.CHICKEN),
+                    SpawnPlacements.getHeightmapType(EntityType.CHICKEN),
+                    MegaChicken::checkSpawnRules);
+        });
     }
 }

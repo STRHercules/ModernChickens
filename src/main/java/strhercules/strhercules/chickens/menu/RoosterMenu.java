@@ -1,8 +1,9 @@
 package strhercules.chickens.menu;
 
+import strhercules.chickens.ChickenFood;
 import strhercules.chickens.entity.Rooster;
 import strhercules.chickens.registry.ModMenuTypes;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +23,7 @@ public class RoosterMenu extends AbstractContainerMenu {
     private final Container inventory;
     private int clientSeeds;
 
-    public RoosterMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public RoosterMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveRooster(playerInventory, buffer));
     }
 
@@ -97,7 +98,7 @@ public class RoosterMenu extends AbstractContainerMenu {
         return rooster;
     }
 
-    private static Rooster resolveRooster(Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    private static Rooster resolveRooster(Inventory playerInventory, FriendlyByteBuf buffer) {
         if (buffer == null) {
             return null;
         }
@@ -126,7 +127,7 @@ public class RoosterMenu extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack) {
             // Only accept items that chickens recognise as food (seeds, etc.).
-            return !stack.isEmpty() && stack.is(net.minecraft.tags.ItemTags.CHICKEN_FOOD);
+            return !stack.isEmpty() && ChickenFood.test(stack);
         }
     }
 }

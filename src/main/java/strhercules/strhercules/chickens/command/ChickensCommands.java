@@ -16,17 +16,16 @@ import strhercules.chickens.spawn.ChickensSpawnDebug;
 import strhercules.chickens.spawn.ChickensSpawnManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomModelData;
-import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
+
+import strhercules.chickens.item.ItemData;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -34,7 +33,7 @@ import java.util.Locale;
 
 
 /**
- * Registers the Chickens command tree. Modern NeoForge exposes Brigadier
+ * Registers the Chickens command tree. Modern Forge exposes Brigadier
  * directly, so we expose a {@code /chickens export breeding} command that lets
  * players regenerate the breeding graph without restarting the server.
  */
@@ -44,7 +43,7 @@ public final class ChickensCommands {
 
     public static void init() {
         // Listen for the command registration callback on the Forge event bus.
-        NeoForge.EVENT_BUS.addListener(ChickensCommands::onRegisterCommands);
+        MinecraftForge.EVENT_BUS.addListener(ChickensCommands::onRegisterCommands);
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -132,7 +131,7 @@ public final class ChickensCommands {
         ItemStack stack = new ItemStack(ModRegistry.CHICKEN_ITEM.get(), amount);
 
         // custom_model_data — mirrors what KubeJS shows (e.g. 105 for chickenType 105)
-        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(chicken.getId()));
+        // custom model data is stored alongside the chicken data in the stack tag
 
         // custom_data  — ChickenStats compound + ChickenType int
         CompoundTag chickenData = new CompoundTag();
@@ -143,7 +142,8 @@ public final class ChickensCommands {
         chickenStats.putInt("Strength", strength);
         chickenData.put("ChickenStats", chickenStats);
         chickenData.putInt("ChickenType", chicken.getId());
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(chickenData));
+        chickenData.putInt("CustomModelData", chicken.getId());
+        stack.setTag(chickenData);
 
         // --- give to player (handle overflow into world) ---
         boolean fullyGiven = player.getInventory().add(stack);
@@ -231,7 +231,7 @@ public final class ChickensCommands {
         var pos = source.getPosition();
         var rot = source.getRotation();
         entity.moveTo(pos.x, pos.y, pos.z, rot.y, rot.x);
-        entity.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, null);
+        entity.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, null, null);
         level.addFreshEntity(entity);
         return true;
     }

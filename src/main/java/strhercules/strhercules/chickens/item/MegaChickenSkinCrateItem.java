@@ -1,5 +1,7 @@
 package strhercules.chickens.item;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.level.Level;
 import strhercules.chickens.entity.MegaChickenSkin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -28,7 +30,7 @@ public final class MegaChickenSkinCrateItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip,
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip,
             TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.chickens.mega_chicken_skin_crate", skin.displayName())
                 .withStyle(ChatFormatting.GRAY));

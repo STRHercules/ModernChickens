@@ -5,7 +5,7 @@ import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.registry.ModMenuTypes;
 import strhercules.chickens.registry.ModRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -40,7 +40,7 @@ public class IncubatorMenu extends AbstractContainerMenu implements SideConfigMe
     private int clientProgress;
     private int clientEnergyCost;
 
-    public IncubatorMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public IncubatorMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveBlockEntity(playerInventory, buffer));
     }
 
@@ -164,7 +164,7 @@ public class IncubatorMenu extends AbstractContainerMenu implements SideConfigMe
         });
     }
 
-    private static IncubatorBlockEntity resolveBlockEntity(Inventory inventory, RegistryFriendlyByteBuf buffer) {
+    private static IncubatorBlockEntity resolveBlockEntity(Inventory inventory, FriendlyByteBuf buffer) {
         Objects.requireNonNull(inventory, "playerInventory");
         Objects.requireNonNull(buffer, "buffer");
         BlockPos pos = buffer.readBlockPos();

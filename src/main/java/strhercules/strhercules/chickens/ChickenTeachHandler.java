@@ -11,8 +11,8 @@ import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import javax.annotation.Nullable;
 
@@ -26,7 +26,7 @@ public final class ChickenTeachHandler {
     }
 
     public static void init() {
-        NeoForge.EVENT_BUS.addListener(ChickenTeachHandler::onEntityInteract);
+        MinecraftForge.EVENT_BUS.addListener(ChickenTeachHandler::onEntityInteract);
     }
 
     private static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
@@ -53,7 +53,7 @@ public final class ChickenTeachHandler {
         }
         newChicken.moveTo(chicken.getX(), chicken.getY(), chicken.getZ(), chicken.getYRot(), chicken.getXRot());
         newChicken.setYHeadRot(chicken.getYHeadRot());
-        newChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null);
+        newChicken.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPos), MobSpawnType.CONVERSION, null, null);
         newChicken.setChickenType(targetBreed.getId());
         newChicken.setAge(chicken.getAge());
         if (chicken.hasCustomName()) {

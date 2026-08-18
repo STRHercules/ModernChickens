@@ -1,6 +1,6 @@
 package strhercules.chickens.integration.kubejs;
 
-import dev.latvian.mods.kubejs.event.KubeStartupEvent;
+import dev.latvian.mods.kubejs.event.StartupEventJS;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class ChickenRegistryKubeEvent implements KubeStartupEvent {
+public class ChickenRegistryKubeEvent extends StartupEventJS {
     static final Logger LOGGER = LoggerFactory.getLogger("ChickensKubeJS");
 
     private static final int ID_BASE = 6_000_000;
@@ -82,19 +82,9 @@ public class ChickenRegistryKubeEvent implements KubeStartupEvent {
         return eggModifiers.computeIfAbsent(key, KubeEggModifier::new);
     }
 
-    /** Adds or replaces an item-to-breed teaching mapping. */
-    public void teach(String trigger, String chickenName) {
-        teach((Object) trigger, chickenName);
-    }
-
-    public void teach(ItemStack trigger, String chickenName) {
-        teach((Object) trigger, chickenName);
-    }
-
-    public void teach(Item trigger, String chickenName) {
-        teach((Object) trigger, chickenName);
-    }
-
+    /** Adds or replaces an item-to-breed teaching mapping. Accepts an item id,
+     *  an Item or an ItemStack; a single overload keeps Rhino from having to
+     *  disambiguate between them. */
     public void teach(Object trigger, String chickenName) {
         Item item = resolveItem(trigger);
         if (item == null) {

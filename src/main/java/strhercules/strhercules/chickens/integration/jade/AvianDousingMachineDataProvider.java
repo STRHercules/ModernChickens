@@ -14,7 +14,7 @@ import snownee.jade.api.IServerDataProvider;
 enum AvianDousingMachineDataProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "avian_dousing_machine");
+    private static final ResourceLocation ID = new ResourceLocation(ChickensMod.MOD_ID, "avian_dousing_machine");
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {

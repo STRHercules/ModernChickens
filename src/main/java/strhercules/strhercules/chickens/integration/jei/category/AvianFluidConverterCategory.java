@@ -6,7 +6,7 @@ import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
+import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * JEI category that previews the Avian Fluid Converter. Displays each liquid
@@ -59,7 +59,7 @@ public final class AvianFluidConverterCategory implements IRecipeCategory<Chicke
 
         if (!recipe.fluid().isEmpty()) {
             builder.addSlot(RecipeIngredientRole.OUTPUT, 96, 18)
-                    .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.fluid());
+                    .addIngredient(ForgeTypes.FLUID_STACK, recipe.fluid());
         }
     }
 

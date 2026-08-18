@@ -16,10 +16,9 @@ import strhercules.chickens.blockentity.NestBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredBlock;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
 
 /**
  * Houses all block entity registrations for Modern Chickens. Keeping the logic
@@ -29,51 +28,51 @@ public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ChickensMod.MOD_ID);
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HenhouseBlockEntity>> HENHOUSE = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<HenhouseBlockEntity>> HENHOUSE = BLOCK_ENTITIES
             .register("henhouse", () -> BlockEntityType.Builder
                     .of(HenhouseBlockEntity::new, henhouseBlocks())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RoostBlockEntity>> ROOST = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<RoostBlockEntity>> ROOST = BLOCK_ENTITIES
             .register("roost", () -> BlockEntityType.Builder
                     .of(RoostBlockEntity::new, ModRegistry.ROOST.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MechanicalRoostBlockEntity>> MECHANICAL_ROOST = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<MechanicalRoostBlockEntity>> MECHANICAL_ROOST = BLOCK_ENTITIES
             .register("mechanical_roost", () -> BlockEntityType.Builder
                     .of(MechanicalRoostBlockEntity::new, ModRegistry.MECHANICAL_ROOST.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MechanicalNestBlockEntity>> MECHANICAL_NEST = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<MechanicalNestBlockEntity>> MECHANICAL_NEST = BLOCK_ENTITIES
             .register("mechanical_nest", () -> BlockEntityType.Builder
                     .of(MechanicalNestBlockEntity::new, ModRegistry.MECHANICAL_NEST.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NestBlockEntity>> NEST = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<NestBlockEntity>> NEST = BLOCK_ENTITIES
             .register("nest", () -> BlockEntityType.Builder
                     .of(NestBlockEntity::new, ModRegistry.NEST.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BreederBlockEntity>> BREEDER = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<BreederBlockEntity>> BREEDER = BLOCK_ENTITIES
             .register("breeder", () -> BlockEntityType.Builder
                     .of(BreederBlockEntity::new, ModRegistry.BREEDER.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CollectorBlockEntity>> COLLECTOR = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<CollectorBlockEntity>> COLLECTOR = BLOCK_ENTITIES
             .register("collector", () -> BlockEntityType.Builder
                     .of(CollectorBlockEntity::new, ModRegistry.COLLECTOR.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianFluxConverterBlockEntity>> AVIAN_FLUX_CONVERTER = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<AvianFluxConverterBlockEntity>> AVIAN_FLUX_CONVERTER = BLOCK_ENTITIES
             .register("avian_flux_converter", () -> BlockEntityType.Builder
                     .of(AvianFluxConverterBlockEntity::new, ModRegistry.AVIAN_FLUX_CONVERTER.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianFluidConverterBlockEntity>> AVIAN_FLUID_CONVERTER = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<AvianFluidConverterBlockEntity>> AVIAN_FLUID_CONVERTER = BLOCK_ENTITIES
             .register("avian_fluid_converter", () -> BlockEntityType.Builder
                     .of(AvianFluidConverterBlockEntity::new, ModRegistry.AVIAN_FLUID_CONVERTER.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianChemicalConverterBlockEntity>> AVIAN_CHEMICAL_CONVERTER = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<AvianChemicalConverterBlockEntity>> AVIAN_CHEMICAL_CONVERTER = BLOCK_ENTITIES
             .register("avian_chemical_converter", () -> BlockEntityType.Builder
                     .of(AvianChemicalConverterBlockEntity::new, ModRegistry.AVIAN_CHEMICAL_CONVERTER.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AvianDousingMachineBlockEntity>> AVIAN_DOUSING_MACHINE = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<AvianDousingMachineBlockEntity>> AVIAN_DOUSING_MACHINE = BLOCK_ENTITIES
             .register("avian_dousing_machine", () -> BlockEntityType.Builder
                     .of(AvianDousingMachineBlockEntity::new, ModRegistry.AVIAN_DOUSING_MACHINE.get())
                     .build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<IncubatorBlockEntity>> INCUBATOR = BLOCK_ENTITIES
+    public static final RegistryObject<BlockEntityType<IncubatorBlockEntity>> INCUBATOR = BLOCK_ENTITIES
             .register("incubator", () -> BlockEntityType.Builder
                     .of(IncubatorBlockEntity::new, ModRegistry.INCUBATOR.get())
                     .build(null));
@@ -87,6 +86,6 @@ public final class ModBlockEntities {
 
     private static Block[] henhouseBlocks() {
         // Expand the type to recognise every wood variant instead of only the oak block.
-        return ModRegistry.HENHOUSE_BLOCKS.stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return ModRegistry.HENHOUSE_BLOCKS.stream().map(RegistryObject::get).toArray(Block[]::new);
     }
 }

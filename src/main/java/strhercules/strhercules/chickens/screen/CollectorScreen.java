@@ -8,11 +8,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class CollectorScreen extends SideConfigurableScreen<CollectorMenu> {
-    private static final ResourceLocation NONE_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation NONE_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/collector_none.png");
-    private static final ResourceLocation ONE_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation ONE_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/collector_one.png");
-    private static final ResourceLocation TWO_TEXTURE = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation TWO_TEXTURE = new ResourceLocation("chickens",
             "textures/gui/collector_two.png");
 
     public CollectorScreen(CollectorMenu menu, Inventory playerInventory, Component title) {
@@ -35,7 +35,7 @@ public class CollectorScreen extends SideConfigurableScreen<CollectorMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         this.renderTooltip(graphics, mouseX, mouseY);

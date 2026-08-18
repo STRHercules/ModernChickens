@@ -1,5 +1,11 @@
 package strhercules.chickens.blockentity;
 
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.config.ChickensConfigHolder;
 import strhercules.chickens.item.ChickenItemHelper;
@@ -44,7 +50,7 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     public static final int SEED_SLOT = 1;
     public static final int INVENTORY_SIZE = 2;
     public static final TagKey<Item> NEST_SEEDS = TagKey.create(
-            Registries.ITEM, ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "nest_seeds"));
+            Registries.ITEM, new ResourceLocation(ChickensMod.MOD_ID, "nest_seeds"));
     private static final int[] ACCESSIBLE_SLOTS = new int[] { ROOSTER_SLOT, SEED_SLOT };
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
@@ -374,18 +380,18 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     // ---------------------------------------------------------------------
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         sideConfig.save(tag);
-        ContainerHelper.saveAllItems(tag, items, provider);
+        ContainerHelper.saveAllItems(tag, items);
         tag.putInt("SeedTicks", seedTicksRemaining);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         sideConfig.load(tag);
-        ContainerHelper.loadAllItems(tag, items, provider);
+        ContainerHelper.loadAllItems(tag, items);
         seedTicksRemaining = tag.getInt("SeedTicks");
     }
 
@@ -395,8 +401,8 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     // ---------------------------------------------------------------------
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        return saveWithoutMetadata(provider);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
@@ -405,16 +411,15 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider provider) {
-        loadAdditional(tag, provider);
+    public void handleUpdateTag(CompoundTag tag) {
+        load(tag);
     }
 
     @Override
-    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet,
-            HolderLookup.Provider provider) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         CompoundTag tag = packet.getTag();
         if (tag != null) {
-            loadAdditional(tag, provider);
+            load(tag);
         }
     }
 
@@ -425,5 +430,24 @@ public class NestBlockEntity extends BlockEntity implements WorldlyContainer, Me
         }
         BlockState state = level.getBlockState(worldPosition);
         level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_ALL);
+    }
+
+    private final SidedCaps<IItemHandler> chickensItemCaps = new SidedCaps<>(
+            side -> side == null ? new InvWrapper(this) : new SidedInvWrapper(this, side));
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (!isRemoved()) {
+            if (capability == ForgeCapabilities.ITEM_HANDLER) {
+                return chickensItemCaps.get(side).cast();
+            }
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        chickensItemCaps.invalidate();
     }
 }

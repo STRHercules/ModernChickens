@@ -1,19 +1,19 @@
 package strhercules.chickens.registry;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import strhercules.chickens.ChickensMod;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.world.BiomeModifier;
-import net.neoforged.neoforge.registries.RegisterEvent;
-import net.neoforged.neoforge.registries.RegisterEvent.RegisterHelper;
-import net.neoforged.neoforge.registries.NeoForgeRegistries.Keys;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.world.BiomeModifier;
+import net.minecraftforge.registries.RegisterEvent;
+import net.minecraftforge.registries.RegisterEvent.RegisterHelper;
+import net.minecraftforge.registries.ForgeRegistries.Keys;
 import net.minecraft.resources.ResourceLocation;
 
 /**
  * Registers the biome modifier codec and instance that handle natural chicken spawns.
  */
 public final class ModBiomeModifiers {
-    private static final ResourceLocation SPAWN_ID = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "chickens_spawns");
+    private static final ResourceLocation SPAWN_ID = new ResourceLocation(ChickensMod.MOD_ID, "chickens_spawns");
 
     private ModBiomeModifiers() {
     }
@@ -27,7 +27,7 @@ public final class ModBiomeModifiers {
         event.register(Keys.BIOME_MODIFIER_SERIALIZERS, helper -> registerSerializer(helper));
     }
 
-    private static void registerSerializer(RegisterHelper<MapCodec<? extends BiomeModifier>> helper) {
+    private static void registerSerializer(RegisterHelper<Codec<? extends BiomeModifier>> helper) {
         helper.register(SPAWN_ID, ChickensSpawnBiomeModifier.CODEC);
     }
 

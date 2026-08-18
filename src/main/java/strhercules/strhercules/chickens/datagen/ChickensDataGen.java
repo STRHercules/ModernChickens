@@ -2,9 +2,9 @@ package strhercules.chickens.datagen;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.data.event.GatherDataEvent;
 
 import strhercules.chickens.ChickensMod;
 import strhercules.chickens.datagen.providers.ChickenItemModelProvider;
@@ -16,7 +16,7 @@ import strhercules.chickens.datagen.providers.ChickensItemTagProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = ChickensMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = ChickensMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ChickensDataGen {
 
     @SubscribeEvent

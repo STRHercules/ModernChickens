@@ -1,6 +1,5 @@
 package strhercules.chickens.block;
 
-import com.mojang.serialization.MapCodec;
 import strhercules.chickens.blockentity.AbstractChickenContainerBlockEntity;
 import strhercules.chickens.blockentity.BreederBlockEntity;
 import strhercules.chickens.registry.ModBlockEntities;
@@ -10,7 +9,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -30,7 +28,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.extensions.IPlayerExtension;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
@@ -40,7 +38,6 @@ import javax.annotation.Nullable;
  * supplied without opening the menu.
  */
 public class BreederBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    public static final MapCodec<BreederBlock> CODEC = simpleCodec(BreederBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty BREEDING = BooleanProperty.create("breeding");
     public static final BooleanProperty HAS_SEEDS = BooleanProperty.create("has_seeds");
@@ -61,10 +58,6 @@ public class BreederBlock extends HorizontalDirectionalBlock implements EntityBl
                 .setValue(HAS_SEEDS, Boolean.FALSE));
     }
 
-    @Override
-    public MapCodec<BreederBlock> codec() {
-        return CODEC;
-    }
 
     @Nullable
     @Override
@@ -88,11 +81,21 @@ public class BreederBlock extends HorizontalDirectionalBlock implements EntityBl
         };
     }
 
+
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+            BlockHitResult hit) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (!(blockEntity instanceof BreederBlockEntity breeder)) {
             return InteractionResult.PASS;
+        }
+        ItemStack stack = player.getItemInHand(hand);
+        if (!stack.isEmpty() && (stack.is(Items.WHEAT_SEEDS) || stack.is(Items.BEETROOT_SEEDS)
+                || stack.is(Items.MELON_SEEDS) || stack.is(Items.PUMPKIN_SEEDS))) {
+            if (!level.isClientSide && breeder.addSeeds(stack)) {
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (player.isShiftKeyDown()) {
             if (!level.isClientSide && breeder.extractChicken(player)) {
@@ -101,26 +104,9 @@ public class BreederBlock extends HorizontalDirectionalBlock implements EntityBl
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ((IPlayerExtension) serverPlayer).openMenu(breeder, pos);
+            NetworkHooks.openScreen(serverPlayer, breeder, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    @Override
-    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-            InteractionHand hand, BlockHitResult hit) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (!(blockEntity instanceof BreederBlockEntity breeder)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-        if (!stack.isEmpty() && (stack.is(Items.WHEAT_SEEDS) || stack.is(Items.BEETROOT_SEEDS)
-                || stack.is(Items.MELON_SEEDS) || stack.is(Items.PUMPKIN_SEEDS))) {
-            if (!level.isClientSide && breeder.addSeeds(stack)) {
-                return ItemInteractionResult.SUCCESS;
-            }
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
-        }
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package strhercules.chickens.item;
 
+import javax.annotation.Nullable;
 import strhercules.chickens.ChickensRegistryItem;
 import strhercules.chickens.entity.ColoredEgg;
 import strhercules.chickens.registry.ModRegistry;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -47,7 +47,7 @@ public class ColoredEggItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         ChickensRegistryItem chicken = ChickenItemHelper.resolve(stack);
         if (chicken != null) {
             tooltip.add(Component.translatable("item.chickens.colored_egg.tooltip", chicken.getDisplayName()).withStyle(ChatFormatting.GRAY));

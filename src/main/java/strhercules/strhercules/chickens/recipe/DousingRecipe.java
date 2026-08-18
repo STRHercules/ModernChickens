@@ -10,10 +10,12 @@ import strhercules.chickens.item.ChickenItem;
 import strhercules.chickens.item.ChickenItemHelper;
 import strhercules.chickens.item.ChickensSpawnEggItem;
 import strhercules.chickens.registry.ModRecipeTypes;
-import net.minecraft.core.HolderLookup;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.Container;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -21,17 +23,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Locale;
 
 
-public final class DousingRecipe implements Recipe<SingleRecipeInput> {
+public final class DousingRecipe implements Recipe<Container> {
     /** Redstone Flux consumed per cycle when a recipe does not specify it. */
     public static final int DEFAULT_ENERGY = 10_000;
 
@@ -61,35 +61,27 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
         }
     }
 
+    private static final ResourceLocation EMPTY_ID = new ResourceLocation("chickens", "dousing");
+
     public static final MapCodec<DousingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.fieldOf("input").forGetter(DousingRecipe::inputChickenName),
             Codec.STRING.fieldOf("result").forGetter(DousingRecipe::resultChickenName),
             Reagent.CODEC.fieldOf("reagent").forGetter(DousingRecipe::reagent),
             Codec.INT.optionalFieldOf("energy", DEFAULT_ENERGY).forGetter(DousingRecipe::energyCost)
-    ).apply(instance, DousingRecipe::new));
+    ).apply(instance, (input, result, reagent, energy) ->
+            new DousingRecipe(EMPTY_ID, input, result, reagent, energy)));
 
-    private static final StreamCodec<RegistryFriendlyByteBuf, DousingRecipe> STREAM_CODEC = StreamCodec.of(
-            (buffer, recipe) -> {
-                buffer.writeUtf(recipe.inputChickenName);
-                buffer.writeUtf(recipe.resultChickenName);
-                buffer.writeEnum(recipe.reagent.type());
-                ResourceLocation.STREAM_CODEC.encode(buffer, recipe.reagent.id());
-                buffer.writeVarInt(recipe.reagent.amount());
-                buffer.writeVarInt(recipe.energyCost);
-            },
-            buffer -> new DousingRecipe(
-                    buffer.readUtf(),
-                    buffer.readUtf(),
-                    new Reagent(buffer.readEnum(ReagentType.class), ResourceLocation.STREAM_CODEC.decode(buffer),
-                            buffer.readVarInt()),
-                    buffer.readVarInt()));
 
+
+    private final ResourceLocation id;
     private final String inputChickenName;
     private final String resultChickenName;
     private final Reagent reagent;
     private final int energyCost;
 
-    public DousingRecipe(String inputChickenName, String resultChickenName, Reagent reagent, int energyCost) {
+    public DousingRecipe(ResourceLocation id, String inputChickenName, String resultChickenName, Reagent reagent,
+            int energyCost) {
+        this.id = id;
         this.inputChickenName = inputChickenName;
         this.resultChickenName = resultChickenName;
         this.reagent = reagent;
@@ -198,13 +190,13 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
     }
 
     @Override
-    public boolean matches(SingleRecipeInput input, Level level) {
-        return input.size() == 1 && matchesInput(input.getItem(0));
+    public boolean matches(Container input, Level level) {
+        return input.getContainerSize() >= 1 && matchesInput(input.getItem(0));
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
-        return getResultItem(registries);
+    public ItemStack assemble(Container input, RegistryAccess registryAccess) {
+        return resultStack();
     }
 
     @Override
@@ -213,7 +205,7 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
     }
 
     @Override
-    public ItemStack getResultItem(HolderLookup.Provider registries) {
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         return resultStack();
     }
 
@@ -237,15 +229,42 @@ public final class DousingRecipe implements Recipe<SingleRecipeInput> {
         return ModRecipeTypes.AVIAN_DOUSING.get();
     }
 
+    public DousingRecipe withId(ResourceLocation newId) {
+        return new DousingRecipe(newId, inputChickenName, resultChickenName, reagent, energyCost);
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return id;
+    }
+
     public static final class Serializer implements RecipeSerializer<DousingRecipe> {
         @Override
-        public MapCodec<DousingRecipe> codec() {
-            return CODEC;
+        public DousingRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
+            DousingRecipe parsed = CODEC.codec().parse(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, message -> {
+                        throw new com.google.gson.JsonParseException("Invalid dousing recipe " + recipeId + ": " + message);
+                    });
+            return parsed.withId(recipeId);
         }
 
         @Override
-        public StreamCodec<RegistryFriendlyByteBuf, DousingRecipe> streamCodec() {
-            return STREAM_CODEC;
+        public DousingRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
+            String input = buffer.readUtf();
+            String result = buffer.readUtf();
+            Reagent reagent = new Reagent(buffer.readEnum(ReagentType.class), buffer.readResourceLocation(),
+                    buffer.readVarInt());
+            return new DousingRecipe(recipeId, input, result, reagent, buffer.readVarInt());
+        }
+
+        @Override
+        public void toNetwork(FriendlyByteBuf buffer, DousingRecipe recipe) {
+            buffer.writeUtf(recipe.inputChickenName);
+            buffer.writeUtf(recipe.resultChickenName);
+            buffer.writeEnum(recipe.reagent.type());
+            buffer.writeResourceLocation(recipe.reagent.id());
+            buffer.writeVarInt(recipe.reagent.amount());
+            buffer.writeVarInt(recipe.energyCost);
         }
     }
 

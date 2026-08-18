@@ -3,7 +3,7 @@ package strhercules.chickens.menu;
 import strhercules.chickens.entity.MegaChicken;
 import strhercules.chickens.registry.ModMenuTypes;
 import strhercules.chickens.registry.ModRegistry;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -32,7 +32,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
     private final Container cargo;
     private final Container chestEquipment;
 
-    public MegaChickenMenu(int id, Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    public MegaChickenMenu(int id, Inventory playerInventory, FriendlyByteBuf buffer) {
         this(id, playerInventory, resolveChicken(playerInventory, buffer));
     }
 
@@ -72,7 +72,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
         }
     }
 
-    private static MegaChicken resolveChicken(Inventory playerInventory, RegistryFriendlyByteBuf buffer) {
+    private static MegaChicken resolveChicken(Inventory playerInventory, FriendlyByteBuf buffer) {
         if (buffer == null) {
             return null;
         }
@@ -90,7 +90,7 @@ public final class MegaChickenMenu extends AbstractContainerMenu {
                 && this.chestEquipment.stillValid(player)
                 && this.chicken.isAlive()
                 && (this.chicken.level().isClientSide || this.chicken.isOwnedByPlayer(player))
-                && player.canInteractWithEntity(this.chicken, 4.0D));
+                && this.chicken.distanceToSqr(player) < 64.0D && this.chicken.isAlive());
     }
 
     @Override

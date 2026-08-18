@@ -1,6 +1,6 @@
 package strhercules.chickens.registry;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import strhercules.chickens.spawn.ChickensSpawnManager;
 import strhercules.chickens.spawn.ChickensSpawnManager.SpawnPlan;
 import net.minecraft.world.entity.EntityType;
@@ -8,8 +8,8 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.biome.Biome;
-import net.neoforged.neoforge.common.world.BiomeModifier;
-import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.minecraftforge.common.world.BiomeModifier;
+import net.minecraftforge.common.world.ModifiableBiomeInfo;
 
 /**
  * Adds the custom chicken entity to biomes that should naturally spawn modded birds.
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
  */
 public final class ChickensSpawnBiomeModifier implements BiomeModifier {
     public static final ChickensSpawnBiomeModifier INSTANCE = new ChickensSpawnBiomeModifier();
-    public static final MapCodec<ChickensSpawnBiomeModifier> CODEC = MapCodec.unit(() -> INSTANCE);
+    public static final Codec<ChickensSpawnBiomeModifier> CODEC = Codec.unit(() -> INSTANCE);
 
     private ChickensSpawnBiomeModifier() {
     }
@@ -49,7 +49,7 @@ public final class ChickensSpawnBiomeModifier implements BiomeModifier {
     }
 
     @Override
-    public MapCodec<? extends BiomeModifier> codec() {
+    public Codec<? extends BiomeModifier> codec() {
         return CODEC;
     }
 }

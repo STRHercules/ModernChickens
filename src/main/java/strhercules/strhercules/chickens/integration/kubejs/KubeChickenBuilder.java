@@ -13,7 +13,7 @@ import java.util.Locale;
 
 public class KubeChickenBuilder {
     private static final ResourceLocation DEFAULT_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID, "textures/entity/whitechicken.png");
+            new ResourceLocation(ChickensMod.MOD_ID, "textures/entity/whitechicken.png");
 
     private final String entityName;
 

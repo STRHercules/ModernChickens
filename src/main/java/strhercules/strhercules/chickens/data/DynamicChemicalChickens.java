@@ -29,7 +29,7 @@ import java.util.Set;
  */
 final class DynamicChemicalChickens {
     private static final Logger LOGGER = LoggerFactory.getLogger("ChickensDynamicChemical");
-    private static final ResourceLocation PLACEHOLDER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation PLACEHOLDER_TEXTURE = new ResourceLocation(
             ChickensMod.MOD_ID, "textures/entity/unknownchicken.png");
     private static final int ID_BASE = 4_500_000;
     private static final int ID_SPAN = 500_000;
@@ -191,7 +191,7 @@ final class DynamicChemicalChickens {
     @Nullable
     private static ChickensRegistryItem findByLayItem(Iterable<ChickensRegistryItem> chickens, ItemStack layStack) {
         for (ChickensRegistryItem chicken : chickens) {
-            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), layStack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createLayItem(), layStack)) {
                 return chicken;
             }
         }
@@ -376,14 +376,14 @@ final class DynamicChemicalChickens {
 
     private static void chemicalRule(Map<String, String[]> rules, String child,
             String chemicalParent, String otherParent) {
-        rule(rules, child, buildEntityName(ResourceLocation.parse(chemicalParent)), otherParent);
+        rule(rules, child, buildEntityName(new ResourceLocation(chemicalParent)), otherParent);
     }
 
     private static void chemicalPairRule(Map<String, String[]> rules, String child,
             String parent1, String parent2) {
         rule(rules, child,
-                buildEntityName(ResourceLocation.parse(parent1)),
-                buildEntityName(ResourceLocation.parse(parent2)));
+                buildEntityName(new ResourceLocation(parent1)),
+                buildEntityName(new ResourceLocation(parent2)));
     }
 
     private static Map<String, ChickensRegistryItem> buildRegistryIndex() {
@@ -420,8 +420,8 @@ final class DynamicChemicalChickens {
 
     private static boolean alreadyRepresents(Iterable<ChickensRegistryItem> chickens, ItemStack layStack) {
         for (ChickensRegistryItem chicken : chickens) {
-            if (ItemStack.isSameItemSameComponents(chicken.createLayItem(), layStack)
-                    || ItemStack.isSameItemSameComponents(chicken.createDropItem(), layStack)) {
+            if (ItemStack.isSameItemSameTags(chicken.createLayItem(), layStack)
+                    || ItemStack.isSameItemSameTags(chicken.createDropItem(), layStack)) {
                 return true;
             }
         }

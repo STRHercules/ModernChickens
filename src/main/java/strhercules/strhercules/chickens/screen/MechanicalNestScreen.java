@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public final class MechanicalNestScreen extends SideConfigurableScreen<MechanicalNestMenu> {
-    private static final ResourceLocation GUI = ResourceLocation.fromNamespaceAndPath("chickens",
+    private static final ResourceLocation GUI = new ResourceLocation("chickens",
             "textures/gui/mechanical_nest.png");
     private static final int BAR_X = 157;
     private static final int BAR_Y = 6;
@@ -47,7 +47,7 @@ public final class MechanicalNestScreen extends SideConfigurableScreen<Mechanica
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(graphics, mouseX, mouseY, partialTicks);
+        renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         if (mouseX >= leftPos + BAR_X && mouseX <= leftPos + BAR_X + BAR_WIDTH

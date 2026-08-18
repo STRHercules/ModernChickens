@@ -2,9 +2,10 @@
 
 Everything Modern Chickens exposes to KubeJS, with runnable examples.
 
-Tested against `kubejs-neoforge-2101.7.2-build.368` and `rhino-2101.2.8-build.91`
-(Minecraft 1.21.1 / NeoForge). Nothing extra to install: the KubeJS plugin ships
-inside the Modern Chickens jar and only loads when KubeJS is present.
+Tested against `kubejs-forge-2001.6.5-build.26` and `rhino-forge-2001.2.3-build.10`
+(Minecraft 1.20.1 / Forge). Nothing extra to install on the Modern Chickens side:
+the KubeJS plugin ships inside the mod jar and only loads when KubeJS is present.
+KubeJS itself needs Architectury API.
 
 | What | Entry point | Script folder |
 | --- | --- | --- |
@@ -205,22 +206,31 @@ per-chicken config pass.
 
 ```js
 ChickensEvents.registry(event => {
-    // Add or replace a vanilla teaching item mapping.
+    // Inspect the roster before touching it.
+    // `getNames()` returns every registered chicken name; `exists(name)` is a
+    // case-insensitive single lookup. Both are handy for guarding a script.
+    console.info(`${event.getNames().size()} chickens are registered`)
+
+    // Add or replace a vanilla teaching item mapping. The trigger takes an item
+    // id, an Item or an ItemStack.
     event.teach('minecraft:paper', 'IronChicken')
 
     // Change any registered breed. A zero spawn weight removes it from natural
     // spawn selection while keeping the breed available for breeding/items.
-    event.modify('IronChicken')
-        .parents('CoalChicken', 'SmartChicken')
-        .layItem('minecraft:iron_nugget')
-        .spawnWeight(4)
+    if (event.exists('IronChicken')) {
+        event.modify('IronChicken')
+            .parents('CoalChicken', 'SmartChicken')
+            .layItem('minecraft:iron_nugget')
+            .spawnWeight(4)
+    }
 
-    // Override the breeding path for an automatically generated fluid breed.
+    // Override the breeding path for a fluid breed. See the rules below: the
+    // parents may not be descendants of the chicken being retuned.
     event.fluid('minecraft:lava')
-        .parents('BlazeChicken', 'WaterChicken')
+        .parents('RedChicken', 'YellowChicken')
         .allowDousing(false)
 
-    // Chemical IDs use the same fluent surface.
+    // Chemical and gas IDs use the same fluent surface.
     event.chemical('mekanism:polonium')
         .parents('UraniumChicken', 'LavaChicken')
 
@@ -238,6 +248,19 @@ ChickensEvents.registry(event => {
 `allowDousing`, `liquidDousingCost`, and `spawnWeight`. `spawnWeight(0)` is
 the explicit natural-spawn disable. `event.fluid(id)` and `event.chemical(id)`
 support `parents`, `allowDousing`, and `spawnWeight`.
+
+**`fluid()` and `chemical()` retune an existing chicken, they do not create one.**
+Both resolve the chicken that *lays* the egg for that resource, so:
+
+- The resource must already have a chicken. Unknown ids are skipped with
+  `<Fluid|Chemical> rule targets an unknown resource '<id>'; ignoring`.
+- Modern Chickens does not ship any chicken that lays a chemical or gas egg, so
+  `event.chemical(...)` only resolves for breeds your pack adds itself, through
+  `custom_chickens.toml` or `event.create(...)`.
+- Neither parent may be the chicken itself or one of its descendants. A cycle is
+  refused with `<Fluid|Chemical> rule for '<id>' has unusable parents; clearing
+  its breeding data`, and the breed ends up with no parents at all — pick
+  unrelated parents rather than ones bred *from* the target.
 
 `event.modifyEgg(id)` accepts a fluid, chemical, or gas resource ID. `.hazards(...)`
 replaces the complete hazard set; use `.clearHazards()` to remove every flag.
@@ -334,7 +357,10 @@ Arguments, in order:
 is a namespaced registry ID; `reagent.amount` is an item count or a volume in mB
 and defaults to `1`.
 
-Omitting `.id(...)` is fine — the schema derives one from the result.
+Omitting `.id(...)` is fine. KubeJS then assigns a generated id of the form
+`chickens:kjs/<hash>`, which is stable for identical recipe content but is not
+human-readable — give the recipe an explicit id if you plan to remove or
+override it later.
 
 ### Chicken names vs item IDs
 
@@ -438,13 +464,17 @@ ServerEvents.recipes(event => {
 - **`ChickensEvents is not defined`** — the script is not in `startup_scripts/`,
   or Modern Chickens failed to load.
 - **`event.recipes.chickens` is undefined** — the schema is registered by the
-  mod's KubeJS plugin during datapack load. Check `logs/kubejs/server.log` for
-  plugin errors; `strhercules.chickens.integration.kubejs.ChickensKubeJSPlugin`
-  should appear under `Loaded plugins`.
+  mod's KubeJS plugin. Look for `Found plugin source chickens` in the game log
+  during startup; if it is missing, KubeJS never picked the plugin up (check that
+  Architectury API is installed and that KubeJS itself loaded).
 - **Changes to a startup script do nothing** — the registry event only runs at
   game start; `/kubejs reload_startup_scripts` will not re-post it.
 - **A dousing recipe never fires** — one of the two names does not exist. Chicken
   names are registry names, not item IDs; item IDs must be registered items.
+- **A fluid or chemical override did nothing** — the log says either `targets an
+  unknown resource` (no chicken lays that egg) or `has unusable parents` (a
+  parent is the target or one of its descendants; the breeding data was cleared).
+  See [Pack overrides](#pack-overrides).
 - **A chicken changed type in an existing world** — this happens if you renamed
   it or pinned `.id(...)` to a different value; ids are tied to the name.
 

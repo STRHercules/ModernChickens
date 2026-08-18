@@ -4,7 +4,7 @@ import strhercules.chickens.ChickensMod;
 import strhercules.chickens.ChemicalEggRegistryItem;
 import strhercules.chickens.SpawnType;
 import mezz.jei.api.recipe.RecipeType;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -74,7 +74,7 @@ public final class ChickensJeiRecipeTypes {
     public record AvianDousingRecipe(ItemStack inputEgg, ItemStack inputChicken, ItemStack reagent, ItemStack result,
                                      @Nullable ChemicalEggRegistryItem entry,
                                      @Nullable MekanismJeiChemicalHelper.JeiChemicalStack chemical,
-                                     @Nullable net.neoforged.neoforge.fluids.FluidStack fluid,
+                                     @Nullable net.minecraftforge.fluids.FluidStack fluid,
                                      int fluidCost, int energyCost) {
     }
 

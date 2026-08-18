@@ -1,34 +1,30 @@
 package strhercules.chickens.integration.kubejs;
 
 import dev.latvian.mods.kubejs.recipe.RecipeKey;
-import dev.latvian.mods.kubejs.recipe.component.CustomObjectRecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.NumberComponent;
+import dev.latvian.mods.kubejs.recipe.component.RecipeComponentBuilder;
+import dev.latvian.mods.kubejs.recipe.component.RecipeComponentBuilderMap;
 import dev.latvian.mods.kubejs.recipe.component.StringComponent;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 import strhercules.chickens.recipe.DousingRecipe;
 
-import java.util.List;
-
 public interface DousingRecipeSchema {
-   RecipeKey<String> RESULT = StringComponent.STRING
-            .outputKey("result")
-            .functionNames("result", "output");
+    RecipeKey<String> RESULT = StringComponent.NON_BLANK.key("result").alt("output");
 
-    RecipeKey<String> INPUT = StringComponent.STRING
-            .inputKey("input")
-            .functionNames("input", "chicken");
+    RecipeKey<String> INPUT = StringComponent.NON_BLANK.key("input").alt("chicken");
 
-    RecipeKey<List<CustomObjectRecipeComponent.Value>> REAGENT = new CustomObjectRecipeComponent(List.of(
-            new CustomObjectRecipeComponent.Key("type", StringComponent.STRING.instance()),
-            new CustomObjectRecipeComponent.Key("id", StringComponent.ID.instance()),
-            new CustomObjectRecipeComponent.Key("amount", NumberComponent.POSITIVE_INT.instance(), true)
-    )).inputKey("reagent");
+    RecipeComponentBuilder REAGENT_COMPONENT = new RecipeComponentBuilder(3)
+            .add(StringComponent.NON_BLANK.key("type"))
+            .add(StringComponent.ID.key("id"))
+            .add(NumberComponent.intRange(1, Integer.MAX_VALUE).key("amount").optional(1))
+            .inputRole();
 
-    RecipeKey<Integer> ENERGY = NumberComponent.NON_NEGATIVE_INT
-            .otherKey("energy")
+    RecipeKey<RecipeComponentBuilderMap> REAGENT = REAGENT_COMPONENT.key("reagent");
+
+    RecipeKey<Integer> ENERGY = NumberComponent.intRange(0, Integer.MAX_VALUE)
+            .key("energy")
             .optional(DousingRecipe.DEFAULT_ENERGY)
-            .functionNames("energy", "energyCost");
+            .alt("energyCost");
 
-    RecipeSchema SCHEMA = new RecipeSchema(RESULT, INPUT, REAGENT, ENERGY)
-            .uniqueId(RESULT);
+    RecipeSchema SCHEMA = new RecipeSchema(RESULT, INPUT, REAGENT, ENERGY);
 }

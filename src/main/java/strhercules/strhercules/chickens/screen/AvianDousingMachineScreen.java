@@ -10,9 +10,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraft.util.Mth;
 
 /**
@@ -21,7 +21,7 @@ import net.minecraft.util.Mth;
  * Smart Chicken infusion will complete.
  */
 public class AvianDousingMachineScreen extends SideConfigurableScreen<AvianDousingMachineMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(ChickensMod.MOD_ID,
+    private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChickensMod.MOD_ID,
             "textures/gui/douser.png");
 
     private static final int CHEM_BAR_X = 9;
@@ -69,7 +69,7 @@ public class AvianDousingMachineScreen extends SideConfigurableScreen<AvianDousi
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics, mouseX, mouseY, partialTicks);
+        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         renderSideConfig(graphics, mouseX, mouseY);
         renderTooltips(graphics, mouseX, mouseY);
@@ -209,7 +209,7 @@ public class AvianDousingMachineScreen extends SideConfigurableScreen<AvianDousi
             FluidStack stack = menu.getFluid();
             Component fluidName = stack.isEmpty()
                     ? Component.translatable("tooltip.chickens.avian_dousing_machine.empty")
-                    : stack.getHoverName();
+                    : stack.getDisplayName();
             if (menu.getSpecialInfusion() != SpecialInfusion.NONE && menu.getSpecialAmount() > 0) {
                 fluidName = Component.literal(menu.getSpecialInfusion().getDisplayName());
             }

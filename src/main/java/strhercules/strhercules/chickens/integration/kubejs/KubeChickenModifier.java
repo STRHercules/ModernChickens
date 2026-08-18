@@ -59,16 +59,6 @@ public final class KubeChickenModifier {
         this.chickenName = chickenName;
     }
 
-    public KubeChickenModifier layItem(ItemStack stack) {
-        layItem = stack == null ? null : stack.copy();
-        return this;
-    }
-
-    public KubeChickenModifier layItem(String value) {
-        layItem = parseItem(value, -1);
-        return this;
-    }
-
     public KubeChickenModifier layItem(Object value) {
         layItem = parseItem(value, -1);
         return this;
@@ -79,26 +69,6 @@ public final class KubeChickenModifier {
         return this;
     }
 
-    public KubeChickenModifier layItem(String value, int count) {
-        layItem = parseItem(value, count);
-        return this;
-    }
-
-    public KubeChickenModifier layItem(ItemStack stack, int count) {
-        layItem = stack == null ? null : withCount(stack.copy(), count);
-        return this;
-    }
-
-    public KubeChickenModifier dropItem(ItemStack stack) {
-        dropItem = stack == null ? null : stack.copy();
-        return this;
-    }
-
-    public KubeChickenModifier dropItem(String value) {
-        dropItem = parseItem(value, -1);
-        return this;
-    }
-
     public KubeChickenModifier dropItem(Object value) {
         dropItem = parseItem(value, -1);
         return this;
@@ -106,16 +76,6 @@ public final class KubeChickenModifier {
 
     public KubeChickenModifier dropItem(Object value, int count) {
         dropItem = parseItem(value, count);
-        return this;
-    }
-
-    public KubeChickenModifier dropItem(String value, int count) {
-        dropItem = parseItem(value, count);
-        return this;
-    }
-
-    public KubeChickenModifier dropItem(ItemStack stack, int count) {
-        dropItem = stack == null ? null : withCount(stack.copy(), count);
         return this;
     }
 

@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public final class RobotRoosterCategory implements IRecipeCategory<ChickensJeiRecipeTypes.RobotRoosterRecipe> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+    private static final ResourceLocation TEXTURE = new ResourceLocation(
             ChickensMod.MOD_ID, "textures/gui/breeding.png");
 
     private final IDrawable background;

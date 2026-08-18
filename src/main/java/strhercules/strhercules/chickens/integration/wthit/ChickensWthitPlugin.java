@@ -12,6 +12,7 @@ import strhercules.chickens.integration.wthit.overlay.HudOverlayHelper;
 import strhercules.chickens.integration.wthit.overlay.HudTooltipRenderer;
 import mcp.mobius.waila.api.IRegistrar;
 import mcp.mobius.waila.api.IWailaPlugin;
+import mcp.mobius.waila.api.WailaPlugin;
 import mcp.mobius.waila.api.TooltipPosition;
 import mcp.mobius.waila.api.IEventListener;
 import mcp.mobius.waila.api.ICommonAccessor;
@@ -27,11 +28,12 @@ import net.minecraft.network.chat.Component;
  * so players receive consistent in-world stats regardless of their HUD mod of
  * choice.
  */
+@WailaPlugin(id = "chickens:wthit")
 public final class ChickensWthitPlugin implements IWailaPlugin {
 
     @Override
     public void register(IRegistrar registrar) {
-        registrar.addDataType(HudOverlayHelper.TYPE, HudOverlayHelper.STREAM_CODEC);
+        registrar.addDataType(HudOverlayHelper.ID, HudOverlayHelper.class, HudOverlayHelper.SERIALIZER);
 
         HudTooltipRenderer hudRenderer = new HudTooltipRenderer();
         registrar.addEventListener(new IEventListener() {
